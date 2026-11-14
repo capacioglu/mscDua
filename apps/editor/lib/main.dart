@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
+import 'package:path/path.dart' as p;
 
+import 'app/actions.dart';
 import 'app/app_state.dart';
 import 'screens/dua_edit_screen.dart';
 import 'screens/dua_list_screen.dart';
@@ -37,12 +39,36 @@ class _EditorAppState extends State<EditorApp> {
   }
 
   Future<void> _open(Directory dir) async {
+    final previous = _state;
+    if (previous != null &&
+        p.equals(previous.contentDir.path, p.absolute(dir.path))) {
+      return;
+    }
     try {
+      if (previous != null) {
+        // Aynı veritabanı iki kez açık kalmasın; açık ekranları kapat.
+        _nav.currentState?.popUntil((r) => r.isFirst);
+        setState(() => _state = null);
+        await previous.close();
+      }
       final st = await AppState.open(dir, _settings);
       setState(() {
         _state = st;
         _error = null;
       });
+      final r = st.lastAutoImport;
+      if (r != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final ctx = _nav.currentContext;
+          if (ctx == null) return;
+          showReport(ctx, 'dua_archive.json içe aktarıldı', [
+            'Yeni dua: ${r.duasCreated}, güncellenen: ${r.duasUpdated}, yeni grup: ${r.groupsCreated}',
+            if (r.changedDuaIds.isNotEmpty)
+              "JSON'da değişiklik olan dualar: ${r.changedDuaIds.join(', ')}",
+            ...r.warnings.map((w) => '⚠ $w'),
+          ]);
+        });
+      }
     } catch (e) {
       setState(() => _error = '$e');
     }
