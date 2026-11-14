@@ -23,12 +23,28 @@ class Duas extends Table {
   TextColumn get importDiff => text().nullable()();
   IntColumn get sortOrder => integer().withDefault(const Constant(0))();
 
+  // dua_archive.json (1.0.0) alanları
+  TextColumn get titleArType => text().nullable()();
+  TextColumn get sourceType => text().nullable()();
+  TextColumn get hadithTr => text().nullable()();
+  TextColumn get hadithEn => text().nullable()();
+  TextColumn get hadithGrade => text().nullable()();
+  TextColumn get storyTr => text().nullable()();
+  TextColumn get storyEn => text().nullable()();
+  IntColumn get recitationCount => integer().nullable()();
+  TextColumn get recitationTimeTr => text().nullable()();
+  TextColumn get recitationTimeEn => text().nullable()();
+  BoolColumn get standaloneVisible => boolean().withDefault(const Constant(true))();
+
   @override
   Set<Column> get primaryKey => {id};
 }
 
 class Categories extends Table {
   IntColumn get id => integer().autoIncrement()();
+
+  /// JSON'daki kalıcı kategori kodu (ör. `forgiveness`); elle eklenen kategoride boş olabilir.
+  TextColumn get code => text().nullable().unique()();
   TextColumn get nameTr => text().unique()();
   TextColumn get nameEn => text().nullable()();
   IntColumn get sortOrder => integer().withDefault(const Constant(0))();
@@ -72,6 +88,9 @@ class GroupItems extends Table {
 
   /// null = sırasız üyelik.
   IntColumn get position => integer().nullable()();
+
+  /// Grupta bu duanın kaç kez okunacağı.
+  IntColumn get repeatCount => integer().withDefault(const Constant(1))();
 
   @override
   List<Set<Column>> get uniqueKeys => [

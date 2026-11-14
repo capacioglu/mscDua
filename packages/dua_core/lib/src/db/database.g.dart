@@ -225,6 +225,131 @@ class $DuasTable extends Duas with TableInfo<$DuasTable, Dua> {
     requiredDuringInsert: false,
     defaultValue: const Constant(0),
   );
+  static const VerificationMeta _titleArTypeMeta = const VerificationMeta(
+    'titleArType',
+  );
+  @override
+  late final GeneratedColumn<String> titleArType = GeneratedColumn<String>(
+    'title_ar_type',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sourceTypeMeta = const VerificationMeta(
+    'sourceType',
+  );
+  @override
+  late final GeneratedColumn<String> sourceType = GeneratedColumn<String>(
+    'source_type',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _hadithTrMeta = const VerificationMeta(
+    'hadithTr',
+  );
+  @override
+  late final GeneratedColumn<String> hadithTr = GeneratedColumn<String>(
+    'hadith_tr',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _hadithEnMeta = const VerificationMeta(
+    'hadithEn',
+  );
+  @override
+  late final GeneratedColumn<String> hadithEn = GeneratedColumn<String>(
+    'hadith_en',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _hadithGradeMeta = const VerificationMeta(
+    'hadithGrade',
+  );
+  @override
+  late final GeneratedColumn<String> hadithGrade = GeneratedColumn<String>(
+    'hadith_grade',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _storyTrMeta = const VerificationMeta(
+    'storyTr',
+  );
+  @override
+  late final GeneratedColumn<String> storyTr = GeneratedColumn<String>(
+    'story_tr',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _storyEnMeta = const VerificationMeta(
+    'storyEn',
+  );
+  @override
+  late final GeneratedColumn<String> storyEn = GeneratedColumn<String>(
+    'story_en',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _recitationCountMeta = const VerificationMeta(
+    'recitationCount',
+  );
+  @override
+  late final GeneratedColumn<int> recitationCount = GeneratedColumn<int>(
+    'recitation_count',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _recitationTimeTrMeta = const VerificationMeta(
+    'recitationTimeTr',
+  );
+  @override
+  late final GeneratedColumn<String> recitationTimeTr = GeneratedColumn<String>(
+    'recitation_time_tr',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _recitationTimeEnMeta = const VerificationMeta(
+    'recitationTimeEn',
+  );
+  @override
+  late final GeneratedColumn<String> recitationTimeEn = GeneratedColumn<String>(
+    'recitation_time_en',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _standaloneVisibleMeta = const VerificationMeta(
+    'standaloneVisible',
+  );
+  @override
+  late final GeneratedColumn<bool> standaloneVisible = GeneratedColumn<bool>(
+    'standalone_visible',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("standalone_visible" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -246,6 +371,17 @@ class $DuasTable extends Duas with TableInfo<$DuasTable, Dua> {
     version,
     importDiff,
     sortOrder,
+    titleArType,
+    sourceType,
+    hadithTr,
+    hadithEn,
+    hadithGrade,
+    storyTr,
+    storyEn,
+    recitationCount,
+    recitationTimeTr,
+    recitationTimeEn,
+    standaloneVisible,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -401,6 +537,90 @@ class $DuasTable extends Duas with TableInfo<$DuasTable, Dua> {
         sortOrder.isAcceptableOrUnknown(data['sort_order']!, _sortOrderMeta),
       );
     }
+    if (data.containsKey('title_ar_type')) {
+      context.handle(
+        _titleArTypeMeta,
+        titleArType.isAcceptableOrUnknown(
+          data['title_ar_type']!,
+          _titleArTypeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('source_type')) {
+      context.handle(
+        _sourceTypeMeta,
+        sourceType.isAcceptableOrUnknown(data['source_type']!, _sourceTypeMeta),
+      );
+    }
+    if (data.containsKey('hadith_tr')) {
+      context.handle(
+        _hadithTrMeta,
+        hadithTr.isAcceptableOrUnknown(data['hadith_tr']!, _hadithTrMeta),
+      );
+    }
+    if (data.containsKey('hadith_en')) {
+      context.handle(
+        _hadithEnMeta,
+        hadithEn.isAcceptableOrUnknown(data['hadith_en']!, _hadithEnMeta),
+      );
+    }
+    if (data.containsKey('hadith_grade')) {
+      context.handle(
+        _hadithGradeMeta,
+        hadithGrade.isAcceptableOrUnknown(
+          data['hadith_grade']!,
+          _hadithGradeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('story_tr')) {
+      context.handle(
+        _storyTrMeta,
+        storyTr.isAcceptableOrUnknown(data['story_tr']!, _storyTrMeta),
+      );
+    }
+    if (data.containsKey('story_en')) {
+      context.handle(
+        _storyEnMeta,
+        storyEn.isAcceptableOrUnknown(data['story_en']!, _storyEnMeta),
+      );
+    }
+    if (data.containsKey('recitation_count')) {
+      context.handle(
+        _recitationCountMeta,
+        recitationCount.isAcceptableOrUnknown(
+          data['recitation_count']!,
+          _recitationCountMeta,
+        ),
+      );
+    }
+    if (data.containsKey('recitation_time_tr')) {
+      context.handle(
+        _recitationTimeTrMeta,
+        recitationTimeTr.isAcceptableOrUnknown(
+          data['recitation_time_tr']!,
+          _recitationTimeTrMeta,
+        ),
+      );
+    }
+    if (data.containsKey('recitation_time_en')) {
+      context.handle(
+        _recitationTimeEnMeta,
+        recitationTimeEn.isAcceptableOrUnknown(
+          data['recitation_time_en']!,
+          _recitationTimeEnMeta,
+        ),
+      );
+    }
+    if (data.containsKey('standalone_visible')) {
+      context.handle(
+        _standaloneVisibleMeta,
+        standaloneVisible.isAcceptableOrUnknown(
+          data['standalone_visible']!,
+          _standaloneVisibleMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -486,6 +706,50 @@ class $DuasTable extends Duas with TableInfo<$DuasTable, Dua> {
         DriftSqlType.int,
         data['${effectivePrefix}sort_order'],
       )!,
+      titleArType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}title_ar_type'],
+      ),
+      sourceType: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source_type'],
+      ),
+      hadithTr: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}hadith_tr'],
+      ),
+      hadithEn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}hadith_en'],
+      ),
+      hadithGrade: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}hadith_grade'],
+      ),
+      storyTr: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}story_tr'],
+      ),
+      storyEn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}story_en'],
+      ),
+      recitationCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}recitation_count'],
+      ),
+      recitationTimeTr: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recitation_time_tr'],
+      ),
+      recitationTimeEn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}recitation_time_en'],
+      ),
+      standaloneVisible: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}standalone_visible'],
+      )!,
     );
   }
 
@@ -515,6 +779,17 @@ class Dua extends DataClass implements Insertable<Dua> {
   final int version;
   final String? importDiff;
   final int sortOrder;
+  final String? titleArType;
+  final String? sourceType;
+  final String? hadithTr;
+  final String? hadithEn;
+  final String? hadithGrade;
+  final String? storyTr;
+  final String? storyEn;
+  final int? recitationCount;
+  final String? recitationTimeTr;
+  final String? recitationTimeEn;
+  final bool standaloneVisible;
   const Dua({
     required this.id,
     required this.titleTr,
@@ -535,6 +810,17 @@ class Dua extends DataClass implements Insertable<Dua> {
     required this.version,
     this.importDiff,
     required this.sortOrder,
+    this.titleArType,
+    this.sourceType,
+    this.hadithTr,
+    this.hadithEn,
+    this.hadithGrade,
+    this.storyTr,
+    this.storyEn,
+    this.recitationCount,
+    this.recitationTimeTr,
+    this.recitationTimeEn,
+    required this.standaloneVisible,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -586,6 +872,37 @@ class Dua extends DataClass implements Insertable<Dua> {
       map['import_diff'] = Variable<String>(importDiff);
     }
     map['sort_order'] = Variable<int>(sortOrder);
+    if (!nullToAbsent || titleArType != null) {
+      map['title_ar_type'] = Variable<String>(titleArType);
+    }
+    if (!nullToAbsent || sourceType != null) {
+      map['source_type'] = Variable<String>(sourceType);
+    }
+    if (!nullToAbsent || hadithTr != null) {
+      map['hadith_tr'] = Variable<String>(hadithTr);
+    }
+    if (!nullToAbsent || hadithEn != null) {
+      map['hadith_en'] = Variable<String>(hadithEn);
+    }
+    if (!nullToAbsent || hadithGrade != null) {
+      map['hadith_grade'] = Variable<String>(hadithGrade);
+    }
+    if (!nullToAbsent || storyTr != null) {
+      map['story_tr'] = Variable<String>(storyTr);
+    }
+    if (!nullToAbsent || storyEn != null) {
+      map['story_en'] = Variable<String>(storyEn);
+    }
+    if (!nullToAbsent || recitationCount != null) {
+      map['recitation_count'] = Variable<int>(recitationCount);
+    }
+    if (!nullToAbsent || recitationTimeTr != null) {
+      map['recitation_time_tr'] = Variable<String>(recitationTimeTr);
+    }
+    if (!nullToAbsent || recitationTimeEn != null) {
+      map['recitation_time_en'] = Variable<String>(recitationTimeEn);
+    }
+    map['standalone_visible'] = Variable<bool>(standaloneVisible);
     return map;
   }
 
@@ -638,6 +955,37 @@ class Dua extends DataClass implements Insertable<Dua> {
           ? const Value.absent()
           : Value(importDiff),
       sortOrder: Value(sortOrder),
+      titleArType: titleArType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(titleArType),
+      sourceType: sourceType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceType),
+      hadithTr: hadithTr == null && nullToAbsent
+          ? const Value.absent()
+          : Value(hadithTr),
+      hadithEn: hadithEn == null && nullToAbsent
+          ? const Value.absent()
+          : Value(hadithEn),
+      hadithGrade: hadithGrade == null && nullToAbsent
+          ? const Value.absent()
+          : Value(hadithGrade),
+      storyTr: storyTr == null && nullToAbsent
+          ? const Value.absent()
+          : Value(storyTr),
+      storyEn: storyEn == null && nullToAbsent
+          ? const Value.absent()
+          : Value(storyEn),
+      recitationCount: recitationCount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recitationCount),
+      recitationTimeTr: recitationTimeTr == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recitationTimeTr),
+      recitationTimeEn: recitationTimeEn == null && nullToAbsent
+          ? const Value.absent()
+          : Value(recitationTimeEn),
+      standaloneVisible: Value(standaloneVisible),
     );
   }
 
@@ -672,6 +1020,17 @@ class Dua extends DataClass implements Insertable<Dua> {
       version: serializer.fromJson<int>(json['version']),
       importDiff: serializer.fromJson<String?>(json['importDiff']),
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
+      titleArType: serializer.fromJson<String?>(json['titleArType']),
+      sourceType: serializer.fromJson<String?>(json['sourceType']),
+      hadithTr: serializer.fromJson<String?>(json['hadithTr']),
+      hadithEn: serializer.fromJson<String?>(json['hadithEn']),
+      hadithGrade: serializer.fromJson<String?>(json['hadithGrade']),
+      storyTr: serializer.fromJson<String?>(json['storyTr']),
+      storyEn: serializer.fromJson<String?>(json['storyEn']),
+      recitationCount: serializer.fromJson<int?>(json['recitationCount']),
+      recitationTimeTr: serializer.fromJson<String?>(json['recitationTimeTr']),
+      recitationTimeEn: serializer.fromJson<String?>(json['recitationTimeEn']),
+      standaloneVisible: serializer.fromJson<bool>(json['standaloneVisible']),
     );
   }
   @override
@@ -697,6 +1056,17 @@ class Dua extends DataClass implements Insertable<Dua> {
       'version': serializer.toJson<int>(version),
       'importDiff': serializer.toJson<String?>(importDiff),
       'sortOrder': serializer.toJson<int>(sortOrder),
+      'titleArType': serializer.toJson<String?>(titleArType),
+      'sourceType': serializer.toJson<String?>(sourceType),
+      'hadithTr': serializer.toJson<String?>(hadithTr),
+      'hadithEn': serializer.toJson<String?>(hadithEn),
+      'hadithGrade': serializer.toJson<String?>(hadithGrade),
+      'storyTr': serializer.toJson<String?>(storyTr),
+      'storyEn': serializer.toJson<String?>(storyEn),
+      'recitationCount': serializer.toJson<int?>(recitationCount),
+      'recitationTimeTr': serializer.toJson<String?>(recitationTimeTr),
+      'recitationTimeEn': serializer.toJson<String?>(recitationTimeEn),
+      'standaloneVisible': serializer.toJson<bool>(standaloneVisible),
     };
   }
 
@@ -720,6 +1090,17 @@ class Dua extends DataClass implements Insertable<Dua> {
     int? version,
     Value<String?> importDiff = const Value.absent(),
     int? sortOrder,
+    Value<String?> titleArType = const Value.absent(),
+    Value<String?> sourceType = const Value.absent(),
+    Value<String?> hadithTr = const Value.absent(),
+    Value<String?> hadithEn = const Value.absent(),
+    Value<String?> hadithGrade = const Value.absent(),
+    Value<String?> storyTr = const Value.absent(),
+    Value<String?> storyEn = const Value.absent(),
+    Value<int?> recitationCount = const Value.absent(),
+    Value<String?> recitationTimeTr = const Value.absent(),
+    Value<String?> recitationTimeEn = const Value.absent(),
+    bool? standaloneVisible,
   }) => Dua(
     id: id ?? this.id,
     titleTr: titleTr ?? this.titleTr,
@@ -752,6 +1133,23 @@ class Dua extends DataClass implements Insertable<Dua> {
     version: version ?? this.version,
     importDiff: importDiff.present ? importDiff.value : this.importDiff,
     sortOrder: sortOrder ?? this.sortOrder,
+    titleArType: titleArType.present ? titleArType.value : this.titleArType,
+    sourceType: sourceType.present ? sourceType.value : this.sourceType,
+    hadithTr: hadithTr.present ? hadithTr.value : this.hadithTr,
+    hadithEn: hadithEn.present ? hadithEn.value : this.hadithEn,
+    hadithGrade: hadithGrade.present ? hadithGrade.value : this.hadithGrade,
+    storyTr: storyTr.present ? storyTr.value : this.storyTr,
+    storyEn: storyEn.present ? storyEn.value : this.storyEn,
+    recitationCount: recitationCount.present
+        ? recitationCount.value
+        : this.recitationCount,
+    recitationTimeTr: recitationTimeTr.present
+        ? recitationTimeTr.value
+        : this.recitationTimeTr,
+    recitationTimeEn: recitationTimeEn.present
+        ? recitationTimeEn.value
+        : this.recitationTimeEn,
+    standaloneVisible: standaloneVisible ?? this.standaloneVisible,
   );
   Dua copyWithCompanion(DuasCompanion data) {
     return Dua(
@@ -798,6 +1196,31 @@ class Dua extends DataClass implements Insertable<Dua> {
           ? data.importDiff.value
           : this.importDiff,
       sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
+      titleArType: data.titleArType.present
+          ? data.titleArType.value
+          : this.titleArType,
+      sourceType: data.sourceType.present
+          ? data.sourceType.value
+          : this.sourceType,
+      hadithTr: data.hadithTr.present ? data.hadithTr.value : this.hadithTr,
+      hadithEn: data.hadithEn.present ? data.hadithEn.value : this.hadithEn,
+      hadithGrade: data.hadithGrade.present
+          ? data.hadithGrade.value
+          : this.hadithGrade,
+      storyTr: data.storyTr.present ? data.storyTr.value : this.storyTr,
+      storyEn: data.storyEn.present ? data.storyEn.value : this.storyEn,
+      recitationCount: data.recitationCount.present
+          ? data.recitationCount.value
+          : this.recitationCount,
+      recitationTimeTr: data.recitationTimeTr.present
+          ? data.recitationTimeTr.value
+          : this.recitationTimeTr,
+      recitationTimeEn: data.recitationTimeEn.present
+          ? data.recitationTimeEn.value
+          : this.recitationTimeEn,
+      standaloneVisible: data.standaloneVisible.present
+          ? data.standaloneVisible.value
+          : this.standaloneVisible,
     );
   }
 
@@ -822,13 +1245,24 @@ class Dua extends DataClass implements Insertable<Dua> {
           ..write('readyToPublish: $readyToPublish, ')
           ..write('version: $version, ')
           ..write('importDiff: $importDiff, ')
-          ..write('sortOrder: $sortOrder')
+          ..write('sortOrder: $sortOrder, ')
+          ..write('titleArType: $titleArType, ')
+          ..write('sourceType: $sourceType, ')
+          ..write('hadithTr: $hadithTr, ')
+          ..write('hadithEn: $hadithEn, ')
+          ..write('hadithGrade: $hadithGrade, ')
+          ..write('storyTr: $storyTr, ')
+          ..write('storyEn: $storyEn, ')
+          ..write('recitationCount: $recitationCount, ')
+          ..write('recitationTimeTr: $recitationTimeTr, ')
+          ..write('recitationTimeEn: $recitationTimeEn, ')
+          ..write('standaloneVisible: $standaloneVisible')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     titleTr,
     titleEn,
@@ -848,7 +1282,18 @@ class Dua extends DataClass implements Insertable<Dua> {
     version,
     importDiff,
     sortOrder,
-  );
+    titleArType,
+    sourceType,
+    hadithTr,
+    hadithEn,
+    hadithGrade,
+    storyTr,
+    storyEn,
+    recitationCount,
+    recitationTimeTr,
+    recitationTimeEn,
+    standaloneVisible,
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -871,7 +1316,18 @@ class Dua extends DataClass implements Insertable<Dua> {
           other.readyToPublish == this.readyToPublish &&
           other.version == this.version &&
           other.importDiff == this.importDiff &&
-          other.sortOrder == this.sortOrder);
+          other.sortOrder == this.sortOrder &&
+          other.titleArType == this.titleArType &&
+          other.sourceType == this.sourceType &&
+          other.hadithTr == this.hadithTr &&
+          other.hadithEn == this.hadithEn &&
+          other.hadithGrade == this.hadithGrade &&
+          other.storyTr == this.storyTr &&
+          other.storyEn == this.storyEn &&
+          other.recitationCount == this.recitationCount &&
+          other.recitationTimeTr == this.recitationTimeTr &&
+          other.recitationTimeEn == this.recitationTimeEn &&
+          other.standaloneVisible == this.standaloneVisible);
 }
 
 class DuasCompanion extends UpdateCompanion<Dua> {
@@ -894,6 +1350,17 @@ class DuasCompanion extends UpdateCompanion<Dua> {
   final Value<int> version;
   final Value<String?> importDiff;
   final Value<int> sortOrder;
+  final Value<String?> titleArType;
+  final Value<String?> sourceType;
+  final Value<String?> hadithTr;
+  final Value<String?> hadithEn;
+  final Value<String?> hadithGrade;
+  final Value<String?> storyTr;
+  final Value<String?> storyEn;
+  final Value<int?> recitationCount;
+  final Value<String?> recitationTimeTr;
+  final Value<String?> recitationTimeEn;
+  final Value<bool> standaloneVisible;
   final Value<int> rowid;
   const DuasCompanion({
     this.id = const Value.absent(),
@@ -915,6 +1382,17 @@ class DuasCompanion extends UpdateCompanion<Dua> {
     this.version = const Value.absent(),
     this.importDiff = const Value.absent(),
     this.sortOrder = const Value.absent(),
+    this.titleArType = const Value.absent(),
+    this.sourceType = const Value.absent(),
+    this.hadithTr = const Value.absent(),
+    this.hadithEn = const Value.absent(),
+    this.hadithGrade = const Value.absent(),
+    this.storyTr = const Value.absent(),
+    this.storyEn = const Value.absent(),
+    this.recitationCount = const Value.absent(),
+    this.recitationTimeTr = const Value.absent(),
+    this.recitationTimeEn = const Value.absent(),
+    this.standaloneVisible = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   DuasCompanion.insert({
@@ -937,6 +1415,17 @@ class DuasCompanion extends UpdateCompanion<Dua> {
     this.version = const Value.absent(),
     this.importDiff = const Value.absent(),
     this.sortOrder = const Value.absent(),
+    this.titleArType = const Value.absent(),
+    this.sourceType = const Value.absent(),
+    this.hadithTr = const Value.absent(),
+    this.hadithEn = const Value.absent(),
+    this.hadithGrade = const Value.absent(),
+    this.storyTr = const Value.absent(),
+    this.storyEn = const Value.absent(),
+    this.recitationCount = const Value.absent(),
+    this.recitationTimeTr = const Value.absent(),
+    this.recitationTimeEn = const Value.absent(),
+    this.standaloneVisible = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        titleTr = Value(titleTr);
@@ -960,6 +1449,17 @@ class DuasCompanion extends UpdateCompanion<Dua> {
     Expression<int>? version,
     Expression<String>? importDiff,
     Expression<int>? sortOrder,
+    Expression<String>? titleArType,
+    Expression<String>? sourceType,
+    Expression<String>? hadithTr,
+    Expression<String>? hadithEn,
+    Expression<String>? hadithGrade,
+    Expression<String>? storyTr,
+    Expression<String>? storyEn,
+    Expression<int>? recitationCount,
+    Expression<String>? recitationTimeTr,
+    Expression<String>? recitationTimeEn,
+    Expression<bool>? standaloneVisible,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -984,6 +1484,17 @@ class DuasCompanion extends UpdateCompanion<Dua> {
       if (version != null) 'version': version,
       if (importDiff != null) 'import_diff': importDiff,
       if (sortOrder != null) 'sort_order': sortOrder,
+      if (titleArType != null) 'title_ar_type': titleArType,
+      if (sourceType != null) 'source_type': sourceType,
+      if (hadithTr != null) 'hadith_tr': hadithTr,
+      if (hadithEn != null) 'hadith_en': hadithEn,
+      if (hadithGrade != null) 'hadith_grade': hadithGrade,
+      if (storyTr != null) 'story_tr': storyTr,
+      if (storyEn != null) 'story_en': storyEn,
+      if (recitationCount != null) 'recitation_count': recitationCount,
+      if (recitationTimeTr != null) 'recitation_time_tr': recitationTimeTr,
+      if (recitationTimeEn != null) 'recitation_time_en': recitationTimeEn,
+      if (standaloneVisible != null) 'standalone_visible': standaloneVisible,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1008,6 +1519,17 @@ class DuasCompanion extends UpdateCompanion<Dua> {
     Value<int>? version,
     Value<String?>? importDiff,
     Value<int>? sortOrder,
+    Value<String?>? titleArType,
+    Value<String?>? sourceType,
+    Value<String?>? hadithTr,
+    Value<String?>? hadithEn,
+    Value<String?>? hadithGrade,
+    Value<String?>? storyTr,
+    Value<String?>? storyEn,
+    Value<int?>? recitationCount,
+    Value<String?>? recitationTimeTr,
+    Value<String?>? recitationTimeEn,
+    Value<bool>? standaloneVisible,
     Value<int>? rowid,
   }) {
     return DuasCompanion(
@@ -1030,6 +1552,17 @@ class DuasCompanion extends UpdateCompanion<Dua> {
       version: version ?? this.version,
       importDiff: importDiff ?? this.importDiff,
       sortOrder: sortOrder ?? this.sortOrder,
+      titleArType: titleArType ?? this.titleArType,
+      sourceType: sourceType ?? this.sourceType,
+      hadithTr: hadithTr ?? this.hadithTr,
+      hadithEn: hadithEn ?? this.hadithEn,
+      hadithGrade: hadithGrade ?? this.hadithGrade,
+      storyTr: storyTr ?? this.storyTr,
+      storyEn: storyEn ?? this.storyEn,
+      recitationCount: recitationCount ?? this.recitationCount,
+      recitationTimeTr: recitationTimeTr ?? this.recitationTimeTr,
+      recitationTimeEn: recitationTimeEn ?? this.recitationTimeEn,
+      standaloneVisible: standaloneVisible ?? this.standaloneVisible,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1094,6 +1627,39 @@ class DuasCompanion extends UpdateCompanion<Dua> {
     if (sortOrder.present) {
       map['sort_order'] = Variable<int>(sortOrder.value);
     }
+    if (titleArType.present) {
+      map['title_ar_type'] = Variable<String>(titleArType.value);
+    }
+    if (sourceType.present) {
+      map['source_type'] = Variable<String>(sourceType.value);
+    }
+    if (hadithTr.present) {
+      map['hadith_tr'] = Variable<String>(hadithTr.value);
+    }
+    if (hadithEn.present) {
+      map['hadith_en'] = Variable<String>(hadithEn.value);
+    }
+    if (hadithGrade.present) {
+      map['hadith_grade'] = Variable<String>(hadithGrade.value);
+    }
+    if (storyTr.present) {
+      map['story_tr'] = Variable<String>(storyTr.value);
+    }
+    if (storyEn.present) {
+      map['story_en'] = Variable<String>(storyEn.value);
+    }
+    if (recitationCount.present) {
+      map['recitation_count'] = Variable<int>(recitationCount.value);
+    }
+    if (recitationTimeTr.present) {
+      map['recitation_time_tr'] = Variable<String>(recitationTimeTr.value);
+    }
+    if (recitationTimeEn.present) {
+      map['recitation_time_en'] = Variable<String>(recitationTimeEn.value);
+    }
+    if (standaloneVisible.present) {
+      map['standalone_visible'] = Variable<bool>(standaloneVisible.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1122,6 +1688,17 @@ class DuasCompanion extends UpdateCompanion<Dua> {
           ..write('version: $version, ')
           ..write('importDiff: $importDiff, ')
           ..write('sortOrder: $sortOrder, ')
+          ..write('titleArType: $titleArType, ')
+          ..write('sourceType: $sourceType, ')
+          ..write('hadithTr: $hadithTr, ')
+          ..write('hadithEn: $hadithEn, ')
+          ..write('hadithGrade: $hadithGrade, ')
+          ..write('storyTr: $storyTr, ')
+          ..write('storyEn: $storyEn, ')
+          ..write('recitationCount: $recitationCount, ')
+          ..write('recitationTimeTr: $recitationTimeTr, ')
+          ..write('recitationTimeEn: $recitationTimeEn, ')
+          ..write('standaloneVisible: $standaloneVisible, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1146,6 +1723,16 @@ class $CategoriesTable extends Categories
     defaultConstraints: GeneratedColumn.constraintIsAlways(
       'PRIMARY KEY AUTOINCREMENT',
     ),
+  );
+  static const VerificationMeta _codeMeta = const VerificationMeta('code');
+  @override
+  late final GeneratedColumn<String> code = GeneratedColumn<String>(
+    'code',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
   );
   static const VerificationMeta _nameTrMeta = const VerificationMeta('nameTr');
   @override
@@ -1179,7 +1766,7 @@ class $CategoriesTable extends Categories
     defaultValue: const Constant(0),
   );
   @override
-  List<GeneratedColumn> get $columns => [id, nameTr, nameEn, sortOrder];
+  List<GeneratedColumn> get $columns => [id, code, nameTr, nameEn, sortOrder];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1194,6 +1781,12 @@ class $CategoriesTable extends Categories
     final data = instance.toColumns(true);
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('code')) {
+      context.handle(
+        _codeMeta,
+        code.isAcceptableOrUnknown(data['code']!, _codeMeta),
+      );
     }
     if (data.containsKey('name_tr')) {
       context.handle(
@@ -1228,6 +1821,10 @@ class $CategoriesTable extends Categories
         DriftSqlType.int,
         data['${effectivePrefix}id'],
       )!,
+      code: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}code'],
+      ),
       nameTr: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}name_tr'],
@@ -1251,11 +1848,15 @@ class $CategoriesTable extends Categories
 
 class Category extends DataClass implements Insertable<Category> {
   final int id;
+
+  /// JSON'daki kalıcı kategori kodu (ör. `forgiveness`); elle eklenen kategoride boş olabilir.
+  final String? code;
   final String nameTr;
   final String? nameEn;
   final int sortOrder;
   const Category({
     required this.id,
+    this.code,
     required this.nameTr,
     this.nameEn,
     required this.sortOrder,
@@ -1264,6 +1865,9 @@ class Category extends DataClass implements Insertable<Category> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<int>(id);
+    if (!nullToAbsent || code != null) {
+      map['code'] = Variable<String>(code);
+    }
     map['name_tr'] = Variable<String>(nameTr);
     if (!nullToAbsent || nameEn != null) {
       map['name_en'] = Variable<String>(nameEn);
@@ -1275,6 +1879,7 @@ class Category extends DataClass implements Insertable<Category> {
   CategoriesCompanion toCompanion(bool nullToAbsent) {
     return CategoriesCompanion(
       id: Value(id),
+      code: code == null && nullToAbsent ? const Value.absent() : Value(code),
       nameTr: Value(nameTr),
       nameEn: nameEn == null && nullToAbsent
           ? const Value.absent()
@@ -1290,6 +1895,7 @@ class Category extends DataClass implements Insertable<Category> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Category(
       id: serializer.fromJson<int>(json['id']),
+      code: serializer.fromJson<String?>(json['code']),
       nameTr: serializer.fromJson<String>(json['nameTr']),
       nameEn: serializer.fromJson<String?>(json['nameEn']),
       sortOrder: serializer.fromJson<int>(json['sortOrder']),
@@ -1300,6 +1906,7 @@ class Category extends DataClass implements Insertable<Category> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
+      'code': serializer.toJson<String?>(code),
       'nameTr': serializer.toJson<String>(nameTr),
       'nameEn': serializer.toJson<String?>(nameEn),
       'sortOrder': serializer.toJson<int>(sortOrder),
@@ -1308,11 +1915,13 @@ class Category extends DataClass implements Insertable<Category> {
 
   Category copyWith({
     int? id,
+    Value<String?> code = const Value.absent(),
     String? nameTr,
     Value<String?> nameEn = const Value.absent(),
     int? sortOrder,
   }) => Category(
     id: id ?? this.id,
+    code: code.present ? code.value : this.code,
     nameTr: nameTr ?? this.nameTr,
     nameEn: nameEn.present ? nameEn.value : this.nameEn,
     sortOrder: sortOrder ?? this.sortOrder,
@@ -1320,6 +1929,7 @@ class Category extends DataClass implements Insertable<Category> {
   Category copyWithCompanion(CategoriesCompanion data) {
     return Category(
       id: data.id.present ? data.id.value : this.id,
+      code: data.code.present ? data.code.value : this.code,
       nameTr: data.nameTr.present ? data.nameTr.value : this.nameTr,
       nameEn: data.nameEn.present ? data.nameEn.value : this.nameEn,
       sortOrder: data.sortOrder.present ? data.sortOrder.value : this.sortOrder,
@@ -1330,6 +1940,7 @@ class Category extends DataClass implements Insertable<Category> {
   String toString() {
     return (StringBuffer('Category(')
           ..write('id: $id, ')
+          ..write('code: $code, ')
           ..write('nameTr: $nameTr, ')
           ..write('nameEn: $nameEn, ')
           ..write('sortOrder: $sortOrder')
@@ -1338,12 +1949,13 @@ class Category extends DataClass implements Insertable<Category> {
   }
 
   @override
-  int get hashCode => Object.hash(id, nameTr, nameEn, sortOrder);
+  int get hashCode => Object.hash(id, code, nameTr, nameEn, sortOrder);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is Category &&
           other.id == this.id &&
+          other.code == this.code &&
           other.nameTr == this.nameTr &&
           other.nameEn == this.nameEn &&
           other.sortOrder == this.sortOrder);
@@ -1351,29 +1963,34 @@ class Category extends DataClass implements Insertable<Category> {
 
 class CategoriesCompanion extends UpdateCompanion<Category> {
   final Value<int> id;
+  final Value<String?> code;
   final Value<String> nameTr;
   final Value<String?> nameEn;
   final Value<int> sortOrder;
   const CategoriesCompanion({
     this.id = const Value.absent(),
+    this.code = const Value.absent(),
     this.nameTr = const Value.absent(),
     this.nameEn = const Value.absent(),
     this.sortOrder = const Value.absent(),
   });
   CategoriesCompanion.insert({
     this.id = const Value.absent(),
+    this.code = const Value.absent(),
     required String nameTr,
     this.nameEn = const Value.absent(),
     this.sortOrder = const Value.absent(),
   }) : nameTr = Value(nameTr);
   static Insertable<Category> custom({
     Expression<int>? id,
+    Expression<String>? code,
     Expression<String>? nameTr,
     Expression<String>? nameEn,
     Expression<int>? sortOrder,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (code != null) 'code': code,
       if (nameTr != null) 'name_tr': nameTr,
       if (nameEn != null) 'name_en': nameEn,
       if (sortOrder != null) 'sort_order': sortOrder,
@@ -1382,12 +1999,14 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
 
   CategoriesCompanion copyWith({
     Value<int>? id,
+    Value<String?>? code,
     Value<String>? nameTr,
     Value<String?>? nameEn,
     Value<int>? sortOrder,
   }) {
     return CategoriesCompanion(
       id: id ?? this.id,
+      code: code ?? this.code,
       nameTr: nameTr ?? this.nameTr,
       nameEn: nameEn ?? this.nameEn,
       sortOrder: sortOrder ?? this.sortOrder,
@@ -1399,6 +2018,9 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<int>(id.value);
+    }
+    if (code.present) {
+      map['code'] = Variable<String>(code.value);
     }
     if (nameTr.present) {
       map['name_tr'] = Variable<String>(nameTr.value);
@@ -1416,6 +2038,7 @@ class CategoriesCompanion extends UpdateCompanion<Category> {
   String toString() {
     return (StringBuffer('CategoriesCompanion(')
           ..write('id: $id, ')
+          ..write('code: $code, ')
           ..write('nameTr: $nameTr, ')
           ..write('nameEn: $nameEn, ')
           ..write('sortOrder: $sortOrder')
@@ -2454,8 +3077,26 @@ class $GroupItemsTable extends GroupItems
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _repeatCountMeta = const VerificationMeta(
+    'repeatCount',
+  );
   @override
-  List<GeneratedColumn> get $columns => [id, groupId, duaId, position];
+  late final GeneratedColumn<int> repeatCount = GeneratedColumn<int>(
+    'repeat_count',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    groupId,
+    duaId,
+    position,
+    repeatCount,
+  ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -2493,6 +3134,15 @@ class $GroupItemsTable extends GroupItems
         position.isAcceptableOrUnknown(data['position']!, _positionMeta),
       );
     }
+    if (data.containsKey('repeat_count')) {
+      context.handle(
+        _repeatCountMeta,
+        repeatCount.isAcceptableOrUnknown(
+          data['repeat_count']!,
+          _repeatCountMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -2522,6 +3172,10 @@ class $GroupItemsTable extends GroupItems
         DriftSqlType.int,
         data['${effectivePrefix}position'],
       ),
+      repeatCount: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}repeat_count'],
+      )!,
     );
   }
 
@@ -2538,11 +3192,15 @@ class GroupItem extends DataClass implements Insertable<GroupItem> {
 
   /// null = sırasız üyelik.
   final int? position;
+
+  /// Grupta bu duanın kaç kez okunacağı.
+  final int repeatCount;
   const GroupItem({
     required this.id,
     required this.groupId,
     required this.duaId,
     this.position,
+    required this.repeatCount,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -2553,6 +3211,7 @@ class GroupItem extends DataClass implements Insertable<GroupItem> {
     if (!nullToAbsent || position != null) {
       map['position'] = Variable<int>(position);
     }
+    map['repeat_count'] = Variable<int>(repeatCount);
     return map;
   }
 
@@ -2564,6 +3223,7 @@ class GroupItem extends DataClass implements Insertable<GroupItem> {
       position: position == null && nullToAbsent
           ? const Value.absent()
           : Value(position),
+      repeatCount: Value(repeatCount),
     );
   }
 
@@ -2577,6 +3237,7 @@ class GroupItem extends DataClass implements Insertable<GroupItem> {
       groupId: serializer.fromJson<String>(json['groupId']),
       duaId: serializer.fromJson<String>(json['duaId']),
       position: serializer.fromJson<int?>(json['position']),
+      repeatCount: serializer.fromJson<int>(json['repeatCount']),
     );
   }
   @override
@@ -2587,6 +3248,7 @@ class GroupItem extends DataClass implements Insertable<GroupItem> {
       'groupId': serializer.toJson<String>(groupId),
       'duaId': serializer.toJson<String>(duaId),
       'position': serializer.toJson<int?>(position),
+      'repeatCount': serializer.toJson<int>(repeatCount),
     };
   }
 
@@ -2595,11 +3257,13 @@ class GroupItem extends DataClass implements Insertable<GroupItem> {
     String? groupId,
     String? duaId,
     Value<int?> position = const Value.absent(),
+    int? repeatCount,
   }) => GroupItem(
     id: id ?? this.id,
     groupId: groupId ?? this.groupId,
     duaId: duaId ?? this.duaId,
     position: position.present ? position.value : this.position,
+    repeatCount: repeatCount ?? this.repeatCount,
   );
   GroupItem copyWithCompanion(GroupItemsCompanion data) {
     return GroupItem(
@@ -2607,6 +3271,9 @@ class GroupItem extends DataClass implements Insertable<GroupItem> {
       groupId: data.groupId.present ? data.groupId.value : this.groupId,
       duaId: data.duaId.present ? data.duaId.value : this.duaId,
       position: data.position.present ? data.position.value : this.position,
+      repeatCount: data.repeatCount.present
+          ? data.repeatCount.value
+          : this.repeatCount,
     );
   }
 
@@ -2616,13 +3283,14 @@ class GroupItem extends DataClass implements Insertable<GroupItem> {
           ..write('id: $id, ')
           ..write('groupId: $groupId, ')
           ..write('duaId: $duaId, ')
-          ..write('position: $position')
+          ..write('position: $position, ')
+          ..write('repeatCount: $repeatCount')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, groupId, duaId, position);
+  int get hashCode => Object.hash(id, groupId, duaId, position, repeatCount);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2630,7 +3298,8 @@ class GroupItem extends DataClass implements Insertable<GroupItem> {
           other.id == this.id &&
           other.groupId == this.groupId &&
           other.duaId == this.duaId &&
-          other.position == this.position);
+          other.position == this.position &&
+          other.repeatCount == this.repeatCount);
 }
 
 class GroupItemsCompanion extends UpdateCompanion<GroupItem> {
@@ -2638,17 +3307,20 @@ class GroupItemsCompanion extends UpdateCompanion<GroupItem> {
   final Value<String> groupId;
   final Value<String> duaId;
   final Value<int?> position;
+  final Value<int> repeatCount;
   const GroupItemsCompanion({
     this.id = const Value.absent(),
     this.groupId = const Value.absent(),
     this.duaId = const Value.absent(),
     this.position = const Value.absent(),
+    this.repeatCount = const Value.absent(),
   });
   GroupItemsCompanion.insert({
     this.id = const Value.absent(),
     required String groupId,
     required String duaId,
     this.position = const Value.absent(),
+    this.repeatCount = const Value.absent(),
   }) : groupId = Value(groupId),
        duaId = Value(duaId);
   static Insertable<GroupItem> custom({
@@ -2656,12 +3328,14 @@ class GroupItemsCompanion extends UpdateCompanion<GroupItem> {
     Expression<String>? groupId,
     Expression<String>? duaId,
     Expression<int>? position,
+    Expression<int>? repeatCount,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (groupId != null) 'group_id': groupId,
       if (duaId != null) 'dua_id': duaId,
       if (position != null) 'position': position,
+      if (repeatCount != null) 'repeat_count': repeatCount,
     });
   }
 
@@ -2670,12 +3344,14 @@ class GroupItemsCompanion extends UpdateCompanion<GroupItem> {
     Value<String>? groupId,
     Value<String>? duaId,
     Value<int?>? position,
+    Value<int>? repeatCount,
   }) {
     return GroupItemsCompanion(
       id: id ?? this.id,
       groupId: groupId ?? this.groupId,
       duaId: duaId ?? this.duaId,
       position: position ?? this.position,
+      repeatCount: repeatCount ?? this.repeatCount,
     );
   }
 
@@ -2694,6 +3370,9 @@ class GroupItemsCompanion extends UpdateCompanion<GroupItem> {
     if (position.present) {
       map['position'] = Variable<int>(position.value);
     }
+    if (repeatCount.present) {
+      map['repeat_count'] = Variable<int>(repeatCount.value);
+    }
     return map;
   }
 
@@ -2703,7 +3382,8 @@ class GroupItemsCompanion extends UpdateCompanion<GroupItem> {
           ..write('id: $id, ')
           ..write('groupId: $groupId, ')
           ..write('duaId: $duaId, ')
-          ..write('position: $position')
+          ..write('position: $position, ')
+          ..write('repeatCount: $repeatCount')
           ..write(')'))
         .toString();
   }
@@ -4772,6 +5452,17 @@ typedef $$DuasTableCreateCompanionBuilder = DuasCompanion Function({
   Value<int> version,
   Value<String?> importDiff,
   Value<int> sortOrder,
+  Value<String?> titleArType,
+  Value<String?> sourceType,
+  Value<String?> hadithTr,
+  Value<String?> hadithEn,
+  Value<String?> hadithGrade,
+  Value<String?> storyTr,
+  Value<String?> storyEn,
+  Value<int?> recitationCount,
+  Value<String?> recitationTimeTr,
+  Value<String?> recitationTimeEn,
+  Value<bool> standaloneVisible,
   Value<int> rowid,
 });
 typedef $$DuasTableUpdateCompanionBuilder = DuasCompanion Function({
@@ -4794,6 +5485,17 @@ typedef $$DuasTableUpdateCompanionBuilder = DuasCompanion Function({
   Value<int> version,
   Value<String?> importDiff,
   Value<int> sortOrder,
+  Value<String?> titleArType,
+  Value<String?> sourceType,
+  Value<String?> hadithTr,
+  Value<String?> hadithEn,
+  Value<String?> hadithGrade,
+  Value<String?> storyTr,
+  Value<String?> storyEn,
+  Value<int?> recitationCount,
+  Value<String?> recitationTimeTr,
+  Value<String?> recitationTimeEn,
+  Value<bool> standaloneVisible,
   Value<int> rowid,
 });
 
@@ -4990,6 +5692,61 @@ class $$DuasTableFilterComposer
 
   ColumnFilters<int> get sortOrder => $composableBuilder(
     column: $table.sortOrder,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get titleArType => $composableBuilder(
+    column: $table.titleArType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sourceType => $composableBuilder(
+    column: $table.sourceType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get hadithTr => $composableBuilder(
+    column: $table.hadithTr,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get hadithEn => $composableBuilder(
+    column: $table.hadithEn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get hadithGrade => $composableBuilder(
+    column: $table.hadithGrade,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get storyTr => $composableBuilder(
+    column: $table.storyTr,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get storyEn => $composableBuilder(
+    column: $table.storyEn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get recitationCount => $composableBuilder(
+    column: $table.recitationCount,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recitationTimeTr => $composableBuilder(
+    column: $table.recitationTimeTr,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recitationTimeEn => $composableBuilder(
+    column: $table.recitationTimeEn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get standaloneVisible => $composableBuilder(
+    column: $table.standaloneVisible,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5216,6 +5973,61 @@ class $$DuasTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get titleArType => $composableBuilder(
+    column: $table.titleArType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sourceType => $composableBuilder(
+    column: $table.sourceType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get hadithTr => $composableBuilder(
+    column: $table.hadithTr,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get hadithEn => $composableBuilder(
+    column: $table.hadithEn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get hadithGrade => $composableBuilder(
+    column: $table.hadithGrade,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get storyTr => $composableBuilder(
+    column: $table.storyTr,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get storyEn => $composableBuilder(
+    column: $table.storyEn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get recitationCount => $composableBuilder(
+    column: $table.recitationCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get recitationTimeTr => $composableBuilder(
+    column: $table.recitationTimeTr,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get recitationTimeEn => $composableBuilder(
+    column: $table.recitationTimeEn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get standaloneVisible => $composableBuilder(
+    column: $table.standaloneVisible,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$DuasTableOrderingComposer get variantOf {
     final $$DuasTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -5326,6 +6138,53 @@ class $$DuasTableAnnotationComposer
 
   GeneratedColumn<int> get sortOrder =>
       $composableBuilder(column: $table.sortOrder, builder: (column) => column);
+
+  GeneratedColumn<String> get titleArType => $composableBuilder(
+    column: $table.titleArType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get sourceType => $composableBuilder(
+    column: $table.sourceType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get hadithTr =>
+      $composableBuilder(column: $table.hadithTr, builder: (column) => column);
+
+  GeneratedColumn<String> get hadithEn =>
+      $composableBuilder(column: $table.hadithEn, builder: (column) => column);
+
+  GeneratedColumn<String> get hadithGrade => $composableBuilder(
+    column: $table.hadithGrade,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get storyTr =>
+      $composableBuilder(column: $table.storyTr, builder: (column) => column);
+
+  GeneratedColumn<String> get storyEn =>
+      $composableBuilder(column: $table.storyEn, builder: (column) => column);
+
+  GeneratedColumn<int> get recitationCount => $composableBuilder(
+    column: $table.recitationCount,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get recitationTimeTr => $composableBuilder(
+    column: $table.recitationTimeTr,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get recitationTimeEn => $composableBuilder(
+    column: $table.recitationTimeEn,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get standaloneVisible => $composableBuilder(
+    column: $table.standaloneVisible,
+    builder: (column) => column,
+  );
 
   $$DuasTableAnnotationComposer get variantOf {
     final $$DuasTableAnnotationComposer composer = $composerBuilder(
@@ -5504,6 +6363,17 @@ class $$DuasTableTableManager
                 Value<int> version = const Value.absent(),
                 Value<String?> importDiff = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
+                Value<String?> titleArType = const Value.absent(),
+                Value<String?> sourceType = const Value.absent(),
+                Value<String?> hadithTr = const Value.absent(),
+                Value<String?> hadithEn = const Value.absent(),
+                Value<String?> hadithGrade = const Value.absent(),
+                Value<String?> storyTr = const Value.absent(),
+                Value<String?> storyEn = const Value.absent(),
+                Value<int?> recitationCount = const Value.absent(),
+                Value<String?> recitationTimeTr = const Value.absent(),
+                Value<String?> recitationTimeEn = const Value.absent(),
+                Value<bool> standaloneVisible = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DuasCompanion(
                 id: id,
@@ -5525,6 +6395,17 @@ class $$DuasTableTableManager
                 version: version,
                 importDiff: importDiff,
                 sortOrder: sortOrder,
+                titleArType: titleArType,
+                sourceType: sourceType,
+                hadithTr: hadithTr,
+                hadithEn: hadithEn,
+                hadithGrade: hadithGrade,
+                storyTr: storyTr,
+                storyEn: storyEn,
+                recitationCount: recitationCount,
+                recitationTimeTr: recitationTimeTr,
+                recitationTimeEn: recitationTimeEn,
+                standaloneVisible: standaloneVisible,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -5548,6 +6429,17 @@ class $$DuasTableTableManager
                 Value<int> version = const Value.absent(),
                 Value<String?> importDiff = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
+                Value<String?> titleArType = const Value.absent(),
+                Value<String?> sourceType = const Value.absent(),
+                Value<String?> hadithTr = const Value.absent(),
+                Value<String?> hadithEn = const Value.absent(),
+                Value<String?> hadithGrade = const Value.absent(),
+                Value<String?> storyTr = const Value.absent(),
+                Value<String?> storyEn = const Value.absent(),
+                Value<int?> recitationCount = const Value.absent(),
+                Value<String?> recitationTimeTr = const Value.absent(),
+                Value<String?> recitationTimeEn = const Value.absent(),
+                Value<bool> standaloneVisible = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DuasCompanion.insert(
                 id: id,
@@ -5569,6 +6461,17 @@ class $$DuasTableTableManager
                 version: version,
                 importDiff: importDiff,
                 sortOrder: sortOrder,
+                titleArType: titleArType,
+                sourceType: sourceType,
+                hadithTr: hadithTr,
+                hadithEn: hadithEn,
+                hadithGrade: hadithGrade,
+                storyTr: storyTr,
+                storyEn: storyEn,
+                recitationCount: recitationCount,
+                recitationTimeTr: recitationTimeTr,
+                recitationTimeEn: recitationTimeEn,
+                standaloneVisible: standaloneVisible,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -5727,12 +6630,14 @@ typedef $$DuasTableProcessedTableManager =
     >;
 typedef $$CategoriesTableCreateCompanionBuilder = CategoriesCompanion Function({
   Value<int> id,
+  Value<String?> code,
   required String nameTr,
   Value<String?> nameEn,
   Value<int> sortOrder,
 });
 typedef $$CategoriesTableUpdateCompanionBuilder = CategoriesCompanion Function({
   Value<int> id,
+  Value<String?> code,
   Value<String> nameTr,
   Value<String?> nameEn,
   Value<int> sortOrder,
@@ -5794,6 +6699,11 @@ class $$CategoriesTableFilterComposer
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get code => $composableBuilder(
+    column: $table.code,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5877,6 +6787,11 @@ class $$CategoriesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get code => $composableBuilder(
+    column: $table.code,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get nameTr => $composableBuilder(
     column: $table.nameTr,
     builder: (column) => ColumnOrderings(column),
@@ -5904,6 +6819,9 @@ class $$CategoriesTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get code =>
+      $composableBuilder(column: $table.code, builder: (column) => column);
 
   GeneratedColumn<String> get nameTr =>
       $composableBuilder(column: $table.nameTr, builder: (column) => column);
@@ -5997,11 +6915,13 @@ class $$CategoriesTableTableManager
           updateCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<String?> code = const Value.absent(),
                 Value<String> nameTr = const Value.absent(),
                 Value<String?> nameEn = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
               }) => CategoriesCompanion(
                 id: id,
+                code: code,
                 nameTr: nameTr,
                 nameEn: nameEn,
                 sortOrder: sortOrder,
@@ -6009,11 +6929,13 @@ class $$CategoriesTableTableManager
           createCompanionCallback:
               ({
                 Value<int> id = const Value.absent(),
+                Value<String?> code = const Value.absent(),
                 required String nameTr,
                 Value<String?> nameEn = const Value.absent(),
                 Value<int> sortOrder = const Value.absent(),
               }) => CategoriesCompanion.insert(
                 id: id,
+                code: code,
                 nameTr: nameTr,
                 nameEn: nameEn,
                 sortOrder: sortOrder,
@@ -7361,12 +8283,14 @@ typedef $$GroupItemsTableCreateCompanionBuilder = GroupItemsCompanion Function({
   required String groupId,
   required String duaId,
   Value<int?> position,
+  Value<int> repeatCount,
 });
 typedef $$GroupItemsTableUpdateCompanionBuilder = GroupItemsCompanion Function({
   Value<int> id,
   Value<String> groupId,
   Value<String> duaId,
   Value<int?> position,
+  Value<int> repeatCount,
 });
 
 final class $$GroupItemsTableReferences
@@ -7424,6 +8348,11 @@ class $$GroupItemsTableFilterComposer
 
   ColumnFilters<int> get position => $composableBuilder(
     column: $table.position,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get repeatCount => $composableBuilder(
+    column: $table.repeatCount,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -7493,6 +8422,11 @@ class $$GroupItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<int> get repeatCount => $composableBuilder(
+    column: $table.repeatCount,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$GroupsTableOrderingComposer get groupId {
     final $$GroupsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -7554,6 +8488,11 @@ class $$GroupItemsTableAnnotationComposer
 
   GeneratedColumn<int> get position =>
       $composableBuilder(column: $table.position, builder: (column) => column);
+
+  GeneratedColumn<int> get repeatCount => $composableBuilder(
+    column: $table.repeatCount,
+    builder: (column) => column,
+  );
 
   $$GroupsTableAnnotationComposer get groupId {
     final $$GroupsTableAnnotationComposer composer = $composerBuilder(
@@ -7634,11 +8573,13 @@ class $$GroupItemsTableTableManager
                 Value<String> groupId = const Value.absent(),
                 Value<String> duaId = const Value.absent(),
                 Value<int?> position = const Value.absent(),
+                Value<int> repeatCount = const Value.absent(),
               }) => GroupItemsCompanion(
                 id: id,
                 groupId: groupId,
                 duaId: duaId,
                 position: position,
+                repeatCount: repeatCount,
               ),
           createCompanionCallback:
               ({
@@ -7646,11 +8587,13 @@ class $$GroupItemsTableTableManager
                 required String groupId,
                 required String duaId,
                 Value<int?> position = const Value.absent(),
+                Value<int> repeatCount = const Value.absent(),
               }) => GroupItemsCompanion.insert(
                 id: id,
                 groupId: groupId,
                 duaId: duaId,
                 position: position,
+                repeatCount: repeatCount,
               ),
           withReferenceMapper: (p0) => p0
               .map(
