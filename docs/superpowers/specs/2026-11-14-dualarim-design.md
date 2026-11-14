@@ -58,23 +58,16 @@ Dualarim/
 
 ### 6.2 Veri modeli (içerik veritabanı, SQLite)
 
-Model, kullanıcının verdiği `dua-arsivi.json` (schema_version 1) yapısına göre kurulmuştur (eşleme: §6.3.2).
+Model, kullanıcının verdiği `content/import/dua_archive.json` (schema_version 1.0.0) yapısına göre kurulmuştur (eşleme: §6.3.2). *(2026-11-14: ilk `dua-arsivi.json` kullanıcı tarafından geçersiz sayıldı ve bununla değiştirildi.)*
 
-- **Dua**: id (JSON'daki kalıcı kod, ör. `DUA-0030`, `DUA-0056-01`; değişmez), başlık TR / EN / AR (AR isteğe bağlı), **varyant bilgisi** (`variant_of` → ana dua id, `variant_key`; bkz. aşağı), Kur'an referansı (isteğe bağlı, ör. "7:23"), **editoryal durum** (JSON `status`: normalized / partial_match / reconstructed … — editörde gösterilir), editoryal not (JSON `source.note_tr`), kaynak bilgisi (JSON `source` nesnesi olduğu gibi saklanır), **sürüm numarası**, "yayına hazır" bayrağı.
-- **Kategori** (etiket): id, ad TR, ad EN, sıra. **Dua ↔ Kategori çoka-çok** (`dua_category` tablosu): bir dua birden fazla kategoride olabilir (ör. Hz. Âdem'in duası hem "Rabbenâ" hem "Ramazan", "Kunut").
-- **Grup (koleksiyon)**: id, başlık TR / EN / AR, açıklama, kategoriler (gruba da çoka-çok kategori), editoryal durum. **Grup ↔ Dua çoka-çok ve sıralı** (`group_item`: grup_id, dua_id, sıra no). Aynı dua birden fazla grupta yer alabilir (ör. `DUA-0030` hem "40 Rabbenâ" hem "Ramazan Kunut Duaları" 3. parça). Grup mobilde baştan sona sırayla okunabilen/çalınabilen hazır bir liste gibi davranır.
-- **Satır (segment)**: id, dua_id, sıra no, **Arapça metin**, Türkçe okunuş, İngilizce okunuş (isteğe bağlı), Türkçe anlam, İngilizce anlam, her alan için kaynak (içe aktarım / Claude / kullanıcı düzeltmesi), **onay durumu** (çeviri yok / gözden geçirilecek / onaylı).
-- **Ses kaydı (track)**: id, dosya adı, okuyan/etiket (ör. "ElevenLabs", "Halis Bayancuk"), süre, ve **sahibi: ya bir dua ya bir grup**. Bir duanın / grubun birden fazla kaydı olabilir.
-  - Dua kaydı: yalnızca o duanın satırlarını içerir (ör. `dua_0030.mp3`).
-  - Grup kaydı: grubun tamamını içeren uzun kayıt (ör. 25 dakikalık Kunut videosu). Satırlar birden fazla duaya ait olabilir; aralarda anlatım/ek yakarış gibi metni olmayan bölümler bulunur.
-- **Zamanlama (cue)**: track_id, başlangıç ms, segment_id **veya boş**. Bitiş = sonraki cue'nun başlangıcı (son cue kaydın sonuna kadar). Boş segment = "metinsiz bölüm" (vurgulama yok). **Aynı satır bir kayıtta birden fazla kez işaretlenebilir** (imamın tekrarları için). Zamanlama kayda özeldir.
+- **Dua**: id (JSON kodu, ör. `DUA-0030`; varyantlar `VAR-0054-01`; değişmez), başlık TR / EN / AR + `titleArType`, varyant bilgisi (`variantOf`, `variantKey` = JSON `variant_type`), Kur'an referansı (ilk `quran` kaynağı), `sourceType`, kaynak listesi (`sourceJson`), hadis TR/EN/derece, kıssa TR/EN, okuma sayısı ve zamanı (TR/EN), `standaloneVisible`, doğrulama durumu (`editorialStatus` = JSON `verification_status`), not (`editorialNote` = varyant `source_note`), JSON'daki dua bazlı okunuş/anlamlar (`src*`), beklenen ses dosyası adı, "yayına hazır", sürüm, `importDiff`.
+- **Kategori**: kalıcı kod (`code`, ör. `forgiveness`), ad TR, ad EN, sıra. 26 kategori JSON'dan gelir; editörde yeni kategori eklenebilir. **Dua ↔ Kategori çoka-çok.**
+- **Grup**: id (`GRP-001`, `GRP-005`), başlık TR/EN/AR, açıklama (`scope_note`), tamamlanma durumu, kaynak bilgisi. **Grup ↔ Dua çoka-çok ve sıralı** (`group_item`: grup, dua, sıra, **tekrar sayısı**). Aynı dua birden çok grupta olabilir (ör. `DUA-0030` hem 40 Rabbenâ'da 20. hem Kunut'ta 3.).
+- **Satır (segment)**, **Ses kaydı (track)**, **Zamanlama (cue)**: değişmedi (satır: Arapça + 4 çeviri alanı + kaynak + onay; kayıt: dua veya gruba ait; cue: başlangıç ms + satır ya da metinsiz bölüm, tekrar işaretlenebilir).
 
-Kelime kelime takibi için ileride segment altına "kelime zamanlaması" tablosu eklenebilir; şimdi yapılmaz.
+**Varyantlar** *(Claude'un kararı)*: her varyant ayrı dua kaydıdır (`variantOf` ile ana duaya bağlı, başlık ve kategorileri ana duadan). Grup üyeliğinde `variant_id` doluysa gruba **varyant** girer (ör. Kunut'ta `VAR-0054-01`, `DUA-0054` değil). Mobilde ana duanın ekranında "Diğer okunuşlar" olarak görünür.
 
-**Varyantlar** *(Claude'un kararı)*: JSON'daki `variants` (ör. `DUA-0054` kerîm'li / kerîm'siz okunuş) **ayrı dua kaydı** olarak saklanır: id `DUA-0054~plural_with_karim`, `variant_of = DUA-0054`, kendi metni, satırları ve ses dosyası vardır. Mobilde ana duanın ekranında "Diğer okunuşlar" olarak görünür. Grupta kullanılan varyant hangisiyse `group_item` o kayda bağlanır.
-
-**Satır bazında okunuş/anlam** *(Claude'un kararı)*: JSON'da okunuş ve anlamlar dua bazında (tek paragraf). Satır satır vurgulamada her satırın kendi okunuşu/anlamı görünmesi için, içe aktarımda Arapça metin satırlara bölünür ve Claude okunuş/anlamları bu satırlara hizalı biçimde böler (gerekirse yoğunlaştırılmış anlamları satır karşılıklarına açar; ör. parça 16). Bu bölünmüş hâller "gözden geçirilecek" olarak gelir. JSON'daki dua bazlı orijinal metinler de duada saklanır (karşılaştırma için).
-
+**Satırlara bölme** *(kullanıcı kararı: Türkçe okunuştaki cümle noktaları rehber)*: Arapça noktalanmışsa (`،` `.` `؟`) ona göre bölünür ve okunuş cümle/virgül sayısı uyuyorsa satırlara dağıtılır. Noktalanmamışsa Arapça, okunuş cümlelerinin uzunluğuyla orantılı bölünür ve her sınır, sonraki cümlenin ilk ünsüzleriyle eşleşen Arapça kelimeye hizalanır. Arapça harfler hiç değişmez. 65 metnin tamamı Claude tarafından gözden geçirildi; 21 çok satırlı bölmenin hepsi doğru. Tek satırlı dualarda JSON'daki 4 alan satıra yazılır ("gözden geçirilecek"); çok satırlılarda okunuşlar satırlara dağıtılır, anlamların satırlara hizalanması Claude'un çeviri adımına kalır (§6.5).
 ### 6.3 Editör çalışma klasörü
 
 `content/` klasörü editörün tek doğru kaynağıdır:
@@ -94,25 +87,19 @@ Kullanıcının belirttiği sıra:
 
 JSON'dan gelen okunuş/çeviriler de "gözden geçirilecek" durumunda gelir; kullanıcı onaylamadan yayına girmez.
 
-### 6.3.2 `dua-arsivi.json` eşlemesi (schema_version 1)
+### 6.3.2 `dua_archive.json` eşlemesi (schema_version 1.x)
 
 | JSON | Veritabanı |
 |---|---|
-| `groups[]` | Grup. `id: null` olan grup (ör. "40 Rabbenâ") için içe aktarımda geçici id üretilir (ör. `GRP-TMP-40-rabbena`); kullanıcı editörde kalıcı kodu verebilir. `known_record_ids` → sırasız `group_item` (sıra kullanıcıya kalır). |
-| `parent_record` (ör. `DUA-0056`, `text_ar: null`) | Kendi metni olmayan "bileşik dua" ayrı dua olarak **oluşturulmaz**; başlığı (AR dahil) ve `categories_tr` bilgileri ilgili gruba (`group_id`) aktarılır. |
-| `parts[]` | Dua + `group_item` (sıra = `part_number`). `text_ar` satırlara bölünür (bkz. aşağı). `pronunciation_tr/en`, `meaning_tr/en` dua bazında saklanır, satırlara Claude böler. |
-| `parts[].variants[]` | Varyant dua (§6.2). |
-| `parts[].elevenlabs.output_filename` | Beklenen ses dosyası adı. Kullanıcı mp3 klasörünü verdiğinde editör dosya adına göre **otomatik eşler** (dua kaydı, etiket "ElevenLabs"); eşleşmeyenler listelenir. |
-| `parts[].source` | Kaynak bilgisi olarak saklanır; `pdf_time_window` **uzun grup kaydında zamanlama yaparken ipucu** olarak gösterilir (o duanın kayıtta yaklaşık nerede olduğu). |
-| `status`, `note_tr`, `quran_reference` | Editoryal durum / not / Kur'an referansı. `reconstructed` ve `audio_verification_pending` durumundaki dualar editörde uyarıyla gösterilir: kullanıcı sesi dinlerken Arapça metni doğrular/düzeltir. |
-| `prior_archive_records[]` | Aynı id'li dua varsa yalnızca eksik alanları ve grup üyeliğini (`group_title_tr` → grup) tamamlar; `text_ar: null` olan kayıtlar metin olarak içe alınmaz. |
-| Kategoriler | `parent_record.categories_tr` gruba ve grubun tüm dualarına kategori olarak atanır; grup başlığı da (ör. "40 Rabbenâ") kategori olarak eklenir. Kategoriler editörde serbestçe eklenip çıkarılabilir. |
-| `sources`, `transcript_issues`, `archive_coverage`, `editorial_notes_tr` | İçe aktarım kaydı olarak saklanır; editörde grup bilgi panelinde gösterilir; mobile gitmez. |
+| `categories[]` | Kategori (`id` → `code`, `title_tr/en` → ad). |
+| `groups[]` | Grup (`scope_note` → açıklama, `is_complete` → durum, `source` → bilgi). |
+| `duas[]` | Dua + satırlar (§6.2 bölme kuralı) + kategoriler (`categories` kodları). |
+| `variants[]` | Varyant dua (`id`, `dua_id` → `variantOf`, `variant_type`, `source_note`). |
+| `group_memberships[]` | `group_item` (hedef = `variant_id ?? dua_id`, `sort_order` → sıra, `repeat_count`). |
+| `metadata`, `statistics` | İçe aktarma kaydında saklanır; mobile gitmez. |
+| Ses dosyası adı | JSON vermiyor; kimlikten türetilir: `DUA-0030` → `dua_0030.mp3`, `VAR-0054-01` → `var_0054_01.mp3`. Eşleşmeyenler editörde elle bağlanır. |
 
-**Satırlara bölme varsayılanı** *(Claude'un kararı)*: `text_ar` önce boş satırdan (`\n\n`), sonra Arapça virgül (`،`) ve noktadan bölünür. Kullanıcı editörde birleştirip yeniden bölebilir. Hareke ve özel karakterler (ör. `ىٰ`) asla değiştirilmez.
-
-İçe aktarma **tekrar çalıştırılabilir**: aynı id'ler güncellenir; kullanıcının onayladığı veya düzelttiği alanlara dokunulmaz, farklılık varsa editörde "JSON'da değişiklik var" uyarısı gösterilir.
-
+Bilinmeyen kategori kodu veya olmayan grup üyesi uyarı olarak raporlanır. İçe aktarma tekrar çalıştırılabilir: onaylı/kullanıcı düzeltmeli alanlar ezilmez; farklar "JSON'da değişiklik var" olarak gösterilir; onaysız ve zamanlanmamış duanın Arapçası değiştiyse satırlar yeniden oluşturulur.
 ### 6.4 Windows editörü
 
 **Dua listesi ekranı:** duaları ve durumlarını (taslak, çeviri bekliyor, gözden geçirilecek, onaylı) listeler; yeni dua, kategori yönetimi.
@@ -137,7 +124,7 @@ JSON'dan gelen okunuş/çeviriler de "gözden geçirilecek" durumunda gelir; kul
 - **Medya:** mp3 / m4a / wav ses ve mp4 video açılabilir. Video eklenince sesi ayrılıp `content/audio/` altına ses dosyası (m4a) olarak kaydedilir; mobil yalnızca bu ses dosyasını kullanır.
 - **Yavaşlatma:** 0.5x – 1.0x çalma hızı (perdeyi bozmadan, zamanlamayı kolaylaştırmak için).
 - **Metin girişi:** Arapça metin yapıştırılır, satır sonlarına göre segmentlere bölünür; segmentler sonradan bölünebilir/birleştirilebilir/yeniden sıralanabilir.
-- **Zamanlama (tap-to-sync):** ses çalarken kullanıcı bir tuşa (ör. Boşluk) bastığında o an, sıradaki satırın başlangıcı olarak kaydedilir ve imleç bir sonraki satıra geçer. Ayrı bir tuş (ör. G) "metinsiz bölüm başladı" işareti koyar (anlatım, ek yakarış). Tekrarlanan bir satır için kullanıcı satır listesinden o satırı seçip işaretler (sıradaki satır imleci yalnızca varsayılandır). Grup kaydında satır listesi grubun tüm dualarını sırayla gösterir ve her duanın JSON'daki yaklaşık zaman penceresi ipucu olarak görünür. Sonra işaretler dalga formu üzerinde sürüklenerek veya ±100 ms kaydırılarak düzeltilir. Bir satıra tıklayınca ses o satırın başına atlar (kontrol için).
+- **Zamanlama (tap-to-sync):** ses çalarken kullanıcı bir tuşa (ör. Boşluk) bastığında o an, sıradaki satırın başlangıcı olarak kaydedilir ve imleç bir sonraki satıra geçer. Ayrı bir tuş (ör. G) "metinsiz bölüm başladı" işareti koyar (anlatım, ek yakarış). Tekrarlanan bir satır için kullanıcı satır listesinden o satırı seçip işaretler (sıradaki satır imleci yalnızca varsayılandır). Grup kaydında satır listesi grubun tüm dualarını sırayla gösterir ve kaynağında `timestamp` olan dualarda (ör. `DUA-0056-11` 18:22–19:02) bu aralık ipucu olarak görünür. Sonra işaretler dalga formu üzerinde sürüklenerek veya ±100 ms kaydırılarak düzeltilir. Bir satıra tıklayınca ses o satırın başına atlar (kontrol için).
 - **Önizleme:** mobildeki gibi satır vurgulamalı oynatma.
 - **Çeviri gözden geçirme:** her satırda okunuş / TR / EN alanları görünür ve düzenlenebilir; satır tek tek veya toplu onaylanır. Kullanıcının düzelttiği alan "kullanıcı düzeltmesi" olarak işaretlenir.
 

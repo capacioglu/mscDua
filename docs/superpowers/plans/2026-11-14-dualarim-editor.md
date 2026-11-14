@@ -382,7 +382,7 @@ Davranış:
 - **Kayıt seçici:** duanın (veya grubun) kayıtları; "Kayıt ekle" (ses veya video; video ise `extractAudio` ile `content/audio/<ad>.m4a`; etiket sorulur; süre `durationMs`).
 - **PlayerBar:** media_kit `Player`; oynat/duraklat, konum/süre (`mm:ss.d`), hız 0.5 / 0.6 / 0.75 / 0.9 / 1.0 (`setRate`, perde korumalı — `pitch` ayarı açık), ±2 sn atlama.
 - **WaveformView:** `decodePcm` → `peaksFromPcm16` (genişliğe göre kova; sonuç `content/audio/.peaks/<ad>.bin` önbelleğine yazılır); oynatma imleci; cue işaretleri (satır numarasıyla etiketli dikey çizgi; gap gri); tıkla → seek; işaret sürükle → `CueTimeline.move`; yakınlaştırma (Ctrl+tekerlek).
-- **Grup kaydında:** satır listesi gruptaki tüm duaların satırları (dua başlığı ayraçlarıyla); her duanın JSON `pdf_time_window` aralığı dalga formunda yarı saydam bant olarak gösterilir.
+- **Grup kaydında:** satır listesi gruptaki tüm duaların satırları (dua başlığı ayraçlarıyla); kaynağında `timestamp` ("18:22–19:02") olan dualar için bu aralık dalga formunda yarı saydam bant olarak gösterilir.
 - **Klavye (oynatıcı odaklıyken):** Boşluk = oynat/duraklat; **Enter = `markNext`**; **G = `markGap`**; Sol/Sağ ok = seçili cue ±100 ms (`nudge`); Shift+ok = ±10 ms; Delete = seçili cue sil; Ctrl+Z = son işlemi geri al. Satıra tıklama = o satırın ilk cue'suna seek + `selectNext` (tekrar işaretlemek için).
 - **Önizleme:** oynarken `activeAt` ile satır listesinde aktif satır vurgulanır ve görünür alanda tutulur.
 - **Kaydetme:** her cue değişikliği DB'ye hemen yazılır (Cues tablosu, transaction).
