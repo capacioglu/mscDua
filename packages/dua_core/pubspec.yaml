@@ -1,0 +1,16 @@
+name: dua_core
+description: Dualarım ortak çekirdeği - veritabanı, içe aktarma, çeviri, yayınlama.
+publish_to: none
+version: 0.1.0
+resolution: workspace
+environment:
+  sdk: ^3.13.0
+dependencies:
+  drift: ^2.35.4
+  sqlite3: ^3.9.1
+  path: ^1.9.1
+  collection: ^1.19.1
+dev_dependencies:
+  drift_dev: ^2.35.3
+  build_runner: ^2.16.1
+  test: ^1.31.1

@@ -1,0 +1,9 @@
+name: dualarim_workspace
+publish_to: none
+environment:
+  sdk: ^3.13.0
+workspace:
+  - packages/dua_core
+  - apps/editor
+dev_dependencies:
+  lints: ^6.0.0
