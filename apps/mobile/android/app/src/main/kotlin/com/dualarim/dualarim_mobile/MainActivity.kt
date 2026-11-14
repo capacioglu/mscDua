@@ -1,0 +1,5 @@
+package com.dualarim.dualarim_mobile
+
+import com.ryanheise.audioservice.AudioServiceActivity
+
+class MainActivity : AudioServiceActivity()
