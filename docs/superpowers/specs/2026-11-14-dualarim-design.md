@@ -157,16 +157,21 @@ Editörde **"Mobil için yayınla"**:
 - Bunlardan ayrı bir `content.db` (yayın kopyası) ve kullanılan ses dosyalarını `apps/mobile/assets/content/` altına kopyalar; içerik sürüm numarasını artırır.
 - Ardından mobil uygulama yeniden derlenir.
 
+### 6.5.3 Güncelleme (2026-11-14, kullanıcı kararı): JSON doğru kabul
+
+JSON'daki metinler doğru kabul edilir. Onay adımı, "yayına hazır" işareti ve Claude çeviri adımı kaldırıldı (§6.5–6.5.2 bu yönüyle geçersiz). Yayın koşulu: duanın satırları var ve dosyası diskte duran, tüm satırları işaretlenmiş en az bir ses kaydı var. Duanın bütün okunuş ve anlamı (`src*`) mobile gider. Editör açılışta `content/import/dua_archive.json`'u kendiliğinden yükler. Kullanıcı varyantların ana duanın sesini paylaşmasını şimdilik kabul etti.
+
 ### 6.7 Mobil uygulama
 
-- **Ana ekran:** Gruplar (ör. "Ramazan Kunut Duaları", "40 Rabbenâ") ve kategoriler; bir dua birden fazla kategoride/grupta görünür. Arama (Türkçe başlık, okunuş, anlam; Arapçada harekesiz eşleşme).
-- **Grup ekranı:** grubun duaları sırayla; tamamını art arda çalma (her duanın kendi kaydıyla) veya grubun uzun kaydı varsa onu çalma. Uzun kayıtta metinsiz bölümlerde vurgulama olmaz, ekranda "…" gösterilir.
-- **Varyantlar:** ana duanın ekranında "Diğer okunuşlar" (ör. kerîm'li okunuş).
-- **Dua ekranı:** Arapça her zaman görünür; okunuş, Türkçe anlam, İngilizce anlam ayrı ayrı açılıp kapanır (tercih kalıcı). Yazı boyutu ayarı. Ses kaydı seçimi (birden fazla varsa).
-- **Oynatma:** ses çalarken o anki satır vurgulanır, ekran onu ortada tutacak şekilde kayar; bir satıra dokununca ses oraya atlar. Arka planda ve kilit ekranında çalmaya devam eder; kilit ekranı kontrolleri.
-- **Çalma listeleri:** kullanıcı liste oluşturur, dualar ekler (hangi ses kaydıyla), sıralar; liste art arda çalar, ekranda o an çalan dua ve satırı takip edilir. Tekrar (listeyi / tek duayı) seçeneği.
-- **Kullanıcı verisi ayrı tutulur:** çalma listeleri ve ayarlar ayrı bir yerel veritabanında; içerik değiştirilince (yeni sürüm) silinmez. Çalma listesi duaya slug ile bağlanır; içerikten kaldırılmış dua listede sessizce atlanır.
-- **Arayüz dili:** Türkçe. Metinler yerelleştirme dosyasında tutulur (ileride İngilizce arayüz için).
+İçerik: `apps/mobile/assets/content/` (editörün yayın çıktısı: `content.db`, `audio/`, `manifest.json`), salt okunur; dua_core şemasıyla okunur.
+
+- **Ana ekran:** Gruplar ("40 Rabbenâ Duası", "Kunut Duası") ve kategoriler (26); bir dua birden fazla kategoride/grupta görünür. Arama (Türkçe başlık, okunuş, anlam; Arapçada harekesiz eşleşme). `standaloneVisible = false` olan kayıtlar (varyantlar) listelerde tek başına çıkmaz.
+- **Grup ekranı:** grubun duaları sırasıyla (grup üyeliği varyantı gösteriyorsa varyant); "Tümünü çal" her duayı kendi kaydıyla art arda, `repeatCount` kadar çalar. Grup kaydı varsa o da seçilebilir; metinsiz bölümlerde vurgulama olmaz.
+- **Dua ekranı:** Arapça satırlar her zaman görünür; her satırın altında (açılıp kapanabilir) Türkçe okunuş ve varsa İngilizce okunuş. Duanın **bütün** Türkçe ve İngilizce anlamı satırların altında tek paragraf (açılıp kapanır). Kaynak (ayet/hadis referansı), hadis ve kıssa metni, okuma sayısı/zamanı ayrıca gösterilir. Varyantı olan duada "Diğer okunuşlar". Yazı boyutu ayarı; tercihler kalıcı.
+- **Oynatma:** ses çalarken o anki satır vurgulanır ve ekranda ortalanır; satıra dokununca ses oraya atlar. Arka planda ve kilit ekranında çalar; kilit ekranı kontrolleri.
+- **Çalma listeleri:** kullanıcı liste oluşturur, dualar ekler, sıralar; liste art arda çalar, o an çalan dua ve satır takip edilir. Tekrar (liste / tek dua).
+- **Kullanıcı verisi ayrı:** çalma listeleri ve ayarlar ayrı yerel veritabanında; içerik sürümü değişince silinmez. Listeler duaya kimlikle (`DUA-0030`) bağlanır; içerikten kalkmış dua listede atlanır.
+- **Arayüz dili:** Türkçe; metinler yerelleştirme dosyasında.
 
 ## 7. Kısıtlar
 
