@@ -1,0 +1,517 @@
+{
+  "schema_version": "1.0.0",
+  "languages": [
+    "ar",
+    "tr",
+    "en"
+  ],
+  "metadata": {
+    "description_tr": "Kaynağı belirlenmiş Kur’an ve hadis duaları ile kullanıcı transkriptinde açıkça okunabilen iki genel dua. Uzun derlemelerin doğrulanmamış bölümleri hariçtir.",
+    "pronunciation_note_tr": "Latin harfli okunuşlar yaklaşık telaffuz rehberidir; tecvid ve mahreç yerine geçmez. Türkçe ve İngilizce mealler özgün anlam aktarımlarıdır.",
+    "rabbana_list_note_tr": "40 kayıt için yaygın 40 Rabbenâ sıralaması esas alındı; Bakara 286 tek dua olarak birleşti, Yûnus 88 ve İbrahim 37 eklendi.",
+    "merged_ids": {
+      "DUA-0016": "DUA-0015",
+      "DUA-0017": "DUA-0015",
+      "DUA-0056-14": "DUA-0056-13",
+      "DUA-0056-15": "DUA-0056-13"
+    },
+    "excluded_group_ids": [
+      "GRP-002",
+      "GRP-003",
+      "GRP-004"
+    ],
+    "excluded_note_tr": "Vird-i Settâr, Kenzü’l-Arş, Südeys Hatim Duası ve kaynak/metin belirsizliği olan diğer kayıtlar bu sürüme alınmadı. Kunutun bozuk ses tanıma parçaları yoktur.",
+    "audio_note_tr": "ElevenLabs parça adları oluşturulmadı. Her ana metin ve varyant yalnız bir defa seslendirilebilir.",
+    "no_amin": true,
+    "verification_note_tr": "Kur’an ve hadis referansları ile genel dua transkripti birbirinden ayrılır; transkriptin ses kaydı bağımsız olarak karşılaştırılmamıştır."
+  },
+  "groups": [
+    {
+      "id": "GRP-001",
+      "title_tr": "40 Rabbenâ Duası",
+      "title_en": "40 Rabbana Supplications",
+      "title_ar": "أَدْعِيَةُ رَبَّنَا الْأَرْبَعُونَ",
+      "source": {
+        "type": "quran_collection",
+        "url": "https://www.quranloop.app/blog/rabbana-duas"
+      },
+      "is_complete": true
+    },
+    {
+      "id": "GRP-005",
+      "title_tr": "Kunut Duası",
+      "title_en": "Qunut Supplication",
+      "title_ar": "دُعَاءُ الْقُنُوتِ",
+      "source": {
+        "type": "recorded_supplication",
+        "reference": "Halis Bayancuk, Ramazan Kunut 2024, kullanıcı transkripti",
+        "url": "https://www.youtube.com/watch?v=K7CfOUTslMw"
+      },
+      "is_complete": false,
+      "scope_note": "Yalnızca açıkça tanınan dua bölümleri; video tam dökümü değildir. Âmin ve tekrarlar çıkarılmıştır."
+    }
+  ],
+  "categories": [
+    {
+      "id": "acceptance",
+      "title_tr": "Kabul",
+      "title_en": "Acceptance"
+    },
+    {
+      "id": "community",
+      "title_tr": "Ümmet",
+      "title_en": "Community"
+    },
+    {
+      "id": "debt",
+      "title_tr": "Borç",
+      "title_en": "Debt"
+    },
+    {
+      "id": "ease",
+      "title_tr": "Kolaylık",
+      "title_en": "Ease"
+    },
+    {
+      "id": "faith",
+      "title_tr": "İman",
+      "title_en": "Faith"
+    },
+    {
+      "id": "family",
+      "title_tr": "Aile",
+      "title_en": "Family"
+    },
+    {
+      "id": "forgiveness",
+      "title_tr": "Mağfiret",
+      "title_en": "Forgiveness"
+    },
+    {
+      "id": "goodness",
+      "title_tr": "Hayır",
+      "title_en": "Goodness"
+    },
+    {
+      "id": "gratitude",
+      "title_tr": "Şükür",
+      "title_en": "Gratitude"
+    },
+    {
+      "id": "guidance",
+      "title_tr": "Hidayet",
+      "title_en": "Guidance"
+    },
+    {
+      "id": "hereafter",
+      "title_tr": "Ahiret",
+      "title_en": "Hereafter"
+    },
+    {
+      "id": "justice",
+      "title_tr": "Adalet",
+      "title_en": "Justice"
+    },
+    {
+      "id": "morning_evening",
+      "title_tr": "Sabah ve akşam",
+      "title_en": "Morning and evening"
+    },
+    {
+      "id": "patience",
+      "title_tr": "Sabır",
+      "title_en": "Patience"
+    },
+    {
+      "id": "prayer",
+      "title_tr": "Namaz",
+      "title_en": "Prayer"
+    },
+    {
+      "id": "prophets",
+      "title_tr": "Peygamber duaları",
+      "title_en": "Prophetic supplications"
+    },
+    {
+      "id": "protection",
+      "title_tr": "Korunma",
+      "title_en": "Protection"
+    },
+    {
+      "id": "provision",
+      "title_tr": "Rızık",
+      "title_en": "Provision"
+    },
+    {
+      "id": "purification",
+      "title_tr": "Nefsin arınması",
+      "title_en": "Purification"
+    },
+    {
+      "id": "qunut",
+      "title_tr": "Kunut",
+      "title_en": "Qunut"
+    },
+    {
+      "id": "ramadan",
+      "title_tr": "Ramazan",
+      "title_en": "Ramadan"
+    },
+    {
+      "id": "reflection",
+      "title_tr": "Tefekkür",
+      "title_en": "Reflection"
+    },
+    {
+      "id": "relief",
+      "title_tr": "Kurtuluş ve ferahlık",
+      "title_en": "Relief"
+    },
+    {
+      "id": "repentance",
+      "title_tr": "Tövbe",
+      "title_en": "Repentance"
+    },
+    {
+      "id": "trust",
+      "title_tr": "Tevekkül",
+      "title_en": "Trust"
+    },
+    {
+      "id": "worship",
+      "title_tr": "İbadet",
+      "title_en": "Worship"
+    }
+  ],
+  "duas": [
+    {
+      "id": "DUA-0004",
+      "title_tr": "Bismillâhillezî Lâ Yedurru",
+      "title_en": "Protection from Harm",
+      "title_ar": "بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ",
+      "text_ar": "بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ",
+      "pronunciation_tr": "Bismillâhillezî lâ yedurru mea'smihî şey'ün fil-ardı ve lâ fis-semâi ve hüves-semîul-alîm.",
+      "pronunciation_en": "Bismillahil-ladhi la yadurru ma'asmihi shay'un fil-ardi wa la fis-sama'i wa Huwas-Sami'ul-'Alim.",
+      "meaning_tr": "İsmiyle yerde ve gökte hiçbir şeyin zarar veremeyeceği Allah'ın adıyla. O, her şeyi işiten ve bilendir.",
+      "meaning_en": "In the name of Allah, with whose name nothing on earth or in heaven can cause harm. He is the All-Hearing, the All-Knowing.",
+      "categories": [
+        "protection",
+        "morning_evening"
+      ],
+      "standalone_visible": true,
+      "source_type": "hadith",
+      "sources": [
+        {
+          "type": "hadith",
+          "reference": "abudawud 5088",
+          "url": "https://sunnah.com/abudawud:5088",
+          "grade": "sahih"
+        },
+        {
+          "type": "hadith",
+          "reference": "tirmidhi 3388",
+          "url": "https://sunnah.com/tirmidhi:3388",
+          "grade": "hasan_sahih"
+        }
+      ],
+      "hadith_tr": "Hz. Osman’dan nakledilen rivayette bu duanın sabah ve akşam üçer defa okunması öğretilmiştir.",
+      "hadith_en": "Uthman narrated that this supplication is to be recited three times each morning and evening.",
+      "hadith_grade": "sahih",
+      "story_tr": null,
+      "story_en": null,
+      "recitation_count": 3,
+      "recitation_time": {
+        "tr": "Sabah ve akşam",
+        "en": "Morning and evening"
+      },
+      "verification_status": "source_identified",
+      "title_ar_type": "incipit"
+    },
+    {
+      "id": "DUA-0006",
+      "title_tr": "Rabbişrah Lî Duası",
+      "title_en": "Musa's Prayer for Ease and Eloquence",
+      "title_ar": "رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ",
+      "text_ar": "رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي وَاحْلُلْ عُقْدَةً مِنْ لِسَانِي يَفْقَهُوا قَوْلِي",
+      "pronunciation_tr": "Rabbişrah lî sadrî. Ve yessir lî emrî. Vahlül ukdeten min lisânî. Yefkahû kavlî.",
+      "pronunciation_en": "Rabbi-shrah li sadri. Wa yassir li amri. Wahlul 'uqdatan min lisani. Yafqahu qawli.",
+      "meaning_tr": "Rabbim! Gönlüme genişlik ver. İşimi kolaylaştır. Dilimdeki düğümü çöz ki sözümü anlasınlar.",
+      "meaning_en": "My Lord, expand my chest, ease my task, and untie the knot from my tongue so they may understand my speech.",
+      "categories": [
+        "prophets",
+        "ease"
+      ],
+      "standalone_visible": true,
+      "source_type": "quran",
+      "sources": [
+        {
+          "type": "quran",
+          "reference": "20:25-28",
+          "url": "https://quran.com/20/25-28"
+        }
+      ],
+      "hadith_tr": null,
+      "hadith_en": null,
+      "hadith_grade": null,
+      "story_tr": "Hz. Musa, Firavun’a gönderildiğinde bu duayı etti. Allah isteğinin kabul edildiğini bildirdi (Tâhâ 20:24–36).",
+      "story_en": "Musa made this prayer when sent to Pharaoh. Allah granted his request (20:24–36).",
+      "recitation_count": null,
+      "recitation_time": null,
+      "verification_status": "source_identified",
+      "title_ar_type": "incipit"
+    },
+    {
+      "id": "DUA-0013",
+      "title_tr": "Rabbenâ Âtinâ",
+      "title_en": "Goodness in This World and the Hereafter",
+      "title_ar": "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً",
+      "text_ar": "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ",
+      "pronunciation_tr": "Rabbenâ âtinâ fid-dünyâ haseneten ve fil-âhireti haseneten ve kınâ azâben-nâr.",
+      "pronunciation_en": "Rabbana atina fid-dunya hasanatan wa fil-akhirati hasanatan wa qina 'adhaban-nar.",
+      "meaning_tr": "Rabbimiz! Bize dünyada iyilik, ahirette de iyilik ver ve bizi ateş azabından koru.",
+      "meaning_en": "Our Lord, grant us good in this world and good in the Hereafter, and protect us from the punishment of the Fire.",
+      "categories": [
+        "hereafter",
+        "goodness"
+      ],
+      "standalone_visible": true,
+      "source_type": "quran",
+      "sources": [
+        {
+          "type": "quran",
+          "reference": "2:201",
+          "url": "https://quran.com/2/201"
+        }
+      ],
+      "hadith_tr": null,
+      "hadith_en": null,
+      "hadith_grade": null,
+      "story_tr": null,
+      "story_en": null,
+      "recitation_count": null,
+      "recitation_time": null,
+      "verification_status": "source_identified",
+      "title_ar_type": "incipit"
+    },
+    {
+      "id": "DUA-0015",
+      "title_tr": "Affedilme ve Ağır Yüklerden Korunma",
+      "title_en": "Forgiveness and Relief from Burdens",
+      "title_ar": "رَبَّنَا لَا تُؤَاخِذْنَا إِنْ نَسِينَا",
+      "text_ar": "رَبَّنَا لَا تُؤَاخِذْنَا إِنْ نَسِينَا أَوْ أَخْطَأْنَا رَبَّنَا وَلَا تَحْمِلْ عَلَيْنَا إِصْرًا كَمَا حَمَلْتَهُ عَلَى الَّذِينَ مِنْ قَبْلِنَا رَبَّنَا وَلَا تُحَمِّلْنَا مَا لَا طَاقَةَ لَنَا بِهِ وَاعْفُ عَنَّا وَاغْفِرْ لَنَا وَارْحَمْنَا أَنْتَ مَوْلَانَا فَانْصُرْنَا عَلَى الْقَوْمِ الْكَافِرِينَ",
+      "pronunciation_tr": "Rabbenâ lâ tüâhiznâ in nesînâ ev ahta'nâ. Rabbenâ ve lâ tahmil aleynâ ısran kemâ hameltehû alellezîne min kablinâ. Rabbenâ ve lâ tuhammilnâ mâ lâ tâkate lenâ bih. Va'fü annâ vağfir lenâ verhamnâ. Ente mevlânâ fensurnâ alel-kavmil-kâfirîn.",
+      "pronunciation_en": "Rabbana la tu'akhidhna in nasina aw akhta'na. Rabbana wa la tahmil 'alayna isran kama hamaltahu 'alal-ladhina min qablina. Rabbana wa la tuhammilna ma la taqata lana bih. Wa'fu 'anna waghfir lana warhamna. Anta mawlana fansurna 'alal-qawmil-kafirin.",
+      "meaning_tr": "Rabbimiz! Unutur veya yanılırsak bizi sorumlu tutma. Rabbimiz! Öncekilere yüklediğin gibi bize ağır yük yükleme. Rabbimiz! Gücümüzün yetmediğini bize yükleme. Bizi affet, bağışla, bize merhamet et. Sen bizim koruyucumuzsun; inkârcı topluluğa karşı bize yardım et.",
+      "meaning_en": "Our Lord, do not hold us accountable if we forget or err. Our Lord, do not lay upon us a burden like that laid upon those before us. Our Lord, do not burden us beyond our strength. Pardon us, forgive us, and have mercy on us. You are our Protector, so grant us victory over the disbelieving people.",
+      "categories": [
+        "forgiveness",
+        "protection"
+      ],
+      "standalone_visible": true,
+      "source_type": "quran",
+      "sources": [
+        {
+          "type": "quran",
+          "reference": "2:286",
+          "url": "https://quran.com/2/286"
+        }
+      ],
+      "hadith_tr": null,
+      "hadith_en": null,
+      "hadith_grade": null,
+      "story_tr": null,
+      "story_en": null,
+      "recitation_count": null,
+      "recitation_time": null,
+      "verification_status": "source_identified",
+      "title_ar_type": "incipit"
+    },
+    {
+      "id": "DUA-0030",
+      "title_tr": "Hz. Âdem ve Havvâ'nın Tövbe Duası",
+      "title_en": "Repentance of Adam and Eve",
+      "title_ar": "رَبَّنَا ظَلَمْنَا أَنْفُسَنَا وَإِنْ لَمْ",
+      "text_ar": "رَبَّنَا ظَلَمْنَا أَنْفُسَنَا وَإِنْ لَمْ تَغْفِرْ لَنَا وَتَرْحَمْنَا لَنَكُونَنَّ مِنَ الْخَاسِرِينَ",
+      "pronunciation_tr": "Rabbenâ zalemnâ enfüsenâ ve in lem tağfir lenâ ve terhamnâ lenekûnenne minel-hâsirîn.",
+      "pronunciation_en": "Rabbana zalamna anfusana wa in lam taghfir lana wa tarhamna lanakunanna minal-khasirin.",
+      "meaning_tr": "Rabbimiz! Kendimize zulmettik. Bizi bağışlamaz ve bize merhamet etmezsen kaybedenlerden oluruz.",
+      "meaning_en": "Our Lord, we have wronged ourselves. If You do not forgive us and have mercy on us, we will surely be among the losers.",
+      "categories": [
+        "repentance",
+        "prophets"
+      ],
+      "standalone_visible": true,
+      "source_type": "quran",
+      "sources": [
+        {
+          "type": "quran",
+          "reference": "7:23",
+          "url": "https://quran.com/7/23"
+        }
+      ],
+      "hadith_tr": null,
+      "hadith_en": null,
+      "hadith_grade": null,
+      "story_tr": "Hz. Âdem ve eşi yasak ağaçtan yedikten sonra hatalarını kabul ederek Allah’a yöneldiler (7:19–23).",
+      "story_en": "Adam and his wife acknowledged their wrongdoing after eating from the forbidden tree (7:19–23).",
+      "recitation_count": null,
+      "recitation_time": null,
+      "verification_status": "source_identified",
+      "title_ar_type": "incipit"
+    },
+    {
+      "id": "DUA-0054",
+      "title_tr": "Allahümme İnneke Afüvvün – Kadir Gecesi Duası",
+      "title_en": "Supplication for Pardon",
+      "title_ar": "اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ",
+      "text_ar": "اللَّهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُ عَنِّي",
+      "pronunciation_tr": "Allâhümme inneke afüvvün tühibbül-afve fa'fü annî.",
+      "pronunciation_en": "Allahumma innaka 'afuwwun tuhibbul-'afwa fa'fu 'anni.",
+      "meaning_tr": "Allah'ım! Sen affedicisin, affetmeyi seversin. Beni affet.",
+      "meaning_en": "O Allah, You are Pardoning and love to pardon, so pardon me.",
+      "categories": [
+        "forgiveness",
+        "ramadan"
+      ],
+      "standalone_visible": true,
+      "source_type": "hadith",
+      "sources": [
+        {
+          "type": "hadith",
+          "reference": "ibnmajah 3850",
+          "url": "https://sunnah.com/ibnmajah:3850",
+          "grade": "sahih"
+        },
+        {
+          "type": "hadith",
+          "reference": "tirmidhi 3513",
+          "url": "https://sunnah.com/tirmidhi:3513",
+          "grade": "hasan_sahih"
+        }
+      ],
+      "hadith_tr": null,
+      "hadith_en": null,
+      "hadith_grade": "sahih",
+      "story_tr": "Hz. Âişe Kadir Gecesi’ne erişirse nasıl dua edeceğini sordu. Resûlullah bu duayı öğretti.",
+      "story_en": "Aisha asked what to say if she encountered the Night of Decree. The Prophet taught her this supplication.",
+      "recitation_count": null,
+      "recitation_time": {
+        "tr": "Özellikle Kadir Gecesi",
+        "en": "Especially the Night of Decree"
+      },
+      "verification_status": "source_identified",
+      "title_ar_type": "incipit"
+    },
+    {
+      "id": "DUA-0056-11",
+      "title_tr": "Mazlumlara Yardım Duası",
+      "title_en": "Prayer for Help for the Oppressed",
+      "title_ar": "اللَّهُمَّ إِنْ لَمْ تَنْصُرْهُمْ فَمَنْ",
+      "text_ar": "اللَّهُمَّ إِنْ لَمْ تَنْصُرْهُمْ فَمَنْ يَنْصُرُهُمْ؟ اللَّهُمَّ لَا رَبَّ لَهُمْ سِوَاكَ، اللَّهُمَّ لَا إِلَهَ لَهُمْ سِوَاكَ، اللَّهُمَّ لَا وَكِيلَ لَهُمْ سِوَاكَ، اللَّهُمَّ لَا كَفِيلَ لَهُمْ سِوَاكَ، اللَّهُمَّ لَا نَصِيرَ لَهُمْ سِوَاكَ، اللَّهُمَّ لَا مَوْلَى لَهُمْ سِوَاكَ",
+      "pronunciation_tr": "Allâhümme in lem tensurhum femen yensuruhüm? Allâhümme lâ rabbe lehüm sivâk, Allâhümme lâ ilâhe lehüm sivâk, Allâhümme lâ vekîle lehüm sivâk, Allâhümme lâ kefîle lehüm sivâk, Allâhümme lâ nasîra lehüm sivâk, Allâhümme lâ mevlâ lehüm sivâk.",
+      "pronunciation_en": "Allahumma in lam tansurhum faman yansuruhum? Allahumma la rabba lahum siwak, Allahumma la ilaha lahum siwak, Allahumma la wakila lahum siwak, Allahumma la kafila lahum siwak, Allahumma la nasira lahum siwak, Allahumma la mawla lahum siwak.",
+      "meaning_tr": "Allah'ım! Sen onlara yardım etmezsen kim yardım eder? Senden başka Rableri, ilâhları, vekilleri, kefilleri, yardımcıları ve koruyucuları yoktur.",
+      "meaning_en": "O Allah, if You do not help them, who will? They have no Lord, deity, trustee, guarantor, helper or protector besides You.",
+      "categories": [
+        "relief",
+        "community"
+      ],
+      "standalone_visible": true,
+      "source_type": "general_supplication",
+      "sources": [
+        {
+          "type": "recorded_supplication",
+          "reference": "Halis Bayancuk, Ramazan Kunut 2024, kullanıcı transkripti",
+          "url": "https://www.youtube.com/watch?v=K7CfOUTslMw",
+          "timestamp": "18:22–19:02"
+        }
+      ],
+      "hadith_tr": null,
+      "hadith_en": null,
+      "hadith_grade": null,
+      "story_tr": null,
+      "story_en": null,
+      "recitation_count": null,
+      "recitation_time": null,
+      "verification_status": "clear_user_transcript_not_audio_verified",
+      "title_ar_type": "incipit"
+    }
+  ],
+  "variants": [
+    {
+      "id": "VAR-0054-01",
+      "dua_id": "DUA-0054",
+      "variant_type": "plural",
+      "text_ar": "اللَّهُمَّ إِنَّكَ عَفُوٌّ كَرِيمٌ تُحِبُّ الْعَفْوَ فَاعْفُ عَنَّا",
+      "pronunciation_tr": "Allâhümme inneke afüvvün kerîmün tühibbül-afve fa'fü annâ.",
+      "pronunciation_en": "Allahumma innaka 'afuwwun karimun tuhibbul-'afwa fa'fu 'anna.",
+      "meaning_tr": "Allah'ım! Sen affedicisin, kerem sahibisin, affetmeyi seversin. Bizi affet.",
+      "meaning_en": "O Allah, You are Pardoning and Generous; You love to pardon, so pardon us.",
+      "source_note": "Kunut transkriptindeki çoğul ve kerîm ilaveli okunuş; İbn Mâce 3850’nin lafzı değildir.",
+      "source_type": "recitation_adaptation",
+      "verification_status": "normalized_from_clear_transcript"
+    }
+  ],
+  "group_memberships": [
+    {
+      "group_id": "GRP-001",
+      "dua_id": "DUA-0013",
+      "sort_order": 4,
+      "variant_id": null,
+      "repeat_count": 1
+    },
+    {
+      "group_id": "GRP-001",
+      "dua_id": "DUA-0015",
+      "sort_order": 7,
+      "variant_id": null,
+      "repeat_count": 1
+    },
+    {
+      "group_id": "GRP-001",
+      "dua_id": "DUA-0030",
+      "sort_order": 20,
+      "variant_id": null,
+      "repeat_count": 1
+    },
+    {
+      "group_id": "GRP-005",
+      "dua_id": "DUA-0054",
+      "sort_order": 2,
+      "variant_id": "VAR-0054-01",
+      "repeat_count": 1
+    },
+    {
+      "group_id": "GRP-005",
+      "dua_id": "DUA-0030",
+      "sort_order": 3,
+      "variant_id": null,
+      "repeat_count": 1
+    },
+    {
+      "group_id": "GRP-005",
+      "dua_id": "DUA-0013",
+      "sort_order": 6,
+      "variant_id": null,
+      "repeat_count": 1
+    },
+    {
+      "group_id": "GRP-005",
+      "dua_id": "DUA-0056-11",
+      "sort_order": 11,
+      "variant_id": null,
+      "repeat_count": 1
+    }
+  ],
+  "statistics": {
+    "unique_duas": 58,
+    "groups": 2,
+    "variants": 7,
+    "group_memberships": 53,
+    "arabic_texts": 65,
+    "group_counts": {
+      "GRP-001": 40,
+      "GRP-005": 13
+    }
+  }
+}
