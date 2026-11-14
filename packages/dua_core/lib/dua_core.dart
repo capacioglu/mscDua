@@ -11,3 +11,4 @@ export 'src/translation/exchange.dart';
 export 'src/audio/audio_matcher.dart';
 export 'src/audio/peaks.dart';
 export 'src/audio/ffmpeg_service.dart';
+export 'src/publish/publisher.dart';
