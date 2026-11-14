@@ -7,3 +7,4 @@ export 'src/rules/approval.dart';
 export 'src/repo/segment_repo.dart';
 export 'src/text/pronunciation_segmenter.dart';
 export 'src/import/archive_importer.dart';
+export 'src/translation/exchange.dart';
