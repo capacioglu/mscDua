@@ -43,6 +43,7 @@ dependencies:
   file_picker: ^13.3.3
   path_provider: ^2.1.6
   path: ^1.9.1
+  drift: ^2.35.4
 
 dev_dependencies:
   flutter_test:
@@ -65,6 +66,12 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  fonts:
+    - family: Amiri
+      fonts:
+        - asset: assets/fonts/Amiri-Regular.ttf
+        - asset: assets/fonts/Amiri-Bold.ttf
+          weight: 700
 
   # To add assets to your application, add an assets section, like this:
   # assets:
