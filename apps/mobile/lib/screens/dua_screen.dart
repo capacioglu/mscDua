@@ -39,15 +39,25 @@ class _DuaScreenState extends State<DuaScreen> {
     return i < 0 || j < 0 || j >= widget.order.length ? null : widget.order[j];
   }
 
-  void _go(String id) => Navigator.of(context)
-      .pushReplacement(MaterialPageRoute(builder: (_) => DuaScreen(duaId: id, order: widget.order)));
+  void _go(String id) => Navigator.of(context).pushReplacement(
+    MaterialPageRoute(
+      builder: (_) => DuaScreen(duaId: id, order: widget.order),
+    ),
+  );
 
-  void _open(String id) =>
-      Navigator.of(context).push(MaterialPageRoute(builder: (_) => DuaScreen(duaId: id, order: widget.order)));
+  void _open(String id) => Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => DuaScreen(duaId: id, order: widget.order),
+    ),
+  );
 
   Future<void> _play() async {
     final s = AppScope.of(context);
-    await s.player.start([PlayRequest(widget.duaId, _repeat)], gapMs: s.gapMs, title: _view?.dua.titleTr);
+    await s.player.start(
+      [PlayRequest(widget.duaId, _repeat)],
+      gapMs: s.gapMs,
+      title: _view?.dua.titleTr,
+    );
   }
 
   @override
@@ -60,8 +70,14 @@ class _DuaScreenState extends State<DuaScreen> {
         title: Text(v?.dua.titleTr ?? ''),
         actions: [
           if (widget.order.isNotEmpty) ...[
-            IconButton(onPressed: prev == null ? null : () => _go(prev), icon: const Icon(Icons.chevron_left)),
-            IconButton(onPressed: next == null ? null : () => _go(next), icon: const Icon(Icons.chevron_right)),
+            IconButton(
+              onPressed: prev == null ? null : () => _go(prev),
+              icon: const Icon(Icons.chevron_left),
+            ),
+            IconButton(
+              onPressed: next == null ? null : () => _go(next),
+              icon: const Icon(Icons.chevron_right),
+            ),
           ],
           IconButton(
             key: const ValueKey('prefs'),
@@ -71,26 +87,42 @@ class _DuaScreenState extends State<DuaScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: MiniPlayer(onOpen: (id) => id == widget.duaId ? null : _open(id)),
+      bottomNavigationBar: MiniPlayer(
+        onOpen: (id) => id == widget.duaId ? null : _open(id),
+      ),
       body: v == null
           ? const Center(child: CircularProgressIndicator())
-          : ListView(padding: const EdgeInsets.fromLTRB(16, 8, 16, 96), children: [
-              _info(context, v),
-              ReadingView(views: [v], showTitles: false, onTapSegment: (d, seg) => s.player.seekToSegment(d, seg)),
-              _controls(context, v),
-              if (v.variants.isNotEmpty) ...[
-                const Divider(),
-                Text('Diğer okunuşlar', style: Theme.of(context).textTheme.titleSmall),
-                for (final x in v.variants)
-                  ListTile(
-                    leading: const Icon(Icons.call_split),
-                    title: Text(x.variantKey == 'plural' ? 'Çoğul okunuş' : (x.variantKey ?? x.id)),
-                    subtitle: Text(x.editorialNote ?? ''),
-                    onTap: () => _open(x.id),
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+              children: [
+                _info(context, v),
+                ReadingView(
+                  views: [v],
+                  showTitles: false,
+                  onTapSegment: (d, seg) => s.player.seekToSegment(d, seg),
+                ),
+                _controls(context, v),
+                if (v.variants.isNotEmpty) ...[
+                  const Divider(),
+                  Text(
+                    'Diğer okunuşlar',
+                    style: Theme.of(context).textTheme.titleSmall,
                   ),
+                  for (final x in v.variants)
+                    ListTile(
+                      leading: const Icon(Icons.call_split),
+                      title: Text(
+                        x.variantKey == 'plural'
+                            ? 'Çoğul okunuş'
+                            : (x.variantKey ?? x.id),
+                      ),
+                      subtitle: Text(x.editorialNote ?? ''),
+                      onTap: () => _open(x.id),
+                    ),
+                ],
+                ..._extras(context, v.dua),
               ],
-              ..._extras(context, v.dua),
-            ]),
+            ),
     );
   }
 
@@ -98,16 +130,26 @@ class _DuaScreenState extends State<DuaScreen> {
     final d = v.dua;
     final parts = [
       if (d.quranReference != null) "Kur'an ${d.quranReference}",
-      if (d.sourceType == 'hadith' && d.hadithGrade != null) 'Hadis (${d.hadithGrade})',
+      if (d.sourceType == 'hadith' && d.hadithGrade != null)
+        'Hadis (${d.hadithGrade})',
       if (d.recitationCount != null) '${d.recitationCount} defa',
       if (d.recitationTimeTr != null) d.recitationTimeTr!,
     ];
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Wrap(spacing: 6, runSpacing: 4, children: [
-        for (final c in v.categories) Chip(label: Text(c), visualDensity: VisualDensity.compact),
-        if (parts.isNotEmpty) Text(parts.join(' · '), style: Theme.of(context).textTheme.bodySmall),
-      ]),
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 4,
+        children: [
+          for (final c in v.categories)
+            Chip(label: Text(c), visualDensity: VisualDensity.compact),
+          if (parts.isNotEmpty)
+            Text(
+              parts.join(' · '),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+        ],
+      ),
     );
   }
 
@@ -116,47 +158,68 @@ class _DuaScreenState extends State<DuaScreen> {
     return Card(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Row(children: [
-          const Text('Tekrar'),
-          IconButton(
-            key: const ValueKey('repeat-minus'),
-            onPressed: _repeat > 1 ? () => setState(() => _repeat--) : null,
-            icon: const Icon(Icons.remove_circle_outline),
-          ),
-          Text('$_repeat', key: const ValueKey('repeat-value'), style: Theme.of(context).textTheme.titleMedium),
-          IconButton(
-            key: const ValueKey('repeat-plus'),
-            onPressed: _repeat < 99 ? () => setState(() => _repeat++) : null,
-            icon: const Icon(Icons.add_circle_outline),
-          ),
-          const Spacer(),
-          ListenableBuilder(
-            listenable: AppScope.of(context).player,
-            builder: (context, _) {
-              final now = AppScope.of(context).player.now;
-              if (now.duaId != widget.duaId || now.turns < 2) return const SizedBox.shrink();
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Text('${now.turn}/${now.turns}', style: Theme.of(context).textTheme.titleMedium),
-              );
-            },
-          ),
-          FilledButton.icon(
-            key: const ValueKey('play'),
-            onPressed: hasAudio ? _play : null,
-            icon: const Icon(Icons.play_arrow),
-            label: Text(hasAudio ? 'Dinle' : 'Ses yok'),
-          ),
-        ]),
+        child: Row(
+          children: [
+            const Text('Tekrar'),
+            IconButton(
+              key: const ValueKey('repeat-minus'),
+              onPressed: _repeat > 1 ? () => setState(() => _repeat--) : null,
+              icon: const Icon(Icons.remove_circle_outline),
+            ),
+            Text(
+              '$_repeat',
+              key: const ValueKey('repeat-value'),
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            IconButton(
+              key: const ValueKey('repeat-plus'),
+              onPressed: _repeat < 99 ? () => setState(() => _repeat++) : null,
+              icon: const Icon(Icons.add_circle_outline),
+            ),
+            const Spacer(),
+            ListenableBuilder(
+              listenable: AppScope.of(context).player,
+              builder: (context, _) {
+                final now = AppScope.of(context).player.now;
+                if (now.duaId != widget.duaId || now.turns < 2) {
+                  return const SizedBox.shrink();
+                }
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Text(
+                    '${now.turn}/${now.turns}',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                );
+              },
+            ),
+            FilledButton.icon(
+              key: const ValueKey('play'),
+              onPressed: hasAudio ? _play : null,
+              icon: const Icon(Icons.play_arrow),
+              label: Text(hasAudio ? 'Dinle' : 'Ses yok'),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   List<Widget> _extras(BuildContext context, Dua d) => [
-        if (d.hadithTr != null || d.storyTr != null) const Divider(),
-        if (d.hadithTr != null)
-          ExpansionTile(title: const Text('Hadis'), children: [Padding(padding: const EdgeInsets.all(8), child: Text(d.hadithTr!))]),
-        if (d.storyTr != null)
-          ExpansionTile(title: const Text('Kıssa'), children: [Padding(padding: const EdgeInsets.all(8), child: Text(d.storyTr!))]),
-      ];
+    if (d.hadithTr != null || d.storyTr != null) const Divider(),
+    if (d.hadithTr != null)
+      ExpansionTile(
+        title: const Text('Hadis'),
+        children: [
+          Padding(padding: const EdgeInsets.all(8), child: Text(d.hadithTr!)),
+        ],
+      ),
+    if (d.storyTr != null)
+      ExpansionTile(
+        title: const Text('Kıssa'),
+        children: [
+          Padding(padding: const EdgeInsets.all(8), child: Text(d.storyTr!)),
+        ],
+      ),
+  ];
 }

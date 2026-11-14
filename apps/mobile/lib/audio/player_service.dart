@@ -8,7 +8,11 @@ import 'package:just_audio_background/just_audio_background.dart';
 
 /// Ses motoru soyutlaması (testte sahte motor kullanılır).
 abstract class AudioBackend {
-  Future<void> setQueue(List<QueueEntry> q, File Function(Track) fileOf, String Function(String duaId) titleOf);
+  Future<void> setQueue(
+    List<QueueEntry> q,
+    File Function(Track) fileOf,
+    String Function(String duaId) titleOf,
+  );
   Future<void> play();
   Future<void> pause();
   Future<void> seekTo(int index, int ms);
@@ -28,21 +32,42 @@ class JustAudioBackend implements AudioBackend {
   final AudioPlayer _p = AudioPlayer();
 
   @override
-  Future<void> setQueue(List<QueueEntry> q, File Function(Track) fileOf, String Function(String duaId) titleOf) async {
+  Future<void> setQueue(
+    List<QueueEntry> q,
+    File Function(Track) fileOf,
+    String Function(String duaId) titleOf,
+  ) async {
     var n = 0;
     Object? tag(String? duaId, String suffix) => background
-        ? MediaItem(id: '${n++}', title: duaId == null ? 'Dualarım' : titleOf(duaId), album: 'Dualarım', artist: suffix)
+        ? MediaItem(
+            id: '${n++}',
+            title: duaId == null ? 'Dualarım' : titleOf(duaId),
+            album: 'Dualarım',
+            artist: suffix,
+          )
         : null;
     final sources = <AudioSource>[
       for (final e in q)
         switch (e) {
-          ClipEntry c => AudioSource.file(fileOf(c.track).path,
-              tag: tag(c.duaId, c.turns > 1 ? '${c.turn}/${c.turns}' : '')),
-          GapEntry g => SilenceAudioSource(duration: Duration(milliseconds: g.ms), tag: tag(null, '')),
-          TextOnlyEntry t => SilenceAudioSource(duration: const Duration(seconds: 2), tag: tag(t.duaId, '')),
+          ClipEntry c => AudioSource.file(
+            fileOf(c.track).path,
+            tag: tag(c.duaId, c.turns > 1 ? '${c.turn}/${c.turns}' : ''),
+          ),
+          GapEntry g => SilenceAudioSource(
+            duration: Duration(milliseconds: g.ms),
+            tag: tag(null, ''),
+          ),
+          TextOnlyEntry t => SilenceAudioSource(
+            duration: const Duration(seconds: 2),
+            tag: tag(t.duaId, ''),
+          ),
         },
     ];
-    await _p.setAudioSources(sources, initialIndex: 0, initialPosition: Duration.zero);
+    await _p.setAudioSources(
+      sources,
+      initialIndex: 0,
+      initialPosition: Duration.zero,
+    );
   }
 
   @override
@@ -50,9 +75,11 @@ class JustAudioBackend implements AudioBackend {
   @override
   Future<void> pause() => _p.pause();
   @override
-  Future<void> seekTo(int index, int ms) => _p.seek(Duration(milliseconds: ms), index: index);
+  Future<void> seekTo(int index, int ms) =>
+      _p.seek(Duration(milliseconds: ms), index: index);
   @override
-  Stream<(int, int)> get progress => _p.positionStream.map((d) => (_p.currentIndex ?? 0, d.inMilliseconds));
+  Stream<(int, int)> get progress =>
+      _p.positionStream.map((d) => (_p.currentIndex ?? 0, d.inMilliseconds));
   @override
   Stream<bool> get playingStream => _p.playingStream;
   @override
@@ -62,15 +89,19 @@ class JustAudioBackend implements AudioBackend {
 /// Uygulamanın tek oynatıcısı: kuyruk kurar, o an okunan dua/satırı yayınlar.
 class PlayerService extends ChangeNotifier {
   PlayerService(this.backend, this.queries, {required this.fileOf}) {
-    _subs.add(backend.progress.listen((e) {
-      _index = e.$1;
-      _now = nowPlaying(_queue, e.$1, e.$2);
-      notifyListeners();
-    }));
-    _subs.add(backend.playingStream.listen((v) {
-      _playing = v;
-      notifyListeners();
-    }));
+    _subs.add(
+      backend.progress.listen((e) {
+        _index = e.$1;
+        _now = nowPlaying(_queue, e.$1, e.$2);
+        notifyListeners();
+      }),
+    );
+    _subs.add(
+      backend.playingStream.listen((v) {
+        _playing = v;
+        notifyListeners();
+      }),
+    );
   }
 
   final AudioBackend backend;
@@ -92,7 +123,11 @@ class PlayerService extends ChangeNotifier {
   String? get title => _title;
   DuaView? viewOf(String duaId) => _views[duaId];
 
-  Future<void> start(List<PlayRequest> requests, {required int gapMs, String? title}) async {
+  Future<void> start(
+    List<PlayRequest> requests, {
+    required int gapMs,
+    String? title,
+  }) async {
     final views = <String, DuaView>{};
     for (final r in requests) {
       if (views.containsKey(r.duaId)) continue;
@@ -109,7 +144,11 @@ class PlayerService extends ChangeNotifier {
     _now = _queue.isEmpty ? const NowPlaying() : nowPlaying(_queue, 0, 0);
     notifyListeners();
     if (_queue.isEmpty) return;
-    await backend.setQueue(_queue, fileOf, (id) => views[id]?.dua.titleTr ?? id);
+    await backend.setQueue(
+      _queue,
+      fileOf,
+      (id) => views[id]?.dua.titleTr ?? id,
+    );
     await backend.play();
   }
 

@@ -18,8 +18,11 @@ class FakeBackend implements AudioBackend {
   void emit(int index, int ms) => _progress.add((index, ms));
 
   @override
-  Future<void> setQueue(List<QueueEntry> q, File Function(Track) fileOf, String Function(String duaId) titleOf) async =>
-      queue = q;
+  Future<void> setQueue(
+    List<QueueEntry> q,
+    File Function(Track) fileOf,
+    String Function(String duaId) titleOf,
+  ) async => queue = q;
   @override
   Future<void> play() async => _playing.add(playing = true);
   @override
@@ -42,15 +45,34 @@ class FakeBackend implements AudioBackend {
 Future<ContentDatabase> seededContent() async {
   final db = ContentDatabase.memory();
   await ArchiveImporter(db).importJson(
-      jsonDecode(File('../../packages/dua_core/test/fixtures/dua_archive.mini.json').readAsStringSync())
-          as Map<String, dynamic>,
-      fileName: 'mini.json');
+    jsonDecode(
+      File('../../packages/dua_core/test/fixtures/dua_archive.mini.json')
+          .readAsStringSync(),
+    ) as Map<String, dynamic>,
+    fileName: 'mini.json',
+  );
   for (final id in ['DUA-0006', 'DUA-0013']) {
-    final t = await db.into(db.tracks).insert(TracksCompanion.insert(
-        ownerKind: TrackOwnerKind.dua, duaId: Value(id), relPath: 'audio/$id.mp3', label: 'x'));
+    final t = await db
+        .into(db.tracks)
+        .insert(
+          TracksCompanion.insert(
+            ownerKind: TrackOwnerKind.dua,
+            duaId: Value(id),
+            relPath: 'audio/$id.mp3',
+            label: 'x',
+          ),
+        );
     final segs = await db.segmentsOf(id);
     for (var i = 0; i < segs.length; i++) {
-      await db.into(db.cues).insert(CuesCompanion.insert(trackId: t, startMs: i * 1000, segmentId: Value(segs[i].id)));
+      await db
+          .into(db.cues)
+          .insert(
+            CuesCompanion.insert(
+              trackId: t,
+              startMs: i * 1000,
+              segmentId: Value(segs[i].id),
+            ),
+          );
     }
   }
   return db;
@@ -63,7 +85,11 @@ Future<(AppServices, FakeBackend, ContentDatabase)> testServices() async {
   final services = await AppServices.create(
     queries: ContentQueries(db),
     user: UserDatabase.memory(),
-    player: PlayerService(backend, ContentQueries(db), fileOf: (t) => File(t.relPath)),
+    player: PlayerService(
+      backend,
+      ContentQueries(db),
+      fileOf: (t) => File(t.relPath),
+    ),
   );
   return (services, backend, db);
 }

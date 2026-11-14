@@ -5,14 +5,27 @@ import 'audio/player_service.dart';
 
 /// Uygulama genelindeki servisler ve kalıcı tercihler.
 class AppServices extends ChangeNotifier {
-  AppServices._(this.queries, this.user, this.player, this._prefs, this._fontScale, this._gapMs);
+  AppServices._(
+    this.queries,
+    this.user,
+    this.player,
+    this._prefs,
+    this._fontScale,
+    this._gapMs,
+  );
 
   static Future<AppServices> create({
     required ContentQueries queries,
     required UserDatabase user,
     required PlayerService player,
-  }) async =>
-      AppServices._(queries, user, player, await user.readingPrefs(), await user.fontScale(), await user.gapMs());
+  }) async => AppServices._(
+    queries,
+    user,
+    player,
+    await user.readingPrefs(),
+    await user.fontScale(),
+    await user.gapMs(),
+  );
 
   final ContentQueries queries;
   final UserDatabase user;
@@ -47,7 +60,12 @@ class AppServices extends ChangeNotifier {
 
 /// Servisleri ağaca taşır; tercih değişince dinleyenleri yeniden çizer.
 class AppScope extends InheritedNotifier<AppServices> {
-  const AppScope({super.key, required AppServices services, required super.child}) : super(notifier: services);
+  const AppScope({
+    super.key,
+    required AppServices services,
+    required super.child,
+  }) : super(notifier: services);
 
-  static AppServices of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<AppScope>()!.notifier!;
+  static AppServices of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<AppScope>()!.notifier!;
 }

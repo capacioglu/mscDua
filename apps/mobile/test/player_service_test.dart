@@ -14,7 +14,11 @@ void main() {
   setUp(() async {
     db = await seededContent();
     backend = FakeBackend();
-    player = PlayerService(backend, ContentQueries(db), fileOf: (t) => File(t.relPath));
+    player = PlayerService(
+      backend,
+      ContentQueries(db),
+      fileOf: (t) => File(t.relPath),
+    );
   });
   tearDown(() async {
     player.dispose();
@@ -38,12 +42,18 @@ void main() {
     expect(player.now.turn, 2);
   });
 
-  test('satıra dokununca o satırın işaretine atlar (çalan tur içinde)', () async {
-    await player.start([const PlayRequest('DUA-0013', 1), const PlayRequest('DUA-0006', 2)], gapMs: 500);
-    final segs = await db.segmentsOf('DUA-0006');
-    backend.emit(4, 0); // DUA-0006 2. tur
-    await pumpEventQueue();
-    await player.seekToSegment('DUA-0006', segs[3].id);
-    expect(backend.lastSeek, (4, 3000));
-  });
+  test(
+    'satıra dokununca o satırın işaretine atlar (çalan tur içinde)',
+    () async {
+      await player.start([
+        const PlayRequest('DUA-0013', 1),
+        const PlayRequest('DUA-0006', 2),
+      ], gapMs: 500);
+      final segs = await db.segmentsOf('DUA-0006');
+      backend.emit(4, 0); // DUA-0006 2. tur
+      await pumpEventQueue();
+      await player.seekToSegment('DUA-0006', segs[3].id);
+      expect(backend.lastSeek, (4, 3000));
+    },
+  );
 }

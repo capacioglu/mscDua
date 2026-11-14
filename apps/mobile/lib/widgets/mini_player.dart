@@ -15,7 +15,9 @@ class MiniPlayer extends StatelessWidget {
       builder: (context, _) {
         if (!p.active) return const SizedBox.shrink();
         final now = p.now;
-        final title = now.duaId == null ? (p.title ?? '') : (p.viewOf(now.duaId!)?.dua.titleTr ?? now.duaId!);
+        final title = now.duaId == null
+            ? (p.title ?? '')
+            : (p.viewOf(now.duaId!)?.dua.titleTr ?? now.duaId!);
         return Material(
           elevation: 6,
           color: Theme.of(context).colorScheme.secondaryContainer,
@@ -23,17 +25,24 @@ class MiniPlayer extends StatelessWidget {
             top: false,
             child: ListTile(
               key: const ValueKey('mini-player'),
-              onTap: now.duaId == null || onOpen == null ? null : () => onOpen!(now.duaId!),
+              onTap: now.duaId == null || onOpen == null
+                  ? null
+                  : () => onOpen!(now.duaId!),
               leading: const Icon(Icons.graphic_eq),
               title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
-              subtitle: Text([
-                if (p.title != null) p.title!,
-                if (now.turns > 1) '${now.turn}/${now.turns}',
-                if (now.inGap) 'ara',
-              ].join(' · ')),
+              subtitle: Text(
+                [
+                  if (p.title != null) p.title!,
+                  if (now.turns > 1) '${now.turn}/${now.turns}',
+                  if (now.inGap) 'ara',
+                ].join(' · '),
+              ),
               trailing: IconButton(
                 key: const ValueKey('mini-toggle'),
-                icon: Icon(p.playing ? Icons.pause_circle : Icons.play_circle, size: 36),
+                icon: Icon(
+                  p.playing ? Icons.pause_circle : Icons.play_circle,
+                  size: 36,
+                ),
                 onPressed: p.togglePlay,
               ),
             ),
