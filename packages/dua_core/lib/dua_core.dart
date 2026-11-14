@@ -14,3 +14,5 @@ export 'src/audio/ffmpeg_service.dart';
 export 'src/publish/publisher.dart';
 export 'src/sync/cue_timeline.dart';
 export 'src/repo/summary.dart';
+export 'src/text/search_normalize.dart';
+export 'src/content/content_queries.dart';
