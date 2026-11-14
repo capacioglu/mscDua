@@ -170,6 +170,13 @@ JSON'daki metinler doğru kabul edilir. Onay adımı, "yayına hazır" işareti 
 - **Dua ekranı:** Arapça satırlar her zaman görünür; her satırın altında (açılıp kapanabilir) Türkçe okunuş ve varsa İngilizce okunuş. Duanın **bütün** Türkçe ve İngilizce anlamı satırların altında tek paragraf (açılıp kapanır). Kaynak (ayet/hadis referansı), hadis ve kıssa metni, okuma sayısı/zamanı ayrıca gösterilir. Varyantı olan duada "Diğer okunuşlar". Yazı boyutu ayarı; tercihler kalıcı.
 - **Oynatma:** ses çalarken o anki satır vurgulanır ve ekranda ortalanır; satıra dokununca ses oraya atlar. Arka planda ve kilit ekranında çalar; kilit ekranı kontrolleri.
 - **Çalma listeleri:** kullanıcı liste oluşturur, dualar ekler, sıralar; liste art arda çalar, o an çalan dua ve satır takip edilir. Tekrar (liste / tek dua).
+- **Kullanım modları (kullanıcı isteği, 2026-11-14):**
+  1. **Tek dua:** dualara tek tek bakma (liste → dua ekranı; önceki/sonraki).
+  2. **Grup:** bir grubun dualarını sırasıyla görme ve dinleme (40 Rabbenâ, Kunut).
+  3. **Kendi listem (çalma listesi):** birden fazla duayı seçip liste yapma; sırasını değiştirme.
+- **Okuma seçenekleri:** her modda kullanıcı ne göreceğini seçer: Arapça, Türkçe okunuş, Türkçe anlam, İngilizce anlam (herhangi bir kombinasyon; ör. yalnız Türkçe okunuş). Tercih kalıcı.
+- **Sesli dinleme:** grup veya liste art arda çalınır; dualar arasında ayarlanabilir **boşluk** (varsayılan 1 sn). O an okunan satır vurgulanır, sonraki duaya geçince ekran da geçer.
+- **Tekrar sayısı:** listedeki her dua için kullanıcı kaç kez okunacağını belirler (varsayılan 1; grup üyeliklerinde JSON'daki `repeat_count`). Tek dua ekranında da tekrar sayısı seçilebilir. Ekranda "2/3" gibi gösterilir.
 - **Kullanıcı verisi ayrı:** çalma listeleri ve ayarlar ayrı yerel veritabanında; içerik sürümü değişince silinmez. Listeler duaya kimlikle (`DUA-0030`) bağlanır; içerikten kalkmış dua listede atlanır.
 - **Arayüz dili:** Türkçe; metinler yerelleştirme dosyasında.
 
