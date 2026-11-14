@@ -5,6 +5,7 @@ import 'package:dua_core/dua_core.dart';
 import 'package:dualarim_editor/app/app_state.dart';
 import 'package:dualarim_editor/screens/dua_edit_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -37,95 +38,74 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Finder inSeg(int i, Finder f) =>
-      find.descendant(of: find.byKey(ValueKey('seg-$i')), matching: f);
-
-  testWidgets('eksik alan varken Onayla pasif; doldurunca onaylanır', (
+  testWidgets('çeviri alanları düzenlenip kaydedilir; onay düğmesi yok', (
     tester,
   ) async {
     await open(tester, 'DUA-0006');
     await tester.tap(find.byKey(const ValueKey('seg-0')));
     await tester.pumpAndSettle();
-    expect(inSeg(0, find.text('Çeviri yok')), findsOneWidget);
-
-    final approve = find.byKey(const ValueKey('approve'));
-    expect(tester.widget<FilledButton>(approve).onPressed, isNull);
-
+    expect(find.byKey(const ValueKey('approve')), findsNothing);
     await tester.enterText(
       find.byKey(const ValueKey('field-meaningTr')),
       'Rabbim! Gönlüme genişlik ver.',
     );
-    await tester.enterText(
-      find.byKey(const ValueKey('field-meaningEn')),
-      'My Lord, expand my chest.',
-    );
     await tester.tap(find.byKey(const ValueKey('save-fields')));
     await tester.pumpAndSettle();
-    expect(inSeg(0, find.text('Gözden geçirilecek')), findsOneWidget);
-    expect(tester.widget<FilledButton>(approve).onPressed, isNotNull);
-
-    await tester.tap(approve);
-    await tester.pumpAndSettle();
-    expect(inSeg(0, find.text('Onaylı')), findsOneWidget);
-  });
-
-  testWidgets('Arapça düzenlenince onay gözden geçirilecek olur', (
-    tester,
-  ) async {
-    await open(tester, 'DUA-0013');
-    await tester.tap(find.byKey(const ValueKey('seg-0')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('approve')));
-    await tester.pumpAndSettle();
-    expect(inSeg(0, find.text('Onaylı')), findsOneWidget);
-
-    await tester.enterText(
-      find.byKey(const ValueKey('field-arabic')),
-      'رَبَّنَا آتِنَا',
-    );
-    await tester.tap(find.byKey(const ValueKey('save-arabic')));
-    await tester.pumpAndSettle();
-    expect(inSeg(0, find.text('Gözden geçirilecek')), findsOneWidget);
-  });
-
-  testWidgets('kategoriler gösterilir ve yayın nedenleri listelenir', (
-    tester,
-  ) async {
-    await open(tester, 'DUA-0030');
-    expect(find.byKey(const ValueKey('cat-Tövbe')), findsOneWidget);
     expect(
-      find.textContaining('Tam zamanlanmış ses kaydı yok'),
-      findsOneWidget,
+      (await db.segmentsOf('DUA-0006')).first.meaningTr,
+      'Rabbim! Gönlüme genişlik ver.',
     );
   });
 
   testWidgets(
-    'Onayla, alana yazılmış ama kaydedilmemiş düzeltmeyi kaydedip onaylar',
+    'duanın bütün anlamı ve kategorileri görünür, yayın durumu yazılır',
     (tester) async {
-      await open(tester, 'DUA-0013');
-      await tester.tap(find.byKey(const ValueKey('seg-0')));
-      await tester.pumpAndSettle();
-      await tester.enterText(
-        find.byKey(const ValueKey('field-meaningTr')),
-        'DÜZELTİLMİŞ ANLAM',
+      await open(tester, 'DUA-0030');
+      expect(find.byKey(const ValueKey('cat-Tövbe')), findsOneWidget);
+      expect(
+        find.textContaining('Rabbimiz! Kendimize zulmettik.'),
+        findsWidgets,
       );
-      await tester.tap(find.byKey(const ValueKey('approve')));
-      await tester.pumpAndSettle();
-      final seg = (await db.segmentsOf('DUA-0013')).single;
-      expect(seg.meaningTr, 'DÜZELTİLMİŞ ANLAM');
-      expect(seg.review, ReviewStatus.approved);
+      expect(
+        find.textContaining('Tam zamanlanmış ses kaydı yok'),
+        findsOneWidget,
+      );
     },
   );
 
-  testWidgets('Tümünü onayla, onaylanabilen satırları onaylar', (tester) async {
-    await open(tester, 'DUA-0013');
-    await tester.tap(find.byKey(const ValueKey('approve-all')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Onayla').last);
+  testWidgets('Arapçayı kopyala düğmesi duanın tüm Arapçasını panoya koyar', (
+    tester,
+  ) async {
+    String? copied;
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'Clipboard.setData') {
+          copied = (call.arguments as Map)['text'] as String?;
+        }
+        return null;
+      },
+    );
+    await open(tester, 'DUA-0006');
+    await tester.tap(find.byKey(const ValueKey('copy-arabic')));
     await tester.pumpAndSettle();
     expect(
-      (await db.segmentsOf('DUA-0013')).single.review,
-      ReviewStatus.approved,
+      copied,
+      'رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي وَاحْلُلْ عُقْدَةً مِنْ لِسَانِي يَفْقَهُوا قَوْلِي',
     );
+  });
+
+  testWidgets('sonraki / önceki dua düğmeleri sıradaki duayı açar', (
+    tester,
+  ) async {
+    await open(tester, 'DUA-0006');
+    await tester.tap(find.byKey(const ValueKey('next-dua')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('DUA-0013 —'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('prev-dua')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('prev-dua')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('DUA-0004 —'), findsOneWidget);
   });
 }

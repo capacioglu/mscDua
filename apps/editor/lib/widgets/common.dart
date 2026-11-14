@@ -50,3 +50,28 @@ class ProgressChip extends StatelessWidget {
     ),
   );
 }
+
+Color timingColor(TimingProgress t) => switch (t) {
+  TimingProgress.noAudio => Colors.grey,
+  TimingProgress.untimed => Colors.orange,
+  TimingProgress.partial => Colors.blue,
+  TimingProgress.ready => Colors.green,
+};
+
+class TimingChip extends StatelessWidget {
+  const TimingChip(this.timing, {super.key});
+  final TimingProgress timing;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+    decoration: BoxDecoration(
+      color: timingColor(timing).withValues(alpha: 0.15),
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Text(
+      timingLabel(timing),
+      style: TextStyle(color: timingColor(timing), fontSize: 12),
+    ),
+  );
+}

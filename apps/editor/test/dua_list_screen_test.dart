@@ -35,7 +35,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byKey(const ValueKey('row-DUA-0006')),
-          matching: find.text('Çeviri bekliyor'),
+          matching: find.text('Ses yok'),
         ),
         findsOneWidget,
       );

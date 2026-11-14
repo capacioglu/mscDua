@@ -1,8 +1,9 @@
 import 'dart:convert';
 
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart' show Value, OrderingTerm;
 import 'package:dua_core/dua_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../app/app_state.dart';
 import '../widgets/category_chips.dart';
@@ -60,34 +61,6 @@ class _DuaEditScreenState extends State<DuaEditScreen> {
     if (mounted) _load();
   }
 
-  Future<void> _approveAll() async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (c) => AlertDialog(
-        content: const Text(
-          'Eksik alanı olmayan tüm satırlar onaylanacak. Hepsini okuduğunuzdan emin misiniz?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(c, false),
-            child: const Text('Vazgeç'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(c, true),
-            child: const Text('Onayla'),
-          ),
-        ],
-      ),
-    );
-    if (ok != true) return;
-    final n = await _repo.approveAll(widget.duaId);
-    await _changed();
-    if (mounted) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('$n satır onaylandı')));
-    }
-  }
-
   Future<void> _load() async {
     final d = await (db.select(
       db.duas,
@@ -97,12 +70,19 @@ class _DuaEditScreenState extends State<DuaEditScreen> {
       db.duas,
     )..where((t) => t.variantOf.equals(d.id))).get();
     final check = await checkPublishable(db, d.id);
+    final order =
+        (await (db.select(
+              db.duas,
+            )..orderBy([(t) => OrderingTerm.asc(t.id)])).get())
+            .map((x) => x.id)
+            .toList();
     if (!mounted) return;
     setState(() {
       _dua = d;
       _segs = segs;
       _variants = variants;
       _check = check;
+      _order = order;
     });
   }
 
@@ -181,18 +161,41 @@ class _DuaEditScreenState extends State<DuaEditScreen> {
     await _changed();
   }
 
-  Future<void> _setReady(bool v) async {
-    await (db.update(db.duas)..where((t) => t.id.equals(widget.duaId))).write(
-      DuasCompanion(readyToPublish: Value(v)),
-    );
-    await _changed();
-  }
-
   Future<void> _clearDiff() async {
     await (db.update(db.duas)..where((t) => t.id.equals(widget.duaId))).write(
       const DuasCompanion(importDiff: Value(null)),
     );
     await _changed();
+  }
+
+  List<String> _order = [];
+
+  String? _neighbor(int delta) {
+    final i = _order.indexOf(widget.duaId);
+    if (i < 0) return null;
+    final j = i + delta;
+    return j >= 0 && j < _order.length ? _order[j] : null;
+  }
+
+  void _go(String id) => Navigator.of(context).pushReplacement(
+    MaterialPageRoute(
+      builder: (_) => DuaEditScreen(
+        state: s,
+        duaId: id,
+        onOpenDua: widget.onOpenDua,
+        syncPanelBuilder: widget.syncPanelBuilder,
+      ),
+    ),
+  );
+
+  Future<void> _copyArabic() async {
+    final text = _segs.map((x) => x.textAr).join(' ');
+    await Clipboard.setData(ClipboardData(text: text));
+    if (mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Arapça metin kopyalandı')));
+    }
   }
 
   @override
@@ -202,7 +205,29 @@ class _DuaEditScreenState extends State<DuaEditScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     return Scaffold(
-      appBar: AppBar(title: Text('${d.id} — ${d.titleTr}')),
+      appBar: AppBar(
+        title: Text('${d.id} — ${d.titleTr}'),
+        actions: [
+          TextButton.icon(
+            key: const ValueKey('copy-arabic'),
+            onPressed: _copyArabic,
+            icon: const Icon(Icons.copy),
+            label: const Text('Arapçayı kopyala'),
+          ),
+          IconButton(
+            key: const ValueKey('prev-dua'),
+            tooltip: 'Önceki dua',
+            onPressed: _neighbor(-1) == null ? null : () => _go(_neighbor(-1)!),
+            icon: const Icon(Icons.chevron_left),
+          ),
+          IconButton(
+            key: const ValueKey('next-dua'),
+            tooltip: 'Sonraki dua',
+            onPressed: _neighbor(1) == null ? null : () => _go(_neighbor(1)!),
+            icon: const Icon(Icons.chevron_right),
+          ),
+        ],
+      ),
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -304,44 +329,28 @@ class _DuaEditScreenState extends State<DuaEditScreen> {
             Text('$label: $v', style: const TextStyle(fontSize: 13)),
         const SizedBox(height: 6),
         CategoryChips(db: db, duaId: d.id, onChanged: () => s.changed()),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: TextButton.icon(
-            key: const ValueKey('approve-all'),
-            onPressed: _approveAll,
-            icon: const Icon(Icons.done_all),
-            label: const Text('Tümünü onayla'),
+        if (check != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Text(
+              check.ok
+                  ? 'Yayınlanabilir'
+                  : 'Yayınlanamaz: ${check.reasons.join(' · ')}',
+              style: TextStyle(color: check.ok ? Colors.green : Colors.red),
+            ),
           ),
-        ),
-        SwitchListTile(
-          dense: true,
-          title: const Text('Yayına hazır'),
-          value: d.readyToPublish,
-          onChanged: _setReady,
-          subtitle: check == null
-              ? null
-              : Text(
-                  check.ok ? 'Yayınlanabilir' : check.reasons.join(' · '),
-                  style: TextStyle(color: check.ok ? Colors.green : Colors.red),
-                ),
-        ),
-        ExpansionTile(
-          title: const Text("JSON'daki dua bazlı okunuş ve anlamlar"),
-          children: [
-            for (final (label, v) in [
-              ('Türkçe okunuş', d.srcPronunciationTr),
-              ('İngilizce okunuş', d.srcPronunciationEn),
-              ('Türkçe anlam', d.srcMeaningTr),
-              ('İngilizce anlam', d.srcMeaningEn),
-            ])
-              if (v != null)
-                ListTile(
-                  dense: true,
-                  title: Text(label),
-                  subtitle: SelectableText(v),
-                ),
-          ],
-        ),
+        const Divider(),
+        if (d.srcPronunciationTr != null)
+          SelectableText(
+            d.srcPronunciationTr!,
+            style: const TextStyle(fontStyle: FontStyle.italic),
+          ),
+        if (d.srcMeaningTr != null) SelectableText(d.srcMeaningTr!),
+        if (d.srcMeaningEn != null)
+          SelectableText(
+            d.srcMeaningEn!,
+            style: const TextStyle(color: Colors.black54),
+          ),
       ],
     );
   }
@@ -370,24 +379,6 @@ class _DuaEditScreenState extends State<DuaEditScreen> {
               Row(
                 children: [
                   Text('${idx + 1}'),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: reviewColor(seg.review).withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      reviewLabel(seg.review),
-                      style: TextStyle(
-                        color: reviewColor(seg.review),
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
                   const Spacer(),
                   IconButton(
                     tooltip: 'Böl',

@@ -57,10 +57,10 @@ class _ReviewFieldsState extends State<ReviewFields> {
   };
 
   static const _labels = {
-    SegmentField.pronunciationTr: 'Türkçe okunuş *',
+    SegmentField.pronunciationTr: 'Türkçe okunuş',
     SegmentField.pronunciationEn: 'İngilizce okunuş',
-    SegmentField.meaningTr: 'Türkçe anlam *',
-    SegmentField.meaningEn: 'İngilizce anlam *',
+    SegmentField.meaningTr: 'Türkçe anlam (bu satır)',
+    SegmentField.meaningEn: 'İngilizce anlam (bu satır)',
   };
 
   @override
@@ -101,9 +101,6 @@ class _ReviewFieldsState extends State<ReviewFields> {
     super.dispose();
   }
 
-  bool get _dirty =>
-      SegmentField.values.any((f) => _ctl[f]!.text.trim() != (_value(f) ?? ''));
-
   /// Alanlardaki kaydedilmemiş değişiklikleri yazar (bildirim göndermeden).
   Future<void> _persistFields() async {
     for (final f in SegmentField.values) {
@@ -125,37 +122,8 @@ class _ReviewFieldsState extends State<ReviewFields> {
     widget.onChanged();
   }
 
-  /// Ekranda görüneni onaylar: önce alanları kaydeder, sonra onaylar.
-  Future<void> _approve() async {
-    await _persistFields();
-    final db = widget.repo.db;
-    final fresh = await (db.select(
-      db.segments,
-    )..where((t) => t.id.equals(seg.id))).getSingle();
-    if (canApprove(fresh)) {
-      await widget.repo.approve(seg.id);
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Eksik alan var; onaylanmadı.')),
-      );
-    }
-    widget.onChanged();
-  }
-
-  String _text(SegmentField f) => _ctl[f]!.text.trim();
-
-  List<String> get _missing => [
-    if (_text(SegmentField.pronunciationTr).isEmpty) 'Türkçe okunuş',
-    if (_text(SegmentField.meaningTr).isEmpty) 'Türkçe anlam',
-    if (_text(SegmentField.meaningEn).isEmpty) 'İngilizce anlam',
-  ];
-
   @override
   Widget build(BuildContext context) {
-    final can =
-        _missing.isEmpty &&
-        _ar.text.trim().isNotEmpty &&
-        (seg.review != ReviewStatus.approved || _dirty);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -168,9 +136,7 @@ class _ReviewFieldsState extends State<ReviewFields> {
                 textDirection: TextDirection.rtl,
                 maxLines: null,
                 style: const TextStyle(fontFamily: 'Amiri', fontSize: 22),
-                decoration: const InputDecoration(
-                  labelText: 'Arapça (değişirse onay kalkar)',
-                ),
+                decoration: const InputDecoration(labelText: 'Arapça'),
               ),
             ),
             TextButton(
@@ -199,27 +165,8 @@ class _ReviewFieldsState extends State<ReviewFields> {
             OutlinedButton(
               key: const ValueKey('save-fields'),
               onPressed: _saveFields,
-              child: const Text('Çevirileri kaydet'),
+              child: const Text('Kaydet'),
             ),
-            const SizedBox(width: 8),
-            Tooltip(
-              message: _missing.isEmpty ? '' : 'Eksik: ${_missing.join(', ')}',
-              child: FilledButton(
-                key: const ValueKey('approve'),
-                onPressed: can ? _approve : null,
-                child: const Text('Onayla'),
-              ),
-            ),
-            if (seg.review == ReviewStatus.approved) ...[
-              const SizedBox(width: 8),
-              TextButton(
-                onPressed: () async {
-                  await widget.repo.unapprove(seg.id);
-                  widget.onChanged();
-                },
-                child: const Text('Onayı kaldır'),
-              ),
-            ],
           ],
         ),
       ],

@@ -30,7 +30,7 @@ class _DuaListScreenState extends State<DuaListScreen> {
   List<DuaGroup> _groups = [];
   final Set<String> _catFilter = {};
   String? _groupFilter;
-  DuaProgress? _progressFilter;
+  TimingProgress? _progressFilter;
   String _query = '';
 
   AppState get s => widget.state;
@@ -73,7 +73,7 @@ class _DuaListScreenState extends State<DuaListScreen> {
       if (_groupFilter != null && !d.groupIds.contains(_groupFilter)) {
         return false;
       }
-      if (_progressFilter != null && d.progress != _progressFilter) {
+      if (_progressFilter != null && d.timing != _progressFilter) {
         return false;
       }
       if (q.isNotEmpty &&
@@ -166,22 +166,12 @@ class _DuaListScreenState extends State<DuaListScreen> {
                 TextButton.icon(
                   onPressed: () => importArchiveAction(context, s),
                   icon: const Icon(Icons.file_download),
-                  label: const Text('JSON içe aktar'),
+                  label: const Text("JSON'u yeniden yükle"),
                 ),
                 TextButton.icon(
                   onPressed: () => matchAudioAction(context, s),
                   icon: const Icon(Icons.library_music),
                   label: const Text('Sesleri eşleştir'),
-                ),
-                TextButton.icon(
-                  onPressed: () => sendToTranslationAction(context, s),
-                  icon: const Icon(Icons.outbox),
-                  label: const Text('Çeviriye gönder'),
-                ),
-                TextButton.icon(
-                  onPressed: () => importTranslationsAction(context, s),
-                  icon: const Icon(Icons.move_to_inbox),
-                  label: const Text('Çevirileri içe aktar'),
                 ),
                 TextButton.icon(
                   onPressed: () => publishAction(context, s),
@@ -224,14 +214,14 @@ class _DuaListScreenState extends State<DuaListScreen> {
         onChanged: (v) => setState(() => _query = v),
       ),
       const SizedBox(height: 12),
-      DropdownButton<DuaProgress?>(
+      DropdownButton<TimingProgress?>(
         isExpanded: true,
         value: _progressFilter,
         hint: const Text('Durum: hepsi'),
         items: [
           const DropdownMenuItem(value: null, child: Text('Durum: hepsi')),
-          for (final p in DuaProgress.values)
-            DropdownMenuItem(value: p, child: Text(progressLabel(p))),
+          for (final p in TimingProgress.values)
+            DropdownMenuItem(value: p, child: Text(timingLabel(p))),
         ],
         onChanged: (v) => setState(() => _progressFilter = v),
       ),
@@ -319,7 +309,7 @@ class _DuaListScreenState extends State<DuaListScreen> {
             padding: EdgeInsets.only(right: 8),
             child: Icon(Icons.verified, color: Colors.green),
           ),
-        ProgressChip(d.progress),
+        TimingChip(d.timing),
       ],
     ),
   );
