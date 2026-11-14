@@ -77,6 +77,8 @@ class _SyncPanelState extends State<SyncPanel> {
   double _rate = 1.0;
   String? _message;
 
+  bool _selfChange = false;
+
   AppState get s => widget.state;
   ContentDatabase get db => s.db;
   bool get _isGroup => widget.groupId != null;
@@ -87,18 +89,29 @@ class _SyncPanelState extends State<SyncPanel> {
     _sub = _player.positionStream.listen((d) {
       if (mounted) setState(() => _posMs = d.inMilliseconds);
     });
+    s.addListener(_onExternalChange);
     _load();
   }
 
+  /// Başka bir yerde (ör. soldaki satır düzenleme) veritabanı değişti:
+  /// satırları ve işaretleri yeniden oku; oynatıcıyı yeniden açma.
+  void _onExternalChange() {
+    if (_selfChange || !mounted) return;
+    _refresh();
+  }
+
+  Future<void> _refresh() => _load(selectTrackId: _track?.id, reopen: false);
+
   @override
   void dispose() {
+    s.removeListener(_onExternalChange);
     _sub?.cancel();
     _player.dispose();
     _focus.dispose();
     super.dispose();
   }
 
-  Future<void> _load({int? selectTrackId}) async {
+  Future<void> _load({int? selectTrackId, bool reopen = true}) async {
     final tracks =
         await (db.select(db.tracks)
               ..where(
@@ -149,6 +162,22 @@ class _SyncPanelState extends State<SyncPanel> {
       _rows = rows;
       _hints = hints;
     });
+    if (!reopen && pick != null && pick.id == _track?.id) {
+      final cues = await (db.select(
+        db.cues,
+      )..where((c) => c.trackId.equals(pick.id))).get();
+      if (!mounted) return;
+      setState(() {
+        _track = pick;
+        _selected = null;
+        _undo.clear();
+        _tl = CueTimeline(_rows.map((r) => r.seg.id).toList(), [
+          for (final c in cues)
+            CueEntry(id: c.id, startMs: c.startMs, segmentId: c.segmentId),
+        ]);
+      });
+      return;
+    }
     await _selectTrack(pick);
   }
 
@@ -241,21 +270,36 @@ class _SyncPanelState extends State<SyncPanel> {
   Future<void> _save() async {
     final t = _track, tl = _tl;
     if (t == null || tl == null) return;
-    await db.transaction(() async {
-      await (db.delete(db.cues)..where((c) => c.trackId.equals(t.id))).go();
-      for (final c in tl.sorted) {
-        c.id = await db
-            .into(db.cues)
-            .insert(
-              CuesCompanion.insert(
-                trackId: t.id,
-                startMs: c.startMs,
-                segmentId: Value(c.segmentId),
-              ),
-            );
+    try {
+      await db.transaction(() async {
+        await (db.delete(db.cues)..where((c) => c.trackId.equals(t.id))).go();
+        for (final c in tl.sorted) {
+          c.id = await db
+              .into(db.cues)
+              .insert(
+                CuesCompanion.insert(
+                  trackId: t.id,
+                  startMs: c.startMs,
+                  segmentId: Value(c.segmentId),
+                ),
+              );
+        }
+      });
+      _selfChange = true;
+      try {
+        s.changed();
+      } finally {
+        _selfChange = false;
       }
-    });
-    s.changed();
+    } catch (e) {
+      // Kaydedilemeyen değişikliği ekranda tutma: veritabanındaki hâline dön.
+      if (mounted) {
+        setState(
+          () => _message = 'Kaydedilemedi, işaretler yeniden yüklendi: $e',
+        );
+      }
+      await _refresh();
+    }
   }
 
   Future<void> _undoLast() async {
@@ -275,6 +319,10 @@ class _SyncPanelState extends State<SyncPanel> {
       return KeyEventResult.ignored;
     }
     final k = e.logicalKey;
+    // Basılı tutma yalnızca ok tuşlarında tekrar eder (Enter/G birden çok işaret koymasın).
+    final isArrow =
+        k == LogicalKeyboardKey.arrowLeft || k == LogicalKeyboardKey.arrowRight;
+    if (e is KeyRepeatEvent && !isArrow) return KeyEventResult.handled;
     final shift = HardwareKeyboard.instance.isShiftPressed;
     final ctrl = HardwareKeyboard.instance.isControlPressed;
     final pos = _player.position.inMilliseconds;

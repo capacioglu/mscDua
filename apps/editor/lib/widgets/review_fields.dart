@@ -67,10 +67,18 @@ class _ReviewFieldsState extends State<ReviewFields> {
   void initState() {
     super.initState();
     _ar = TextEditingController(text: seg.textAr);
+    _ar.addListener(_onEdit);
     _ctl = {
       for (final f in SegmentField.values)
         f: TextEditingController(text: _value(f) ?? ''),
     };
+    for (final c in _ctl.values) {
+      c.addListener(_onEdit);
+    }
+  }
+
+  void _onEdit() {
+    if (mounted) setState(() {});
   }
 
   @override
@@ -93,30 +101,61 @@ class _ReviewFieldsState extends State<ReviewFields> {
     super.dispose();
   }
 
-  Future<void> _saveFields() async {
+  bool get _dirty =>
+      SegmentField.values.any((f) => _ctl[f]!.text.trim() != (_value(f) ?? ''));
+
+  /// Alanlardaki kaydedilmemiş değişiklikleri yazar (bildirim göndermeden).
+  Future<void> _persistFields() async {
     for (final f in SegmentField.values) {
       final now = _ctl[f]!.text.trim();
       if (now != (_value(f) ?? '')) {
         await widget.repo.updateField(seg.id, f, now);
       }
     }
+  }
+
+  Future<void> _saveFields() async {
+    await _persistFields();
     widget.onChanged();
   }
 
   Future<void> _saveArabic() async {
+    await _persistFields();
     await widget.repo.updateArabic(seg.id, _ar.text);
     widget.onChanged();
   }
 
+  /// Ekranda görüneni onaylar: önce alanları kaydeder, sonra onaylar.
+  Future<void> _approve() async {
+    await _persistFields();
+    final db = widget.repo.db;
+    final fresh = await (db.select(
+      db.segments,
+    )..where((t) => t.id.equals(seg.id))).getSingle();
+    if (canApprove(fresh)) {
+      await widget.repo.approve(seg.id);
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Eksik alan var; onaylanmadı.')),
+      );
+    }
+    widget.onChanged();
+  }
+
+  String _text(SegmentField f) => _ctl[f]!.text.trim();
+
   List<String> get _missing => [
-    if ((seg.pronunciationTr ?? '').trim().isEmpty) 'Türkçe okunuş',
-    if ((seg.meaningTr ?? '').trim().isEmpty) 'Türkçe anlam',
-    if ((seg.meaningEn ?? '').trim().isEmpty) 'İngilizce anlam',
+    if (_text(SegmentField.pronunciationTr).isEmpty) 'Türkçe okunuş',
+    if (_text(SegmentField.meaningTr).isEmpty) 'Türkçe anlam',
+    if (_text(SegmentField.meaningEn).isEmpty) 'İngilizce anlam',
   ];
 
   @override
   Widget build(BuildContext context) {
-    final can = canApprove(seg) && seg.review != ReviewStatus.approved;
+    final can =
+        _missing.isEmpty &&
+        _ar.text.trim().isNotEmpty &&
+        (seg.review != ReviewStatus.approved || _dirty);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -167,12 +206,7 @@ class _ReviewFieldsState extends State<ReviewFields> {
               message: _missing.isEmpty ? '' : 'Eksik: ${_missing.join(', ')}',
               child: FilledButton(
                 key: const ValueKey('approve'),
-                onPressed: can
-                    ? () async {
-                        await widget.repo.approve(seg.id);
-                        widget.onChanged();
-                      }
-                    : null,
+                onPressed: can ? _approve : null,
                 child: const Text('Onayla'),
               ),
             ),

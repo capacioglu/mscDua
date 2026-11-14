@@ -45,7 +45,47 @@ class _DuaEditScreenState extends State<DuaEditScreen> {
   @override
   void initState() {
     super.initState();
+    s.addListener(_onExternalChange);
     _load();
+  }
+
+  @override
+  void dispose() {
+    s.removeListener(_onExternalChange);
+    _paste.dispose();
+    super.dispose();
+  }
+
+  void _onExternalChange() {
+    if (mounted) _load();
+  }
+
+  Future<void> _approveAll() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        content: const Text(
+          'Eksik alanı olmayan tüm satırlar onaylanacak. Hepsini okuduğunuzdan emin misiniz?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(c, false),
+            child: const Text('Vazgeç'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: const Text('Onayla'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    final n = await _repo.approveAll(widget.duaId);
+    await _changed();
+    if (mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('$n satır onaylandı')));
+    }
   }
 
   Future<void> _load() async {
@@ -254,8 +294,25 @@ class _DuaEditScreenState extends State<DuaEditScreen> {
           Text(
             'Okuma: ${[if (d.recitationCount != null) '${d.recitationCount} defa', d.recitationTimeTr].whereType<String>().join(', ')}',
           ),
+        for (final (label, v) in [
+          ('Hadis', d.hadithTr),
+          ('Hadis (EN)', d.hadithEn),
+          ('Kıssa', d.storyTr),
+          ('Kıssa (EN)', d.storyEn),
+        ])
+          if (v != null)
+            Text('$label: $v', style: const TextStyle(fontSize: 13)),
         const SizedBox(height: 6),
         CategoryChips(db: db, duaId: d.id, onChanged: () => s.changed()),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            key: const ValueKey('approve-all'),
+            onPressed: _approveAll,
+            icon: const Icon(Icons.done_all),
+            label: const Text('Tümünü onayla'),
+          ),
+        ),
         SwitchListTile(
           dense: true,
           title: const Text('Yayına hazır'),

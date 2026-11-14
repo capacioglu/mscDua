@@ -129,5 +129,7 @@ Future<void> publishAction(
     'Yayınlanan dua: ${r.publishedDuaIds.length}, grup: ${r.publishedGroupIds.length}',
     if (r.skipped.isNotEmpty) 'Yayınlanmayan (${r.skipped.length}):',
     ...r.skipped.entries.map((e) => '  ${e.key}: ${e.value.join('; ')}'),
+    if (r.groupMissing.isNotEmpty) 'Gruplarda eksik kalan üyeler:',
+    ...r.groupMissing.entries.map((e) => '  ${e.key}: ${e.value.join(', ')}'),
   ];
 });

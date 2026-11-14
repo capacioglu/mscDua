@@ -98,4 +98,34 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets(
+    'Onayla, alana yazılmış ama kaydedilmemiş düzeltmeyi kaydedip onaylar',
+    (tester) async {
+      await open(tester, 'DUA-0013');
+      await tester.tap(find.byKey(const ValueKey('seg-0')));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('field-meaningTr')),
+        'DÜZELTİLMİŞ ANLAM',
+      );
+      await tester.tap(find.byKey(const ValueKey('approve')));
+      await tester.pumpAndSettle();
+      final seg = (await db.segmentsOf('DUA-0013')).single;
+      expect(seg.meaningTr, 'DÜZELTİLMİŞ ANLAM');
+      expect(seg.review, ReviewStatus.approved);
+    },
+  );
+
+  testWidgets('Tümünü onayla, onaylanabilen satırları onaylar', (tester) async {
+    await open(tester, 'DUA-0013');
+    await tester.tap(find.byKey(const ValueKey('approve-all')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Onayla').last);
+    await tester.pumpAndSettle();
+    expect(
+      (await db.segmentsOf('DUA-0013')).single.review,
+      ReviewStatus.approved,
+    );
+  });
 }

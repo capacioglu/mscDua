@@ -128,4 +128,69 @@ void main() {
       );
     },
   );
+
+  testWidgets(
+    'soldaki satır birleştirilince panel yenilenir; sonraki işaret kaydedilir',
+    (tester) async {
+      await db
+          .into(db.cues)
+          .insert(
+            CuesCompanion.insert(
+              trackId: trackId,
+              startMs: 1000,
+              segmentId: Value(segIds[1]),
+            ),
+          );
+      await tester.binding.setSurfaceSize(const Size(1200, 900));
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: SyncPanel(
+              state: state,
+              duaId: 'D1',
+              playbackFactory: () => player,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await SegmentRepo(db)
+          .merge(segIds[0]); // satır 2 silinir, işareti satır 1'e geçer
+      state.changed();
+      await tester.pumpAndSettle();
+
+      player.setPosition(5000);
+      await tester.sendKeyEvent(LogicalKeyboardKey.keyG);
+      await tester.pumpAndSettle();
+      expect((await cues()).map((c) => (c.startMs, c.segmentId)), [
+        (1000, segIds[0]),
+        (5000, null),
+      ]);
+      expect(find.byKey(ValueKey('sync-seg-${segIds[1]}')), findsNothing);
+    },
+  );
+
+  testWidgets('Enter basılı tutulunca tekrar işaretlemez', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1200, 900));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SyncPanel(
+            state: state,
+            duaId: 'D1',
+            playbackFactory: () => player,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    player.setPosition(1000);
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.enter);
+    await tester.sendKeyRepeatEvent(LogicalKeyboardKey.enter);
+    await tester.sendKeyRepeatEvent(LogicalKeyboardKey.enter);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+    expect(await cues(), hasLength(1));
+  });
 }
