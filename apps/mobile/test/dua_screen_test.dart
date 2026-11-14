@@ -126,4 +126,31 @@ void main() {
     expect(services.themeMode, ThemeMode.dark);
     expect(await services.user.themeMode(), 'dark');
   });
+
+  testWidgets('çalmıyorken satıra dokununca ses o satırdan başlar', (
+    tester,
+  ) async {
+    await open(tester, 'DUA-0006');
+    final segs = await db.segmentsOf('DUA-0006');
+    await tester.tap(find.text(segs[2].textAr));
+    await tester.pumpAndSettle();
+    expect(backend.queue.whereType<ClipEntry>(), hasLength(1));
+    expect(backend.lastSeek, (0, 2000));
+    expect(backend.playing, isTrue);
+  });
+
+  testWidgets('kaldığın yerden devam: küçük oynatıcı saklı oturumu sürdürür', (
+    tester,
+  ) async {
+    await services.user.saveLastSession(
+      '{"requests":[["DUA-0006",2]],"gapMs":500,"title":"Sabah","index":2,"ms":1200}',
+    );
+    await services.player.loadSession();
+    await open(tester, 'DUA-0013');
+    expect(find.textContaining('Kaldığın yerden devam'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('mini-resume')));
+    await tester.pumpAndSettle();
+    expect(backend.queue.whereType<ClipEntry>(), hasLength(2));
+    expect(backend.lastSeek, (2, 1200));
+  });
 }

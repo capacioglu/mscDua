@@ -84,7 +84,16 @@ class _GroupScreenState extends State<GroupScreen> {
                   ),
                 ReadingView(
                   views: _views,
-                  onTapSegment: (d, seg) => s.player.seekToSegment(d, seg),
+                  onTapSegment: (d, seg) => s.player.playFrom(
+                    [
+                      for (final e in _entries)
+                        PlayRequest(e.dua.id, e.item.repeatCount),
+                    ],
+                    gapMs: s.gapMs,
+                    title: widget.group.titleTr,
+                    duaId: d,
+                    segmentId: seg,
+                  ),
                   onTapTitle: (id) => Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) => DuaScreen(duaId: id, order: order),

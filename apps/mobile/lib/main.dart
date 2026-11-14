@@ -36,9 +36,10 @@ Future<void> main() async {
   );
   final contentDb = ContentDatabase.open(await installer.ensureInstalled());
   final queries = ContentQueries(contentDb);
+  final user = UserDatabase.open(File(p.join(support.path, 'user.db')));
   final services = await AppServices.create(
     queries: queries,
-    user: UserDatabase.open(File(p.join(support.path, 'user.db'))),
+    user: user,
     player: PlayerService(
       JustAudioBackend(
         background: _isMobile,
@@ -47,8 +48,10 @@ Future<void> main() async {
       queries,
       fileOf: (t) =>
           File(p.joinAll([installer.contentDir.path, ...t.relPath.split('/')])),
+      store: SessionStore(load: user.lastSession, save: user.saveLastSession),
     ),
   );
+  await services.player.loadSession();
   runApp(DualarimApp(services: services));
 }
 

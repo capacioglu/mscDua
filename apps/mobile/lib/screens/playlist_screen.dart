@@ -84,8 +84,13 @@ class _PlaylistScreenState extends State<PlaylistScreen> {
             children: [
               ReadingView(
                 views: views,
-                onTapSegment: (d, seg) =>
-                    AppScope.of(c).player.seekToSegment(d, seg),
+                onTapSegment: (d, seg) => AppScope.of(c).player.playFrom(
+                  _requests,
+                  gapMs: AppScope.of(c).gapMs,
+                  title: _list?.name,
+                  duaId: d,
+                  segmentId: seg,
+                ),
               ),
             ],
           ),

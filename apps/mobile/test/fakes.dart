@@ -82,13 +82,15 @@ Future<ContentDatabase> seededContent() async {
 Future<(AppServices, FakeBackend, ContentDatabase)> testServices() async {
   final db = await seededContent();
   final backend = FakeBackend();
+  final user = UserDatabase.memory();
   final services = await AppServices.create(
     queries: ContentQueries(db),
-    user: UserDatabase.memory(),
+    user: user,
     player: PlayerService(
       backend,
       ContentQueries(db),
       fileOf: (t) => File(t.relPath),
+      store: SessionStore(load: user.lastSession, save: user.saveLastSession),
     ),
   );
   return (services, backend, db);

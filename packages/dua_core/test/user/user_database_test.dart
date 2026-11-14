@@ -79,5 +79,13 @@ void main() {
     await db.close();
     await dir.delete(recursive: true);
   });
+
+  test('son dinleme oturumu saklanır ve silinir', () async {
+    expect(await u.lastSession(), isNull);
+    await u.saveLastSession('{"a":1}');
+    expect(await u.lastSession(), '{"a":1}');
+    await u.saveLastSession(null);
+    expect(await u.lastSession(), isNull);
+  });
 }
 

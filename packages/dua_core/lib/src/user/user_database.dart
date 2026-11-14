@@ -187,5 +187,16 @@ class UserDatabase extends _$UserDatabase {
   Future<bool> meaningPerLine() async => (await _get('meaningPerLine') ?? '1') == '1';
 
   Future<void> setMeaningPerLine(bool v) => _set('meaningPerLine', v ? '1' : '0');
+
+  /// Son dinleme oturumu (JSON) — "kaldığın yerden devam" için.
+  Future<String?> lastSession() => _get('lastSession');
+
+  Future<void> saveLastSession(String? json) async {
+    if (json == null) {
+      await (delete(userSettings)..where((t) => t.key.equals('lastSession'))).go();
+    } else {
+      await _set('lastSession', json);
+    }
+  }
 }
 

@@ -99,7 +99,13 @@ class _DuaScreenState extends State<DuaScreen> {
                 ReadingView(
                   views: [v],
                   showTitles: false,
-                  onTapSegment: (d, seg) => s.player.seekToSegment(d, seg),
+                  onTapSegment: (d, seg) => s.player.playFrom(
+                    [PlayRequest(widget.duaId, _repeat)],
+                    gapMs: s.gapMs,
+                    title: v.dua.titleTr,
+                    duaId: d,
+                    segmentId: seg,
+                  ),
                 ),
                 _controls(context, v),
                 if (v.variants.isNotEmpty) ...[

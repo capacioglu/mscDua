@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dua_core/dua_core.dart';
@@ -92,14 +93,31 @@ class JustAudioBackend implements AudioBackend {
   Future<void> dispose() => _p.dispose();
 }
 
-/// Uygulamanın tek oynatıcısı: kuyruk kurar, o an okunan dua/satırı yayınlar.
+/// "Kaldığın yerden devam" için oturumun saklandığı yer (kullanıcı veritabanı).
+class SessionStore {
+  const SessionStore({required this.load, required this.save});
+  final Future<String?> Function() load;
+  final Future<void> Function(String? json) save;
+}
+
+/// Uygulamanın tek oynatıcısı: kuyruk kurar, o an okunan dua/satırı yayınlar,
+/// dinleme oturumunu saklar.
 class PlayerService extends ChangeNotifier {
-  PlayerService(this.backend, this.queries, {required this.fileOf}) {
+  PlayerService(
+    this.backend,
+    this.queries, {
+    required this.fileOf,
+    this.store,
+  }) {
     _subs.add(
       backend.progress.listen((e) {
         _index = e.$1;
+        _posMs = e.$2;
         _now = nowPlaying(_queue, e.$1, e.$2);
         notifyListeners();
+        if (e.$1 != _savedIndex || (e.$2 - _savedMs).abs() >= 3000) {
+          _saveSession();
+        }
       }),
     );
     _subs.add(
@@ -113,7 +131,15 @@ class PlayerService extends ChangeNotifier {
   final AudioBackend backend;
   final ContentQueries queries;
   final File Function(Track) fileOf;
+  final SessionStore? store;
   final List<StreamSubscription<Object?>> _subs = [];
+
+  List<PlayRequest> _requests = [];
+  int _gapMs = 0;
+  int _posMs = 0;
+  int _savedIndex = -1;
+  int _savedMs = 0;
+  Map<String, dynamic>? _pending;
 
   List<QueueEntry> _queue = [];
   Map<String, DuaView> _views = {};
@@ -129,11 +155,101 @@ class PlayerService extends ChangeNotifier {
   String? get title => _title;
   DuaView? viewOf(String duaId) => _views[duaId];
 
+  /// Uygulama yeniden açılınca devam ettirilebilecek oturum var mı?
+  bool get canResume => !active && _pending != null;
+  String? get resumeTitle => _pending?['title'] as String?;
+
+  Future<bool> loadSession() async {
+    final raw = await store?.load();
+    if (raw == null) return false;
+    try {
+      _pending = jsonDecode(raw) as Map<String, dynamic>;
+    } catch (_) {
+      _pending = null;
+    }
+    notifyListeners();
+    return _pending != null;
+  }
+
+  /// Saklanan oturumu aynı dua, tur ve konumdan sürdürür.
+  Future<void> resume() async {
+    final p = _pending;
+    if (p == null) return;
+    final reqs = [
+      for (final r in (p['requests'] as List))
+        PlayRequest(r[0] as String, r[1] as int),
+    ];
+    await start(
+      reqs,
+      gapMs: p['gapMs'] as int,
+      title: p['title'] as String?,
+      autoplay: false,
+    );
+    final index = (p['index'] as int).clamp(
+      0,
+      _queue.isEmpty ? 0 : _queue.length - 1,
+    );
+    if (_queue.isNotEmpty) await backend.seekTo(index, p['ms'] as int);
+    _pending = null;
+    await backend.play();
+  }
+
+  Future<void> _saveSession() async {
+    final s = store;
+    if (s == null || _requests.isEmpty) return;
+    _savedIndex = _index;
+    _savedMs = _posMs;
+    await s.save(
+      jsonEncode({
+        'requests': [
+          for (final r in _requests) [r.duaId, r.repeat],
+        ],
+        'gapMs': _gapMs,
+        'title': _title,
+        'index': _index,
+        'ms': _posMs,
+      }),
+    );
+  }
+
+  /// Dokunulan satırdan başlatır: aynı kuyruk çalıyorsa yalnızca atlar,
+  /// değilse [requests] kuyruğunu kurup o duanın ilk turunda o satıra atlar.
+  Future<void> playFrom(
+    List<PlayRequest> requests, {
+    required int gapMs,
+    String? title,
+    required String duaId,
+    required int segmentId,
+  }) async {
+    final same =
+        _queue.isNotEmpty && _sameRequests(requests) && _gapMs == gapMs;
+    if (!same) {
+      await start(requests, gapMs: gapMs, title: title, autoplay: false);
+    }
+    await seekToSegment(duaId, segmentId);
+    await backend.play();
+  }
+
+  bool _sameRequests(List<PlayRequest> other) {
+    if (other.length != _requests.length) return false;
+    for (var i = 0; i < other.length; i++) {
+      if (other[i].duaId != _requests[i].duaId ||
+          other[i].repeat != _requests[i].repeat) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   Future<void> start(
     List<PlayRequest> requests, {
     required int gapMs,
     String? title,
+    bool autoplay = true,
   }) async {
+    _requests = List.of(requests);
+    _gapMs = gapMs;
+    _pending = null;
     final views = <String, DuaView>{};
     for (final r in requests) {
       if (views.containsKey(r.duaId)) continue;
@@ -147,6 +263,7 @@ class PlayerService extends ChangeNotifier {
     _queue = buildQueue(requests, views, gapMs: gapMs);
     _title = title;
     _index = 0;
+    _posMs = 0;
     _now = _queue.isEmpty ? const NowPlaying() : nowPlaying(_queue, 0, 0);
     notifyListeners();
     if (_queue.isEmpty) return;
@@ -155,11 +272,17 @@ class PlayerService extends ChangeNotifier {
       fileOf,
       (id) => views[id]?.dua.titleTr ?? id,
     );
-    await backend.play();
+    unawaited(_saveSession());
+    if (autoplay) await backend.play();
   }
 
   Future<void> play() => backend.play();
-  Future<void> pause() => backend.pause();
+
+  Future<void> pause() async {
+    await backend.pause();
+    await _saveSession();
+  }
+
   Future<void> togglePlay() => _playing ? pause() : play();
 
   /// Satıra dokunulunca: çalan tur o duadaysa onun içinde, değilse duanın ilk turunda o satıra atlar.

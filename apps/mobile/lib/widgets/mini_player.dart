@@ -13,7 +13,30 @@ class MiniPlayer extends StatelessWidget {
     return ListenableBuilder(
       listenable: p,
       builder: (context, _) {
-        if (!p.active) return const SizedBox.shrink();
+        if (!p.active) {
+          if (!p.canResume) return const SizedBox.shrink();
+          return Material(
+            elevation: 6,
+            color: Theme.of(context).colorScheme.secondaryContainer,
+            child: SafeArea(
+              top: false,
+              child: ListTile(
+                leading: const Icon(Icons.history),
+                title: const Text('Kaldığın yerden devam'),
+                subtitle: Text(
+                  p.resumeTitle ?? '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                trailing: IconButton(
+                  key: const ValueKey('mini-resume'),
+                  icon: const Icon(Icons.play_circle, size: 36),
+                  onPressed: p.resume,
+                ),
+              ),
+            ),
+          );
+        }
         final now = p.now;
         final title = now.duaId == null
             ? (p.title ?? '')
