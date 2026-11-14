@@ -37,9 +37,12 @@ void main() {
     expect((await get(s[0])).review, ReviewStatus.review);
   });
 
-  test('çevirisiz satıra elle çeviri girilince gözden geçirilecek olur', () async {
+  test('çevirisiz satır, zorunlu alanlar elle tamamlanınca gözden geçirilecek olur; eksikken kuyrukta kalır', () async {
     final s = await seedDua(db, 'D1', ['أ']);
     await repo.updateField(s[0], SegmentField.meaningTr, 'anlam');
+    expect((await get(s[0])).review, ReviewStatus.none);
+    await repo.updateField(s[0], SegmentField.pronunciationTr, 'okunuş');
+    await repo.updateField(s[0], SegmentField.meaningEn, 'meaning');
     expect((await get(s[0])).review, ReviewStatus.review);
   });
 

@@ -57,8 +57,8 @@ class SegmentRepo {
       await (db.update(db.segments)..where((t) => t.id.equals(segId)))
           .write(const SegmentsCompanion(review: Value(ReviewStatus.review)));
     }
-    // Hiç çevirisi olmayan satıra elle çeviri girilirse gözden geçirilecek olur.
-    if (s.review == ReviewStatus.none && v != null) {
+    // Çevirisiz satır, zorunlu alanları tamamlanınca gözden geçirilecek olur (eksikken kuyrukta kalır).
+    if (s.review == ReviewStatus.none && canApprove(s)) {
       await (db.update(db.segments)..where((t) => t.id.equals(segId)))
           .write(const SegmentsCompanion(review: Value(ReviewStatus.review)));
     }

@@ -34,10 +34,20 @@ class CueTimeline {
     _cursor = i;
   }
 
+  /// Aynı ms'de başka işaret varsa bir sonraki boş ms (sıralama kararlı kalsın).
+  int _free(int ms) {
+    final used = _cues.map((c) => c.startMs).toSet();
+    var m = ms < 0 ? 0 : ms;
+    while (used.contains(m)) {
+      m++;
+    }
+    return m;
+  }
+
   CueEntry markNext(int atMs) {
     final seg = nextSegmentId;
     if (seg == null) throw StateError('İşaretlenecek satır kalmadı');
-    final c = CueEntry(startMs: atMs, segmentId: seg);
+    final c = CueEntry(startMs: _free(atMs), segmentId: seg);
     _cues.add(c);
     _sort();
     _cursor++;
@@ -45,7 +55,7 @@ class CueTimeline {
   }
 
   CueEntry markGap(int atMs) {
-    final c = CueEntry(startMs: atMs);
+    final c = CueEntry(startMs: _free(atMs));
     _cues.add(c);
     _sort();
     return c;
@@ -56,7 +66,7 @@ class CueTimeline {
     final i = _cues.indexOf(c);
     final lo = i > 0 ? _cues[i - 1].startMs + 1 : 0;
     final hi = i < _cues.length - 1 ? _cues[i + 1].startMs - 1 : 1 << 31;
-    c.startMs = toMs.clamp(lo, hi);
+    c.startMs = lo > hi ? c.startMs : toMs.clamp(lo, hi);
   }
 
   void nudge(CueEntry c, int deltaMs) => move(c, c.startMs + deltaMs);

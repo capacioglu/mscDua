@@ -44,6 +44,14 @@ void main() {
     expect(b.startMs, 1);
   });
 
+  test('aynı anda iki işaret çakışmaz ve kaydırma çökmez', () {
+    final a = t.markNext(0);
+    final b = t.markNext(0);
+    expect(b.startMs, 1);
+    expect(() => t.nudge(a, 100), returnsNormally);
+    expect(t.markGap(1).startMs, 2);
+  });
+
   test('silme ve sıralama', () {
     final c3 = CueEntry(startMs: 3000, segmentId: s3);
     final c1 = CueEntry(startMs: 1000, segmentId: s1);

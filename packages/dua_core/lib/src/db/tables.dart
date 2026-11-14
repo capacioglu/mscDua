@@ -17,6 +17,9 @@ class Duas extends Table {
   TextColumn get srcPronunciationEn => text().nullable()();
   TextColumn get srcMeaningTr => text().nullable()();
   TextColumn get srcMeaningEn => text().nullable()();
+
+  /// Son içe aktarımdaki Arapça metin (kullanıcı düzeltmesini JSON değişikliğinden ayırmak için).
+  TextColumn get srcTextAr => text().nullable()();
   TextColumn get expectedAudioFile => text().nullable()();
   BoolColumn get readyToPublish => boolean().withDefault(const Constant(false))();
   IntColumn get version => integer().withDefault(const Constant(0))();

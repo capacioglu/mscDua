@@ -44,15 +44,20 @@ class ArchiveImporter {
     final report = ImportReport();
     await db.transaction(() async {
       final catIds = await _importCategories(json);
-      await _importGroups(json, report);
+      final newGroups = await _importGroups(json, report);
+      final newDuas = <String>{};
 
       final duaCats = <String, List<String>>{};
       for (final d in ((json['duas'] as List?) ?? []).cast<Map<String, dynamic>>()) {
         final id = d['id'] as String;
         final cats = ((d['categories'] as List?) ?? []).cast<String>();
         duaCats[id] = cats;
-        await _upsertDua(d, id, report);
-        await _setCategories(id, cats, catIds, report);
+        if (await _upsertDua(d, id, report)) {
+          newDuas.add(id);
+          await _setCategories(id, cats, catIds, report);
+        } else {
+          await _reportCategoryDiff(id, cats, catIds, report);
+        }
       }
 
       for (final v in ((json['variants'] as List?) ?? []).cast<Map<String, dynamic>>()) {
@@ -63,13 +68,16 @@ class ArchiveImporter {
           report.warnings.add('$id: ana dua $parentId bulunamadı, varyant alınmadı');
           continue;
         }
-        await _upsertDua({
+        final created = await _upsertDua({
           'title_tr': parent.titleTr,
           'title_en': parent.titleEn,
           'title_ar': parent.titleAr,
           ...v,
         }, id, report, variantOf: parentId, variantKey: v['variant_type'] as String?);
-        await _setCategories(id, duaCats[parentId] ?? const [], catIds, report);
+        if (created) {
+          newDuas.add(id);
+          await _setCategories(id, duaCats[parentId] ?? const [], catIds, report);
+        }
       }
 
       for (final m in ((json['group_memberships'] as List?) ?? []).cast<Map<String, dynamic>>()) {
@@ -79,7 +87,12 @@ class ArchiveImporter {
           report.warnings.add('$groupId: $target kaydı yok, gruba eklenmedi');
           continue;
         }
-        await _setGroupItem(groupId, target, m['sort_order'] as int?, (m['repeat_count'] as int?) ?? 1);
+        if (await (db.select(db.groups)..where((t) => t.id.equals(groupId))).getSingleOrNull() == null) {
+          report.warnings.add('$groupId: grup yok, $target üyeliği alınmadı');
+          continue;
+        }
+        await _setGroupItem(groupId, target, m['sort_order'] as int?, (m['repeat_count'] as int?) ?? 1,
+            allowInsert: newGroups.contains(groupId) || newDuas.contains(target), report: report);
       }
 
       await db.into(db.importLogs).insert(ImportLogsCompanion.insert(
@@ -118,7 +131,8 @@ class ArchiveImporter {
     return ids;
   }
 
-  Future<void> _importGroups(Map<String, dynamic> json, ImportReport report) async {
+  Future<Set<String>> _importGroups(Map<String, dynamic> json, ImportReport report) async {
+    final created = <String>{};
     final list = ((json['groups'] as List?) ?? []).cast<Map<String, dynamic>>();
     for (var i = 0; i < list.length; i++) {
       final g = list[i];
@@ -139,10 +153,12 @@ class ArchiveImporter {
               sortOrder: Value(i),
             ));
         report.groupsCreated++;
+        created.add(id);
       } else {
         await (db.update(db.groups)..where((t) => t.id.equals(id))).write(meta);
       }
     }
+    return created;
   }
 
   Future<void> _setCategories(String duaId, List<String> codes, Map<String, int> catIds, ImportReport report) async {
@@ -156,16 +172,34 @@ class ArchiveImporter {
     }
   }
 
-  Future<void> _setGroupItem(String groupId, String duaId, int? position, int repeat) async {
+  /// Üyelik yoksa (yeni grup ya da yeni dua ise) ekler; varsa kullanıcının sırasına
+  /// dokunmaz, farkı uyarı olarak raporlar.
+  Future<void> _setGroupItem(String groupId, String duaId, int? position, int repeat,
+      {required bool allowInsert, required ImportReport report}) async {
     final existing = await (db.select(db.groupItems)
           ..where((t) => t.groupId.equals(groupId) & t.duaId.equals(duaId)))
         .getSingleOrNull();
     if (existing == null) {
-      await db.into(db.groupItems).insert(GroupItemsCompanion.insert(
-          groupId: groupId, duaId: duaId, position: Value(position), repeatCount: Value(repeat)));
-    } else {
-      await (db.update(db.groupItems)..where((t) => t.id.equals(existing.id)))
-          .write(GroupItemsCompanion(position: Value(position), repeatCount: Value(repeat)));
+      if (allowInsert) {
+        await db.into(db.groupItems).insert(GroupItemsCompanion.insert(
+            groupId: groupId, duaId: duaId, position: Value(position), repeatCount: Value(repeat)));
+      } else {
+        report.warnings.add("$groupId: $duaId JSON'da grupta ama editörde değil; eklenmedi");
+      }
+    } else if (existing.position != position || existing.repeatCount != repeat) {
+      report.warnings.add("$groupId: $duaId sırası/tekrarı JSON'dan farklı (editör: ${existing.position}, "
+          'JSON: $position); editördeki korundu');
+    }
+  }
+
+  /// Var olan duanın kategorileri JSON'dan farklıysa uyarır; değiştirmez.
+  Future<void> _reportCategoryDiff(String duaId, List<String> codes, Map<String, int> catIds, ImportReport report) async {
+    final current = (await (db.select(db.duaCategories)..where((t) => t.duaId.equals(duaId))).get())
+        .map((l) => l.categoryId)
+        .toSet();
+    final wanted = codes.map((c) => catIds[c]).whereType<int>().toSet();
+    if (current.length != wanted.length || !current.containsAll(wanted)) {
+      report.warnings.add("$duaId: kategoriler JSON'dan farklı; editördeki korundu");
     }
   }
 
@@ -208,7 +242,8 @@ class ArchiveImporter {
     report.segmentsCreated += drafts.length;
   }
 
-  Future<void> _upsertDua(Map<String, dynamic> m, String id, ImportReport report,
+  /// Duayı ekler veya günceller; yeni oluşturulduysa true döner.
+  Future<bool> _upsertDua(Map<String, dynamic> m, String id, ImportReport report,
       {String? variantOf, String? variantKey}) async {
     final text = m['text_ar'] as String?;
     final time = m['recitation_time'] as Map<String, dynamic>?;
@@ -244,10 +279,11 @@ class ArchiveImporter {
             srcPronunciationEn: Value(m['pronunciation_en'] as String?),
             srcMeaningTr: Value(m['meaning_tr'] as String?),
             srcMeaningEn: Value(m['meaning_en'] as String?),
+            srcTextAr: Value(text),
           ));
       await _createSegments(id, m, report);
       report.duasCreated++;
-      return;
+      return true;
     }
 
     report.duasUpdated++;
@@ -265,19 +301,26 @@ class ArchiveImporter {
 
     final segs = await db.segmentsOf(id);
     final joined = segs.map((s) => s.textAr).join(' ');
+    final prevText = existing.srcTextAr ?? joined;
     var recreated = false;
-    if (text != null && _noSpace(joined) != _noSpace(text)) {
+    // Yalnızca JSON'daki metin bir önceki içe aktarımdan farklıysa ilgilen;
+    // kullanıcının Arapça düzeltmesi tek başına "JSON değişti" sayılmaz.
+    if (text != null && _noSpace(prevText) != _noSpace(text)) {
       final segIds = segs.map((s) => s.id).toList();
-      final hasApproved = segs.any((s) => s.review == ReviewStatus.approved);
+      final touched = segs.any((s) =>
+          s.review == ReviewStatus.approved ||
+          [s.pronunciationTrSource, s.pronunciationEnSource, s.meaningTrSource, s.meaningEnSource]
+              .any((src) => src == FieldSource.user || src == FieldSource.claude));
       final hasCues = segIds.isNotEmpty &&
           (await (db.select(db.cues)..where((c) => c.segmentId.isIn(segIds))).get()).isNotEmpty;
-      if (!hasApproved && !hasCues) {
+      final sameAsImported = _noSpace(joined) == _noSpace(prevText);
+      if (!touched && !hasCues && sameAsImported) {
         await (db.delete(db.segments)..where((t) => t.duaId.equals(id))).go();
         await _createSegments(id, m, report);
         report.warnings.add('$id: Arapça metin değişti, satırlar yeniden oluşturuldu');
         recreated = true;
       } else {
-        diff['text_ar'] = {'old': joined, 'new': text};
+        diff['text_ar'] = {'old': prevText, 'new': text, 'current': joined};
       }
     }
 
@@ -290,8 +333,10 @@ class ArchiveImporter {
               diff.containsKey('pronunciation_en') ? Value(m['pronunciation_en'] as String?) : const Value.absent(),
           srcMeaningTr: diff.containsKey('meaning_tr') ? Value(m['meaning_tr'] as String?) : const Value.absent(),
           srcMeaningEn: diff.containsKey('meaning_en') ? Value(m['meaning_en'] as String?) : const Value.absent(),
+          srcTextAr: text == null ? const Value.absent() : Value(text),
           importDiff: diff.isEmpty || recreated ? const Value.absent() : Value(jsonEncode(diff)),
         ));
     if (diff.isNotEmpty && !recreated) report.changedDuaIds.add(id);
+    return false;
   }
 }

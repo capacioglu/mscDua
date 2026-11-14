@@ -41,6 +41,35 @@ void main() {
 
       await matchAudioFolder(db, src, content);
       expect(await db.select(db.tracks).get(), hasLength(1));
+
+      // Farklı içerikli aynı adlı dosya: eski kayıt ve dosyası korunur, yeni kayıt eklenir.
+      await File(p.join(src.path, 'DUA_0030.MP3')).writeAsBytes([9, 9]);
+      await matchAudioFolder(db, src, content);
+      final tracks = await db.select(db.tracks).get();
+      expect(tracks.map((t) => t.relPath), ['audio/dua_0030.mp3', 'audio/dua_0030_2.mp3']);
+      expect(File(p.join(content.path, 'audio', 'dua_0030.mp3')).readAsBytesSync(), [1, 2, 3]);
+    });
+  });
+
+  group('importAudioFile', () {
+    late Directory tmp;
+    setUp(() async => tmp = await Directory.systemTemp.createTemp('dualarim_uniq'));
+    tearDown(() => tmp.delete(recursive: true));
+
+    test('aynı ad farklı içerikse üzerine yazmaz, _2 ekler; aynı içerikse var olanı kullanır', () async {
+      final audio = Directory(p.join(tmp.path, 'audio'));
+      final a = File(p.join(tmp.path, 'a', 'dua_0030.mp3'))..createSync(recursive: true);
+      a.writeAsBytesSync([1, 2]);
+      final b = File(p.join(tmp.path, 'b', 'dua_0030.mp3'))..createSync(recursive: true);
+      b.writeAsBytesSync([3, 4]);
+
+      final f1 = await importAudioFile(a, audio, 'dua_0030.mp3');
+      final f2 = await importAudioFile(b, audio, 'dua_0030.mp3');
+      final f3 = await importAudioFile(a, audio, 'dua_0030.mp3');
+      expect(p.basename(f1.path), 'dua_0030.mp3');
+      expect(p.basename(f2.path), 'dua_0030_2.mp3');
+      expect(p.basename(f3.path), 'dua_0030.mp3');
+      expect(File(p.join(audio.path, 'dua_0030.mp3')).readAsBytesSync(), [1, 2]);
     });
   });
 

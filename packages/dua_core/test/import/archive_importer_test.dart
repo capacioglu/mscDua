@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:dua_core/dua_core.dart';
 import 'package:test/test.dart';
 
@@ -116,6 +117,46 @@ void main() {
     expect((await dua('DUA-0030'))!.srcMeaningTr, 'JSON yeni anlam');
     expect((await dua('DUA-0030'))!.importDiff, isNotNull);
     expect(r.changedDuaIds, ['DUA-0030']);
+  });
+
+  test('yeniden içe aktarma kullanıcının grup sırasını ve kaldırdığı kategoriyi geri almaz', () async {
+    await importer.importJson(loadMini(), fileName: 'mini.json');
+    await (db.update(db.groupItems)..where((t) => t.groupId.equals('GRP-001') & t.duaId.equals('DUA-0030')))
+        .write(const GroupItemsCompanion(position: Value(99)));
+    final tovbe = await (db.select(db.categories)..where((t) => t.code.equals('repentance'))).getSingle();
+    await (db.delete(db.duaCategories)..where((t) => t.duaId.equals('DUA-0030') & t.categoryId.equals(tovbe.id))).go();
+
+    final r = await importer.importJson(loadMini(), fileName: 'mini.json');
+    expect((await groupPositions('DUA-0030'))['GRP-001'], 99);
+    expect(await db.categoriesOf('DUA-0030'), {'Peygamber duaları'});
+    expect(r.warnings.join('\n'), contains('DUA-0030'));
+  });
+
+  test('aynı JSON yeniden aktarılınca kullanıcının Arapça düzeltmesi ve çevirisi korunur', () async {
+    await importer.importJson(loadMini(), fileName: 'mini.json');
+    final repo = SegmentRepo(db);
+    final seg = (await db.segmentsOf('DUA-0004')).single;
+    await repo.updateArabic(seg.id, '${seg.textAr}ً');
+    await repo.updateField(seg.id, SegmentField.meaningTr, 'KULLANICI DÜZELTMESİ');
+    final r = await importer.importJson(loadMini(), fileName: 'mini.json');
+    final after = (await db.segmentsOf('DUA-0004')).single;
+    expect(after.textAr, '${seg.textAr}ً');
+    expect(after.meaningTr, 'KULLANICI DÜZELTMESİ');
+    expect(after.meaningTrSource, FieldSource.user);
+    expect(r.warnings, isEmpty);
+    expect(r.changedDuaIds, isEmpty);
+  });
+
+  test('JSON Arapçası değişti ama kullanıcı satırlara dokunduysa satırlar korunur, fark raporlanır', () async {
+    await importer.importJson(loadMini(), fileName: 'mini.json');
+    final seg = (await db.segmentsOf('DUA-0004')).single;
+    await SegmentRepo(db).updateField(seg.id, SegmentField.meaningTr, 'benim');
+    final mini = loadMini();
+    (mini['duas'] as List).firstWhere((d) => d['id'] == 'DUA-0004')['text_ar'] = 'بِسْمِ اللَّهِ';
+    final r = await importer.importJson(mini, fileName: 'mini.json');
+    expect((await db.segmentsOf('DUA-0004')).single.meaningTr, 'benim');
+    expect(r.changedDuaIds, ['DUA-0004']);
+    expect((await dua('DUA-0004'))!.importDiff, contains('text_ar'));
   });
 
   test('onaysız ve zamansız duanın Arapçası değiştiyse satırlar yeniden oluşur', () async {

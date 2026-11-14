@@ -163,6 +163,17 @@ class $DuasTable extends Duas with TableInfo<$DuasTable, Dua> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _srcTextArMeta = const VerificationMeta(
+    'srcTextAr',
+  );
+  @override
+  late final GeneratedColumn<String> srcTextAr = GeneratedColumn<String>(
+    'src_text_ar',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _expectedAudioFileMeta = const VerificationMeta(
     'expectedAudioFile',
   );
@@ -366,6 +377,7 @@ class $DuasTable extends Duas with TableInfo<$DuasTable, Dua> {
     srcPronunciationEn,
     srcMeaningTr,
     srcMeaningEn,
+    srcTextAr,
     expectedAudioFile,
     readyToPublish,
     version,
@@ -499,6 +511,12 @@ class $DuasTable extends Duas with TableInfo<$DuasTable, Dua> {
           data['src_meaning_en']!,
           _srcMeaningEnMeta,
         ),
+      );
+    }
+    if (data.containsKey('src_text_ar')) {
+      context.handle(
+        _srcTextArMeta,
+        srcTextAr.isAcceptableOrUnknown(data['src_text_ar']!, _srcTextArMeta),
       );
     }
     if (data.containsKey('expected_audio_file')) {
@@ -686,6 +704,10 @@ class $DuasTable extends Duas with TableInfo<$DuasTable, Dua> {
         DriftSqlType.string,
         data['${effectivePrefix}src_meaning_en'],
       ),
+      srcTextAr: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}src_text_ar'],
+      ),
       expectedAudioFile: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}expected_audio_file'],
@@ -774,6 +796,9 @@ class Dua extends DataClass implements Insertable<Dua> {
   final String? srcPronunciationEn;
   final String? srcMeaningTr;
   final String? srcMeaningEn;
+
+  /// Son içe aktarımdaki Arapça metin (kullanıcı düzeltmesini JSON değişikliğinden ayırmak için).
+  final String? srcTextAr;
   final String? expectedAudioFile;
   final bool readyToPublish;
   final int version;
@@ -805,6 +830,7 @@ class Dua extends DataClass implements Insertable<Dua> {
     this.srcPronunciationEn,
     this.srcMeaningTr,
     this.srcMeaningEn,
+    this.srcTextAr,
     this.expectedAudioFile,
     required this.readyToPublish,
     required this.version,
@@ -862,6 +888,9 @@ class Dua extends DataClass implements Insertable<Dua> {
     }
     if (!nullToAbsent || srcMeaningEn != null) {
       map['src_meaning_en'] = Variable<String>(srcMeaningEn);
+    }
+    if (!nullToAbsent || srcTextAr != null) {
+      map['src_text_ar'] = Variable<String>(srcTextAr);
     }
     if (!nullToAbsent || expectedAudioFile != null) {
       map['expected_audio_file'] = Variable<String>(expectedAudioFile);
@@ -946,6 +975,9 @@ class Dua extends DataClass implements Insertable<Dua> {
       srcMeaningEn: srcMeaningEn == null && nullToAbsent
           ? const Value.absent()
           : Value(srcMeaningEn),
+      srcTextAr: srcTextAr == null && nullToAbsent
+          ? const Value.absent()
+          : Value(srcTextAr),
       expectedAudioFile: expectedAudioFile == null && nullToAbsent
           ? const Value.absent()
           : Value(expectedAudioFile),
@@ -1013,6 +1045,7 @@ class Dua extends DataClass implements Insertable<Dua> {
       ),
       srcMeaningTr: serializer.fromJson<String?>(json['srcMeaningTr']),
       srcMeaningEn: serializer.fromJson<String?>(json['srcMeaningEn']),
+      srcTextAr: serializer.fromJson<String?>(json['srcTextAr']),
       expectedAudioFile: serializer.fromJson<String?>(
         json['expectedAudioFile'],
       ),
@@ -1051,6 +1084,7 @@ class Dua extends DataClass implements Insertable<Dua> {
       'srcPronunciationEn': serializer.toJson<String?>(srcPronunciationEn),
       'srcMeaningTr': serializer.toJson<String?>(srcMeaningTr),
       'srcMeaningEn': serializer.toJson<String?>(srcMeaningEn),
+      'srcTextAr': serializer.toJson<String?>(srcTextAr),
       'expectedAudioFile': serializer.toJson<String?>(expectedAudioFile),
       'readyToPublish': serializer.toJson<bool>(readyToPublish),
       'version': serializer.toJson<int>(version),
@@ -1085,6 +1119,7 @@ class Dua extends DataClass implements Insertable<Dua> {
     Value<String?> srcPronunciationEn = const Value.absent(),
     Value<String?> srcMeaningTr = const Value.absent(),
     Value<String?> srcMeaningEn = const Value.absent(),
+    Value<String?> srcTextAr = const Value.absent(),
     Value<String?> expectedAudioFile = const Value.absent(),
     bool? readyToPublish,
     int? version,
@@ -1126,6 +1161,7 @@ class Dua extends DataClass implements Insertable<Dua> {
         : this.srcPronunciationEn,
     srcMeaningTr: srcMeaningTr.present ? srcMeaningTr.value : this.srcMeaningTr,
     srcMeaningEn: srcMeaningEn.present ? srcMeaningEn.value : this.srcMeaningEn,
+    srcTextAr: srcTextAr.present ? srcTextAr.value : this.srcTextAr,
     expectedAudioFile: expectedAudioFile.present
         ? expectedAudioFile.value
         : this.expectedAudioFile,
@@ -1185,6 +1221,7 @@ class Dua extends DataClass implements Insertable<Dua> {
       srcMeaningEn: data.srcMeaningEn.present
           ? data.srcMeaningEn.value
           : this.srcMeaningEn,
+      srcTextAr: data.srcTextAr.present ? data.srcTextAr.value : this.srcTextAr,
       expectedAudioFile: data.expectedAudioFile.present
           ? data.expectedAudioFile.value
           : this.expectedAudioFile,
@@ -1241,6 +1278,7 @@ class Dua extends DataClass implements Insertable<Dua> {
           ..write('srcPronunciationEn: $srcPronunciationEn, ')
           ..write('srcMeaningTr: $srcMeaningTr, ')
           ..write('srcMeaningEn: $srcMeaningEn, ')
+          ..write('srcTextAr: $srcTextAr, ')
           ..write('expectedAudioFile: $expectedAudioFile, ')
           ..write('readyToPublish: $readyToPublish, ')
           ..write('version: $version, ')
@@ -1277,6 +1315,7 @@ class Dua extends DataClass implements Insertable<Dua> {
     srcPronunciationEn,
     srcMeaningTr,
     srcMeaningEn,
+    srcTextAr,
     expectedAudioFile,
     readyToPublish,
     version,
@@ -1312,6 +1351,7 @@ class Dua extends DataClass implements Insertable<Dua> {
           other.srcPronunciationEn == this.srcPronunciationEn &&
           other.srcMeaningTr == this.srcMeaningTr &&
           other.srcMeaningEn == this.srcMeaningEn &&
+          other.srcTextAr == this.srcTextAr &&
           other.expectedAudioFile == this.expectedAudioFile &&
           other.readyToPublish == this.readyToPublish &&
           other.version == this.version &&
@@ -1345,6 +1385,7 @@ class DuasCompanion extends UpdateCompanion<Dua> {
   final Value<String?> srcPronunciationEn;
   final Value<String?> srcMeaningTr;
   final Value<String?> srcMeaningEn;
+  final Value<String?> srcTextAr;
   final Value<String?> expectedAudioFile;
   final Value<bool> readyToPublish;
   final Value<int> version;
@@ -1377,6 +1418,7 @@ class DuasCompanion extends UpdateCompanion<Dua> {
     this.srcPronunciationEn = const Value.absent(),
     this.srcMeaningTr = const Value.absent(),
     this.srcMeaningEn = const Value.absent(),
+    this.srcTextAr = const Value.absent(),
     this.expectedAudioFile = const Value.absent(),
     this.readyToPublish = const Value.absent(),
     this.version = const Value.absent(),
@@ -1410,6 +1452,7 @@ class DuasCompanion extends UpdateCompanion<Dua> {
     this.srcPronunciationEn = const Value.absent(),
     this.srcMeaningTr = const Value.absent(),
     this.srcMeaningEn = const Value.absent(),
+    this.srcTextAr = const Value.absent(),
     this.expectedAudioFile = const Value.absent(),
     this.readyToPublish = const Value.absent(),
     this.version = const Value.absent(),
@@ -1444,6 +1487,7 @@ class DuasCompanion extends UpdateCompanion<Dua> {
     Expression<String>? srcPronunciationEn,
     Expression<String>? srcMeaningTr,
     Expression<String>? srcMeaningEn,
+    Expression<String>? srcTextAr,
     Expression<String>? expectedAudioFile,
     Expression<bool>? readyToPublish,
     Expression<int>? version,
@@ -1479,6 +1523,7 @@ class DuasCompanion extends UpdateCompanion<Dua> {
         'src_pronunciation_en': srcPronunciationEn,
       if (srcMeaningTr != null) 'src_meaning_tr': srcMeaningTr,
       if (srcMeaningEn != null) 'src_meaning_en': srcMeaningEn,
+      if (srcTextAr != null) 'src_text_ar': srcTextAr,
       if (expectedAudioFile != null) 'expected_audio_file': expectedAudioFile,
       if (readyToPublish != null) 'ready_to_publish': readyToPublish,
       if (version != null) 'version': version,
@@ -1514,6 +1559,7 @@ class DuasCompanion extends UpdateCompanion<Dua> {
     Value<String?>? srcPronunciationEn,
     Value<String?>? srcMeaningTr,
     Value<String?>? srcMeaningEn,
+    Value<String?>? srcTextAr,
     Value<String?>? expectedAudioFile,
     Value<bool>? readyToPublish,
     Value<int>? version,
@@ -1547,6 +1593,7 @@ class DuasCompanion extends UpdateCompanion<Dua> {
       srcPronunciationEn: srcPronunciationEn ?? this.srcPronunciationEn,
       srcMeaningTr: srcMeaningTr ?? this.srcMeaningTr,
       srcMeaningEn: srcMeaningEn ?? this.srcMeaningEn,
+      srcTextAr: srcTextAr ?? this.srcTextAr,
       expectedAudioFile: expectedAudioFile ?? this.expectedAudioFile,
       readyToPublish: readyToPublish ?? this.readyToPublish,
       version: version ?? this.version,
@@ -1611,6 +1658,9 @@ class DuasCompanion extends UpdateCompanion<Dua> {
     }
     if (srcMeaningEn.present) {
       map['src_meaning_en'] = Variable<String>(srcMeaningEn.value);
+    }
+    if (srcTextAr.present) {
+      map['src_text_ar'] = Variable<String>(srcTextAr.value);
     }
     if (expectedAudioFile.present) {
       map['expected_audio_file'] = Variable<String>(expectedAudioFile.value);
@@ -1683,6 +1733,7 @@ class DuasCompanion extends UpdateCompanion<Dua> {
           ..write('srcPronunciationEn: $srcPronunciationEn, ')
           ..write('srcMeaningTr: $srcMeaningTr, ')
           ..write('srcMeaningEn: $srcMeaningEn, ')
+          ..write('srcTextAr: $srcTextAr, ')
           ..write('expectedAudioFile: $expectedAudioFile, ')
           ..write('readyToPublish: $readyToPublish, ')
           ..write('version: $version, ')
@@ -5447,6 +5498,7 @@ typedef $$DuasTableCreateCompanionBuilder = DuasCompanion Function({
   Value<String?> srcPronunciationEn,
   Value<String?> srcMeaningTr,
   Value<String?> srcMeaningEn,
+  Value<String?> srcTextAr,
   Value<String?> expectedAudioFile,
   Value<bool> readyToPublish,
   Value<int> version,
@@ -5480,6 +5532,7 @@ typedef $$DuasTableUpdateCompanionBuilder = DuasCompanion Function({
   Value<String?> srcPronunciationEn,
   Value<String?> srcMeaningTr,
   Value<String?> srcMeaningEn,
+  Value<String?> srcTextAr,
   Value<String?> expectedAudioFile,
   Value<bool> readyToPublish,
   Value<int> version,
@@ -5667,6 +5720,11 @@ class $$DuasTableFilterComposer
 
   ColumnFilters<String> get srcMeaningEn => $composableBuilder(
     column: $table.srcMeaningEn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get srcTextAr => $composableBuilder(
+    column: $table.srcTextAr,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5948,6 +6006,11 @@ class $$DuasTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get srcTextAr => $composableBuilder(
+    column: $table.srcTextAr,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get expectedAudioFile => $composableBuilder(
     column: $table.expectedAudioFile,
     builder: (column) => ColumnOrderings(column),
@@ -6117,6 +6180,9 @@ class $$DuasTableAnnotationComposer
     column: $table.srcMeaningEn,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get srcTextAr =>
+      $composableBuilder(column: $table.srcTextAr, builder: (column) => column);
 
   GeneratedColumn<String> get expectedAudioFile => $composableBuilder(
     column: $table.expectedAudioFile,
@@ -6358,6 +6424,7 @@ class $$DuasTableTableManager
                 Value<String?> srcPronunciationEn = const Value.absent(),
                 Value<String?> srcMeaningTr = const Value.absent(),
                 Value<String?> srcMeaningEn = const Value.absent(),
+                Value<String?> srcTextAr = const Value.absent(),
                 Value<String?> expectedAudioFile = const Value.absent(),
                 Value<bool> readyToPublish = const Value.absent(),
                 Value<int> version = const Value.absent(),
@@ -6390,6 +6457,7 @@ class $$DuasTableTableManager
                 srcPronunciationEn: srcPronunciationEn,
                 srcMeaningTr: srcMeaningTr,
                 srcMeaningEn: srcMeaningEn,
+                srcTextAr: srcTextAr,
                 expectedAudioFile: expectedAudioFile,
                 readyToPublish: readyToPublish,
                 version: version,
@@ -6424,6 +6492,7 @@ class $$DuasTableTableManager
                 Value<String?> srcPronunciationEn = const Value.absent(),
                 Value<String?> srcMeaningTr = const Value.absent(),
                 Value<String?> srcMeaningEn = const Value.absent(),
+                Value<String?> srcTextAr = const Value.absent(),
                 Value<String?> expectedAudioFile = const Value.absent(),
                 Value<bool> readyToPublish = const Value.absent(),
                 Value<int> version = const Value.absent(),
@@ -6456,6 +6525,7 @@ class $$DuasTableTableManager
                 srcPronunciationEn: srcPronunciationEn,
                 srcMeaningTr: srcMeaningTr,
                 srcMeaningEn: srcMeaningEn,
+                srcTextAr: srcTextAr,
                 expectedAudioFile: expectedAudioFile,
                 readyToPublish: readyToPublish,
                 version: version,

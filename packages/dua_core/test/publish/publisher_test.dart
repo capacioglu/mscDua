@@ -110,6 +110,66 @@ void main() {
     expect((await (db.select(db.duas)..where((t) => t.id.equals('D1'))).getSingle()).version, 2);
   });
 
+  Future<int> groupTrack(String groupId, List<(int, int?)> cues) async {
+    await File(p.join(content.path, 'audio', 'g.mp3')).writeAsBytes([9]);
+    final t = await addGroupTrack(db, groupId, path: 'audio/g.mp3');
+    for (final (ms, seg) in cues) {
+      await addCue(db, t, ms, seg);
+    }
+    return t;
+  }
+
+  test('grup kaydı: yayınlanmayan üyenin işaretleri metinsiz bölüm olur, dua sessiz kalmaz', () async {
+    final a = await seedDua(db, 'A', ['أَ'], approved: true, ready: true);
+    final b = await seedDua(db, 'B', ['بَ'], translated: true);
+    await db.into(db.groups).insert(GroupsCompanion.insert(id: 'G', titleTr: 'g'));
+    for (final (id, pos) in [('A', 1), ('B', 2)]) {
+      await db.into(db.groupItems).insert(GroupItemsCompanion.insert(groupId: 'G', duaId: id, position: Value(pos)));
+    }
+    await groupTrack('G', [(0, a[0]), (1000, b[0])]);
+    final r = await publish(db, contentDir: content, outDir: out);
+    expect(r.publishedDuaIds, ['A']);
+    final o = await openOut();
+    expect(await o.select(o.tracks).get(), hasLength(1));
+    expect((await o.select(o.cues).get()).map((c) => c.segmentId), [a[0], null]);
+    await o.close();
+  });
+
+  test('yayınlanan üyeleri tam zamanlanmamış grup kaydı çıkmaz; ona dayanan dua da çıkmaz', () async {
+    final a = await seedDua(db, 'A', ['أَ'], approved: true, ready: true);
+    await publishable('C'); // C kendi kaydıyla yayınlanabilir
+    await db.into(db.groups).insert(GroupsCompanion.insert(id: 'G', titleTr: 'g'));
+    for (final (id, pos) in [('A', 1), ('C', 2)]) {
+      await db.into(db.groupItems).insert(GroupItemsCompanion.insert(groupId: 'G', duaId: id, position: Value(pos)));
+    }
+    await groupTrack('G', [(0, a[0])]); // C grup kaydında işaretlenmemiş
+    final r = await publish(db, contentDir: content, outDir: out);
+    expect(r.publishedDuaIds, ['C']);
+    expect(r.skipped['A']!.join(), contains('tam zamanlı'));
+    expect(r.groupMissing['G'], ['A']);
+    final o = await openOut();
+    expect((await o.select(o.tracks).get()).map((t) => t.relPath), ['audio/c.mp3']);
+    await o.close();
+  });
+
+  test('ses dosyası diskte yoksa dua yayınlanmaz', () async {
+    await publishable('D1');
+    await File(p.join(content.path, 'audio', 'd1.mp3')).delete();
+    final r = await publish(db, contentDir: content, outDir: out);
+    expect(r.publishedDuaIds, isEmpty);
+    expect(r.skipped['D1']!.join(), contains('Ses dosyası'));
+  });
+
+  test('yayın klasörü içerik klasörü olamaz; yabancı dosya içeren klasör silinmez', () async {
+    await publishable('D1');
+    expect(() => publish(db, contentDir: content, outDir: content), throwsArgumentError);
+    expect(() => publish(db, contentDir: content, outDir: tmp), throwsArgumentError);
+    await out.create();
+    final foreign = File(p.join(out.path, 'onemli.txt'))..writeAsStringSync('x');
+    expect(() => publish(db, contentDir: content, outDir: out), throwsStateError);
+    expect(foreign.existsSync(), isTrue);
+  });
+
   test('ana duası yayınlanmayan varyant bağı olmadan yayınlanır', () async {
     await seedDua(db, 'D1', ['أَ'], translated: true);
     await publishable('V1');
