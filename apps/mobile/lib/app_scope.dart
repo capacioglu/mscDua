@@ -1,5 +1,5 @@
 import 'package:dua_core/dua_core.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 import 'audio/player_service.dart';
 
@@ -12,6 +12,8 @@ class AppServices extends ChangeNotifier {
     this._prefs,
     this._fontScale,
     this._gapMs,
+    this._themeMode,
+    this._meaningPerLine,
   );
 
   static Future<AppServices> create({
@@ -25,6 +27,13 @@ class AppServices extends ChangeNotifier {
     await user.readingPrefs(),
     await user.fontScale(),
     await user.gapMs(),
+    _parseTheme(await user.themeMode()),
+    await user.meaningPerLine(),
+  );
+
+  static ThemeMode _parseTheme(String s) => ThemeMode.values.firstWhere(
+    (m) => m.name == s,
+    orElse: () => ThemeMode.system,
   );
 
   final ContentQueries queries;
@@ -34,6 +43,25 @@ class AppServices extends ChangeNotifier {
   ReadingPrefs _prefs;
   double _fontScale;
   int _gapMs;
+  ThemeMode _themeMode;
+  bool _meaningPerLine;
+
+  ThemeMode get themeMode => _themeMode;
+
+  /// Anlam her Arapça satırın altında (true) ya da duanın sonunda (false).
+  bool get meaningPerLine => _meaningPerLine;
+
+  Future<void> setThemeMode(ThemeMode m) async {
+    _themeMode = m;
+    notifyListeners();
+    await user.setThemeMode(m.name);
+  }
+
+  Future<void> setMeaningPerLine(bool v) async {
+    _meaningPerLine = v;
+    notifyListeners();
+    await user.setMeaningPerLine(v);
+  }
 
   ReadingPrefs get prefs => _prefs;
   double get fontScale => _fontScale;

@@ -89,4 +89,41 @@ void main() {
     );
     expect(find.text('1/3'), findsWidgets);
   });
+
+  testWidgets('anlam yerleşimi: satır altında ↔ duanın sonunda', (
+    tester,
+  ) async {
+    await open(tester, 'DUA-0013');
+    final seg = (await db.segmentsOf('DUA-0013')).single;
+    expect(find.byKey(ValueKey('seg-meaning-${seg.id}')), findsOneWidget);
+    expect(find.byKey(const ValueKey('dua-meaning-DUA-0013')), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('prefs')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('pref-meaning-per-line')));
+    await tester.pumpAndSettle();
+    Navigator.of(tester.element(find.byKey(const ValueKey('pref-arabic'))))
+        .pop();
+    await tester.pumpAndSettle();
+    expect(find.byKey(ValueKey('seg-meaning-${seg.id}')), findsNothing);
+    expect(find.byKey(const ValueKey('dua-meaning-DUA-0013')), findsOneWidget);
+    expect(await services.user.meaningPerLine(), isFalse);
+  });
+
+  testWidgets('satır anlamı olmayan çok satırlı duada anlam sonda kalır', (
+    tester,
+  ) async {
+    await open(tester, 'DUA-0006');
+    expect(find.byKey(const ValueKey('dua-meaning-DUA-0006')), findsOneWidget);
+  });
+
+  testWidgets('gece modu seçilir ve kalıcıdır', (tester) async {
+    await open(tester, 'DUA-0013');
+    await tester.tap(find.byKey(const ValueKey('prefs')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('theme-dark')));
+    await tester.pumpAndSettle();
+    expect(services.themeMode, ThemeMode.dark);
+    expect(await services.user.themeMode(), 'dark');
+  });
 }

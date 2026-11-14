@@ -45,4 +45,14 @@ void main() {
     expect(p.toggle(ReadingOption.arabic).arabic, isTrue);
     expect(p.toggle(ReadingOption.meaningTr).meaningTr, isTrue);
   });
+
+  test('tema ve anlam yerleşimi ayarları', () async {
+    expect(await u.themeMode(), 'system');
+    expect(await u.meaningPerLine(), isTrue);
+    await u.setThemeMode('dark');
+    await u.setMeaningPerLine(false);
+    expect(await u.themeMode(), 'dark');
+    expect(await u.meaningPerLine(), isFalse);
+    expect(() => u.setThemeMode('mor'), throwsArgumentError);
+  });
 }

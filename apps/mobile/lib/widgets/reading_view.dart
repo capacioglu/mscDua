@@ -71,6 +71,21 @@ class _ReadingViewState extends State<ReadingView> {
     final allHavePronTr = v.segments.every(
       (x) => (x.pronunciationTr ?? '').isNotEmpty,
     );
+    // Satır altında anlam: seçiliyse ve duanın her satırının kendi anlamı varsa.
+    // Aksi hâlde (seçim kapalı ya da satır anlamı eksik) anlam duanın sonunda tek paragraf.
+    final lineTr = s.meaningPerLine && allHaveMeaningTr;
+    final lineEn = s.meaningPerLine && allHaveMeaningEn;
+    String? joined(String? Function(Segment) f) {
+      final parts = v.segments
+          .map(f)
+          .whereType<String>()
+          .where((x) => x.isNotEmpty)
+          .toList();
+      return parts.isEmpty ? null : parts.join(' ');
+    }
+
+    final endTr = d.srcMeaningTr ?? joined((x) => x.meaningTr);
+    final endEn = d.srcMeaningEn ?? joined((x) => x.meaningEn);
     final playingHere = now.duaId == d.id;
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
@@ -102,17 +117,18 @@ class _ReadingViewState extends State<ReadingView> {
               ),
             ),
           for (final seg in v.segments)
-            _segment(context, v, seg, p, scale, now),
+            _segment(context, v, seg, p, scale, now, lineTr, lineEn),
           if (p.pronunciationTr &&
               !allHavePronTr &&
               d.srcPronunciationTr != null)
             _para(d.srcPronunciationTr!, scale, italic: true),
-          if (p.meaningTr && !allHaveMeaningTr && d.srcMeaningTr != null)
-            _para(d.srcMeaningTr!, scale),
-          if (p.meaningEn && !allHaveMeaningEn && d.srcMeaningEn != null)
+          if (p.meaningTr && !lineTr && endTr != null)
+            _para(endTr, scale, key: ValueKey('dua-meaning-${d.id}')),
+          if (p.meaningEn && !lineEn && endEn != null)
             _para(
-              d.srcMeaningEn!,
+              endEn,
               scale,
+              key: ValueKey('dua-meaning-en-${d.id}'),
               color: theme.colorScheme.onSurfaceVariant,
             ),
         ],
@@ -123,12 +139,14 @@ class _ReadingViewState extends State<ReadingView> {
   Widget _para(
     String text,
     double scale, {
+    Key? key,
     bool italic = false,
     Color? color,
   }) => Padding(
     padding: const EdgeInsets.only(top: 10),
     child: Text(
       text,
+      key: key,
       style: TextStyle(
         fontSize: 16 * scale,
         height: 1.45,
@@ -145,6 +163,8 @@ class _ReadingViewState extends State<ReadingView> {
     ReadingPrefs p,
     double scale,
     NowPlaying now,
+    bool lineTr,
+    bool lineEn,
   ) {
     final theme = Theme.of(context);
     final isActive = now.duaId == v.dua.id && now.segmentId == seg.id;
@@ -196,9 +216,13 @@ class _ReadingViewState extends State<ReadingView> {
                     color: theme.colorScheme.outline,
                   ),
                 ),
-              if (p.meaningTr && (seg.meaningTr ?? '').isNotEmpty)
-                Text(seg.meaningTr!, style: TextStyle(fontSize: 16 * scale)),
-              if (p.meaningEn && (seg.meaningEn ?? '').isNotEmpty)
+              if (p.meaningTr && lineTr)
+                Text(
+                  seg.meaningTr!,
+                  key: ValueKey('seg-meaning-${seg.id}'),
+                  style: TextStyle(fontSize: 16 * scale),
+                ),
+              if (p.meaningEn && lineEn)
                 Text(
                   seg.meaningEn!,
                   style: TextStyle(

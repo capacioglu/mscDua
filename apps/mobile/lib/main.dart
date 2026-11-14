@@ -59,19 +59,23 @@ class DualarimApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => AppScope(
     services: services,
-    child: MaterialApp(
-      title: 'Dualarım',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorSchemeSeed: const Color(0xFF0C4250),
-        useMaterial3: true,
+    child: ListenableBuilder(
+      listenable: services,
+      builder: (context, _) => MaterialApp(
+        themeMode: services.themeMode,
+        title: 'Dualarım',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorSchemeSeed: const Color(0xFF0C4250),
+          useMaterial3: true,
+        ),
+        darkTheme: ThemeData(
+          colorSchemeSeed: const Color(0xFF0C4250),
+          brightness: Brightness.dark,
+          useMaterial3: true,
+        ),
+        home: const HomeScreen(),
       ),
-      darkTheme: ThemeData(
-        colorSchemeSeed: const Color(0xFF0C4250),
-        brightness: Brightness.dark,
-        useMaterial3: true,
-      ),
-      home: const HomeScreen(),
     ),
   );
 }

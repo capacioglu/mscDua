@@ -169,4 +169,18 @@ class UserDatabase extends _$UserDatabase {
   Future<double> fontScale() async => double.tryParse(await _get('fontScale') ?? '') ?? 1.0;
 
   Future<void> setFontScale(double v) => _set('fontScale', v.clamp(0.7, 2.0).toString());
+
+  /// 'system' | 'light' | 'dark'
+  Future<String> themeMode() async => await _get('themeMode') ?? 'system';
+
+  Future<void> setThemeMode(String mode) async {
+    if (!const {'system', 'light', 'dark'}.contains(mode)) throw ArgumentError('Geçersiz tema: $mode');
+    await _set('themeMode', mode);
+  }
+
+  /// Anlam her Arapça satırın altında mı (true) yoksa duanın sonunda mı (false).
+  Future<bool> meaningPerLine() async => (await _get('meaningPerLine') ?? '1') == '1';
+
+  Future<void> setMeaningPerLine(bool v) => _set('meaningPerLine', v ? '1' : '0');
 }
+
