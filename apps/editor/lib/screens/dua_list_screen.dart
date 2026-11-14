@@ -67,15 +67,19 @@ class _DuaListScreenState extends State<DuaListScreen> {
   List<DuaSummary> get _visible {
     final q = trLower(_query.trim());
     return _all.where((d) {
-      if (_catFilter.isNotEmpty && !_catFilter.every(d.categories.contains))
+      if (_catFilter.isNotEmpty && !_catFilter.every(d.categories.contains)) {
         return false;
-      if (_groupFilter != null && !d.groupIds.contains(_groupFilter))
+      }
+      if (_groupFilter != null && !d.groupIds.contains(_groupFilter)) {
         return false;
-      if (_progressFilter != null && d.progress != _progressFilter)
+      }
+      if (_progressFilter != null && d.progress != _progressFilter) {
         return false;
+      }
       if (q.isNotEmpty &&
-          !trLower('${d.id} ${d.titleTr} ${d.dua.titleEn ?? ''}').contains(q))
+          !trLower('${d.id} ${d.titleTr} ${d.dua.titleEn ?? ''}').contains(q)) {
         return false;
+      }
       return true;
     }).toList();
   }

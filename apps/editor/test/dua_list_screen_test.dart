@@ -47,9 +47,11 @@ void main() {
         findsOneWidget,
       );
 
-      await tester.ensureVisible(find.byKey(const ValueKey('filter-cat-Tövbe')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('filter-cat-Tövbe')));
+      await tester.ensureVisible(
+        find.byKey(const ValueKey('filter-cat-Tövbe')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('filter-cat-Tövbe')));
       await tester.pumpAndSettle();
       expect(find.text('DUA-0030'), findsOneWidget);
       expect(find.text('DUA-0006'), findsNothing);

@@ -5,8 +5,7 @@ import 'package:path/path.dart' as p;
 
 /// Editör ayarları: `%APPDATA%\Dualarim\settings.json`.
 class Settings {
-  Settings({this.lastContentDir, this.ffmpegPath, this.publishDir, File? file})
-    : _file = file;
+  Settings({this.lastContentDir, this.ffmpegPath, this.publishDir, this._file});
 
   String? lastContentDir;
   String? ffmpegPath;
