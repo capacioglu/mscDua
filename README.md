@@ -4,7 +4,7 @@ Duaları Arapça aslı, Türkçe/İngilizce okunuşu ve anlamıyla gösteren; se
 
 - `packages/dua_core/` — ortak çekirdek: veritabanı (drift/SQLite), JSON içe aktarma, satır bölme, onay kuralları, çeviri alışverişi, ses eşleştirme, yayınlama.
 - `apps/editor/` — Windows içerik editörü (Flutter).
-- `apps/mobile/` — iOS + Android uygulaması (ayrı planla gelecek).
+- `apps/mobile/` — dua okuma/dinleme uygulaması: iOS, Android ve Windows.
 - `content/` — editörün çalışma klasörü (`content.db`, `audio/`, `translation/`, `import/`).
 - Tasarım: `docs/superpowers/specs/2026-11-14-dualarim-design.md`
 
@@ -28,3 +28,20 @@ Testler: `cd packages/dua_core && dart test` · `cd apps/editor && flutter test`
 5. **Sesler:** **Sesleri eşleştir** ile mp3 klasörünü gösterin; `DUA-0030` → `dua_0030.mp3`, `VAR-0054-01` → `var_0054_01.mp3` adları kendiliğinden eşleşir. Diğer kayıtları (ör. 25 dk'lık Kunut videosu) dua veya grup ekranında **+** ile ekleyin; video ise sesi ayrılır.
 6. **Zamanla:** sağ paneli tıklayıp odaklayın, sesi çalın (Boşluk), her satır başladığında **Enter**. Metinsiz bölüm **G**, seçili işareti **←/→** (±100 ms, Shift ±10), **Delete** sil, **Ctrl+Z** geri al. Hız 0.5x–1x.
 7. **Yayına hazır** işaretleyin → **Mobil için yayınla** (`apps/mobile/assets/content/`). Yalnızca tüm satırları onaylı ve en az bir kaydı tam zamanlanmış dualar çıkar.
+
+## Mobil uygulama (apps/mobile)
+
+İçerik: `apps/mobile/assets/content/` — editörün **Mobil için yayınla** çıktısı (`content.db`, `audio/`, `manifest.json`). Yeni içerik yayınlandıktan sonra uygulama yeniden derlenir; telefondaki listeler ve ayarlar korunur.
+
+- Testler: `cd apps/mobile && flutter test`
+- Android: `flutter build apk --release` → `build/app/outputs/flutter-apk/app-release.apk`
+- Windows: `flutter build windows --release` → `build/windows/x64/runner/Release/` (klasörün tamamı gerekir)
+
+### iOS (Mac'te)
+
+1. Gerekenler: Xcode (App Store), Xcode komut satırı araçları (`xcode-select --install`), CocoaPods (`sudo gem install cocoapods` ya da `brew install cocoapods`), Flutter 3.47+.
+2. `git clone https://github.com/capacioglu/mscDua.git && cd mscDua`
+3. `dart pub get` (kökte; pub workspace).
+4. `cd apps/mobile && flutter precache --ios && cd ios && pod install && cd ..`
+5. `open ios/Runner.xcworkspace` → Runner hedefi → **Signing & Capabilities** → Team: Apple geliştirici hesabın. Bundle Identifier: `com.dualarim.app` (başkası almışsa benzersiz bir ad ver). **Background Modes → Audio** işaretli olmalı (Info.plist'te `UIBackgroundModes: audio` hazır).
+6. iPhone'u kabloyla bağla (Geliştirici Modu açık): `flutter run --release -d <iphone>` — ya da TestFlight için `flutter build ipa` → `build/ios/ipa/` dosyasını Xcode Organizer / Transporter ile yükle.

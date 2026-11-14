@@ -5,3 +5,6 @@ build/
 .idea/
 pubspec_overrides.yaml
 content/audio/.peaks/
+content/*.bak-*
+content/translation/pending.json
+content/translation/done.json
