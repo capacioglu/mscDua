@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:dua_core/dua_core.dart';
+import 'package:path/path.dart' as p;
+import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -55,4 +59,25 @@ void main() {
     expect(await u.meaningPerLine(), isFalse);
     expect(() => u.setThemeMode('mor'), throwsArgumentError);
   });
+
+  test('eski (v1) kullanıcı veritabanı açılınca ayarlar tablosu eklenir, listeler korunur', () async {
+    final dir = await Directory.systemTemp.createTemp('dualarim_mig');
+    final f = File(p.join(dir.path, 'user.db'));
+    final raw = sqlite3.open(f.path);
+    raw.execute('CREATE TABLE playlists (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, created_at INTEGER NOT NULL, sort_order INTEGER NOT NULL DEFAULT 0)');
+    raw.execute('CREATE TABLE playlist_items (id INTEGER PRIMARY KEY AUTOINCREMENT, playlist_id INTEGER NOT NULL, dua_id TEXT NOT NULL, position INTEGER NOT NULL, repeat_count INTEGER NOT NULL DEFAULT 1)');
+    raw.execute('CREATE TABLE settings ("key" TEXT NOT NULL PRIMARY KEY, value TEXT NOT NULL)');
+    raw.execute("INSERT INTO playlists (name, created_at) VALUES ('Eski', 0)");
+    raw.execute('PRAGMA user_version = 1');
+    raw.close();
+
+    final db = UserDatabase.open(f);
+    expect(await db.gapMs(), 1000);
+    await db.setGapMs(1500);
+    expect(await db.gapMs(), 1500);
+    expect((await db.allPlaylists()).single.name, 'Eski');
+    await db.close();
+    await dir.delete(recursive: true);
+  });
 }
+

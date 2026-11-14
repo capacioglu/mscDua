@@ -23,7 +23,7 @@ class PlaylistItems extends Table {
   IntColumn get repeatCount => integer().withDefault(const Constant(1))();
 }
 
-class Settings extends Table {
+class UserSettings extends Table {
   TextColumn get key => text()();
   TextColumn get value => text()();
 
@@ -81,7 +81,7 @@ class ReadingPrefs {
   }
 }
 
-@DriftDatabase(tables: [Playlists, PlaylistItems, Settings])
+@DriftDatabase(tables: [Playlists, PlaylistItems, UserSettings])
 class UserDatabase extends _$UserDatabase {
   UserDatabase(super.e);
 
@@ -89,11 +89,16 @@ class UserDatabase extends _$UserDatabase {
   static UserDatabase memory() => UserDatabase(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
-  MigrationStrategy get migration =>
-      MigrationStrategy(beforeOpen: (_) async => customStatement('PRAGMA foreign_keys = ON'));
+  MigrationStrategy get migration => MigrationStrategy(
+        onUpgrade: (m, from, to) async {
+          // v1 → v2: ayarlar tablosu 'settings' → 'user_settings' (editörle ad çakışması).
+          if (from < 2) await m.createTable(userSettings);
+        },
+        beforeOpen: (_) async => customStatement('PRAGMA foreign_keys = ON'),
+      );
 
   // ---- listeler ----
 
@@ -147,10 +152,10 @@ class UserDatabase extends _$UserDatabase {
   // ---- ayarlar ----
 
   Future<String?> _get(String key) async =>
-      (await (select(settings)..where((t) => t.key.equals(key))).getSingleOrNull())?.value;
+      (await (select(userSettings)..where((t) => t.key.equals(key))).getSingleOrNull())?.value;
 
   Future<void> _set(String key, String value) =>
-      into(settings).insertOnConflictUpdate(SettingsCompanion.insert(key: key, value: value));
+      into(userSettings).insertOnConflictUpdate(UserSettingsCompanion.insert(key: key, value: value));
 
   Future<ReadingPrefs> readingPrefs() async {
     final s = await _get('reading');
