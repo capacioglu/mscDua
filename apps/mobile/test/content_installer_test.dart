@@ -55,4 +55,13 @@ void main() {
     expect(userDb.readAsBytesSync(), [42]);
     expect(installer().audioDir.path, p.join(support.path, 'content', 'audio'));
   });
+
+  test('asset adı kodlanmamış Türkçe karakter ya da kodlanmış biçimde gelebilir', () async {
+    assets['assets/content/audio/yemek duası.mp3'] = [1];
+    assets['assets/content/audio/sabah%20duas%C4%B1.mp3'] = [2];
+    await installer().ensureInstalled();
+    expect(File(p.join(support.path, 'content', 'audio', 'yemek duası.mp3')).readAsBytesSync(), [1]);
+    expect(File(p.join(support.path, 'content', 'audio', 'sabah duası.mp3')).readAsBytesSync(), [2]);
+  });
 }
+

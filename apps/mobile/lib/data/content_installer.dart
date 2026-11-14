@@ -47,7 +47,7 @@ class ContentInstaller {
       final rel = key
           .substring(_prefix.length)
           .split('/')
-          .map(Uri.decodeComponent)
+          .map(_decodePart)
           .toList();
       if (rel.last.isEmpty) continue;
       final out = File(p.joinAll([contentDir.path, ...rel]));
@@ -61,4 +61,17 @@ class ContentInstaller {
     await _versionFile.writeAsString('$version');
     return dbFile;
   }
+
+  /// Asset adları platforma göre kodlanmış (%C4%B1) ya da düz (ı) gelir.
+  /// Dart'ın decodeComponent'i düz ASCII dışı karakterde hata verdiği için
+  /// yalnızca % içeren adlar çözülür; çözülemezse ad olduğu gibi kalır.
+  static String _decodePart(String s) {
+    if (!s.contains('%')) return s;
+    try {
+      return Uri.decodeComponent(s);
+    } catch (_) {
+      return s;
+    }
+  }
 }
+
