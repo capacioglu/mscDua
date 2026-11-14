@@ -3,6 +3,16 @@ import 'package:drift/drift.dart';
 import '../db/database.dart';
 import '../rules/approval.dart';
 
+/// Zamanlama durumu (kullanıcının asıl işi: ses ekle ve zamanla).
+enum TimingProgress { noAudio, untimed, partial, ready }
+
+String timingLabel(TimingProgress t) => switch (t) {
+      TimingProgress.noAudio => 'Ses yok',
+      TimingProgress.untimed => 'Zamanlanmadı',
+      TimingProgress.partial => 'Kısmen zamanlandı',
+      TimingProgress.ready => 'Hazır',
+    };
+
 /// Editörün dua listesinde bir satır.
 class DuaSummary {
   DuaSummary({
@@ -12,6 +22,7 @@ class DuaSummary {
     required this.groupIds,
     required this.trackCount,
     required this.segmentCount,
+    required this.timing,
   });
   final Dua dua;
   final DuaProgress progress;
@@ -19,6 +30,7 @@ class DuaSummary {
   final List<String> groupIds;
   final int trackCount;
   final int segmentCount;
+  final TimingProgress timing;
 
   String get id => dua.id;
   String get titleTr => dua.titleTr;
@@ -53,9 +65,27 @@ Future<List<DuaSummary>> listDuaSummaries(ContentDatabase db) async {
   for (final g in await db.select(db.groupItems).get()) {
     groupsBy.putIfAbsent(g.duaId, () => []).add(g.groupId);
   }
+  final tracks = await db.select(db.tracks).get();
   final tracksBy = <String, int>{};
-  for (final t in await db.select(db.tracks).get()) {
+  for (final t in tracks) {
     if (t.duaId != null) tracksBy[t.duaId!] = (tracksBy[t.duaId!] ?? 0) + 1;
+  }
+  final cuedBy = <int, Set<int>>{};
+  for (final c in await db.select(db.cues).get()) {
+    if (c.segmentId != null) cuedBy.putIfAbsent(c.trackId, () => {}).add(c.segmentId!);
+  }
+  TimingProgress timingOf(String duaId) {
+    final groups = (groupsBy[duaId] ?? const []).toSet();
+    final relevant = tracks.where((t) => t.duaId == duaId || (t.groupId != null && groups.contains(t.groupId)));
+    if (relevant.isEmpty) return TimingProgress.noAudio;
+    final segIds = (segsBy[duaId] ?? const []).map((s) => s.id).toSet();
+    var any = false;
+    for (final t in relevant) {
+      final cued = cuedBy[t.id] ?? const <int>{};
+      if (segIds.isNotEmpty && cued.containsAll(segIds)) return TimingProgress.ready;
+      if (cued.any(segIds.contains)) any = true;
+    }
+    return any ? TimingProgress.partial : TimingProgress.untimed;
   }
   return [
     for (final d in duas)
@@ -66,6 +96,7 @@ Future<List<DuaSummary>> listDuaSummaries(ContentDatabase db) async {
         groupIds: groupsBy[d.id] ?? const [],
         trackCount: tracksBy[d.id] ?? 0,
         segmentCount: segsBy[d.id]?.length ?? 0,
+        timing: timingOf(d.id),
       ),
   ];
 }

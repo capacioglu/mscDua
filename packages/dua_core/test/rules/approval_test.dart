@@ -61,13 +61,21 @@ void main() {
       expect(r.fullyTimedTrackIds, [t]);
     });
 
-    test('nedenler Türkçe listelenir', () async {
+    test('JSON doğru kabul: onay ve yayına hazır işareti gerekmez, tam zamanlı kayıt yeter', () async {
       final s = await seedDua(db, 'D1', ['أ', 'ب'], translated: true);
       final t = await addDuaTrack(db, 'D1');
       await addCue(db, t, 0, s[0]);
+      await addCue(db, t, 900, s[1]);
       final r = await checkPublishable(db, 'D1');
-      expect(r.ok, isFalse);
-      expect(r.reasons, containsAll(['Yayına hazır işaretli değil', 'Onaylanmamış satır: 2', 'Tam zamanlanmış ses kaydı yok']));
+      expect(r.ok, isTrue, reason: r.reasons.join());
+    });
+
+    test('eksik zamanlı kayıtta neden Türkçe', () async {
+      final s = await seedDua(db, 'D1', ['أ', 'ب']);
+      final t = await addDuaTrack(db, 'D1');
+      await addCue(db, t, 0, s[0]);
+      final r = await checkPublishable(db, 'D1');
+      expect(r.reasons, ['Tam zamanlanmış ses kaydı yok']);
     });
 
     test('satırsız dua', () async {

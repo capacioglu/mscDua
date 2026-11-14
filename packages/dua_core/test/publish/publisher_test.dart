@@ -39,19 +39,18 @@ void main() {
 
   Future<ContentDatabase> openOut() async => ContentDatabase.open(File(p.join(out.path, 'content.db')));
 
-  test('yalnızca yayınlanabilir dualar ve onaylı satırlar çıkar; nedenler raporlanır', () async {
+  test('yalnızca tam zamanlanmış dualar çıkar; duanın bütün anlamı mobile gider', () async {
     await publishable('D1');
-    await seedDua(db, 'D2', ['جَ'], translated: true, ready: true);
+    await seedDua(db, 'D2', ['جَ'], translated: true);
     final r = await publish(db, contentDir: content, outDir: out);
     expect(r.publishedDuaIds, ['D1']);
-    expect(r.skipped['D2'], contains('Onaylanmamış satır: 1'));
+    expect(r.skipped['D2'], ['Tam zamanlanmış ses kaydı yok']);
 
     final o = await openOut();
     expect((await o.select(o.duas).get()).map((d) => d.id), ['D1']);
-    expect(await (o.select(o.segments)..where((t) => t.review.equalsValue(ReviewStatus.approved).not())).get(), isEmpty);
     expect(await o.select(o.cues).get(), hasLength(2));
     final d1 = await o.select(o.duas).getSingle();
-    expect(d1.srcMeaningTr, isNull);
+    expect(d1.srcMeaningTr, 'kaynak');
     expect(d1.importDiff, isNull);
     await o.close();
   });
@@ -121,7 +120,7 @@ void main() {
 
   test('grup kaydı: yayınlanmayan üyenin işaretleri metinsiz bölüm olur, dua sessiz kalmaz', () async {
     final a = await seedDua(db, 'A', ['أَ'], approved: true, ready: true);
-    final b = await seedDua(db, 'B', ['بَ'], translated: true);
+    final b = await seedDua(db, 'B', ['بَ', 'تَ'], translated: true); // B'nin 2. satırı zamanlanmamış
     await db.into(db.groups).insert(GroupsCompanion.insert(id: 'G', titleTr: 'g'));
     for (final (id, pos) in [('A', 1), ('B', 2)]) {
       await db.into(db.groupItems).insert(GroupItemsCompanion.insert(groupId: 'G', duaId: id, position: Value(pos)));

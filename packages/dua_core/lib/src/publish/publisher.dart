@@ -127,10 +127,7 @@ Future<PublishReport> publish(ContentDatabase db, {required Directory contentDir
       for (final d in duas.where((d) => published.contains(d.id))) {
         await out.into(out.duas).insert(d.copyWith(
               variantOf: Value(published.contains(d.variantOf) ? d.variantOf : null),
-              srcPronunciationTr: const Value(null),
-              srcPronunciationEn: const Value(null),
-              srcMeaningTr: const Value(null),
-              srcMeaningEn: const Value(null),
+              // src* (duanın bütün okunuş/anlamı) mobilde dua altında gösterilir; korunur.
               srcTextAr: const Value(null),
               importDiff: const Value(null),
               version: report.contentVersion,

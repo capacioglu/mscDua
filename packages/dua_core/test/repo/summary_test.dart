@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:dua_core/dua_core.dart';
 import 'package:test/test.dart';
 
@@ -35,5 +36,28 @@ void main() {
     expect(progressLabel(DuaProgress.inReview), 'Gözden geçirilecek');
     expect(progressLabel(DuaProgress.approved), 'Onaylı');
     expect(progressLabel(DuaProgress.draft), 'Taslak');
+  });
+
+  test('zamanlama durumu: ses yok → zamanlanmadı → kısmen → hazır; grup kaydı da sayılır', () async {
+    Future<TimingProgress> of(String id) async => (await listDuaSummaries(db)).firstWhere((x) => x.id == id).timing;
+    expect(await of('DUA-0006'), TimingProgress.noAudio);
+
+    final t = await db.into(db.tracks).insert(TracksCompanion.insert(
+        ownerKind: TrackOwnerKind.dua, duaId: const Value('DUA-0006'), relPath: 'audio/x.mp3', label: 'x'));
+    expect(await of('DUA-0006'), TimingProgress.untimed);
+
+    final segs = await db.segmentsOf('DUA-0006');
+    await db.into(db.cues).insert(CuesCompanion.insert(trackId: t, startMs: 0, segmentId: Value(segs[0].id)));
+    expect(await of('DUA-0006'), TimingProgress.partial);
+
+    for (var i = 1; i < segs.length; i++) {
+      await db.into(db.cues).insert(CuesCompanion.insert(trackId: t, startMs: i * 1000, segmentId: Value(segs[i].id)));
+    }
+    expect(await of('DUA-0006'), TimingProgress.ready);
+
+    await db.into(db.tracks).insert(TracksCompanion.insert(
+        ownerKind: TrackOwnerKind.group, groupId: const Value('GRP-005'), relPath: 'audio/g.mp3', label: 'g'));
+    expect(await of('DUA-0030'), TimingProgress.untimed);
+    expect(timingLabel(TimingProgress.partial), 'Kısmen zamanlandı');
   });
 }
