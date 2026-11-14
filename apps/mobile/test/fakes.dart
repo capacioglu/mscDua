@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:dua_core/dua_core.dart';
+import 'package:dualarim_mobile/app_scope.dart';
 import 'package:dualarim_mobile/audio/player_service.dart';
 
 /// Sahte ses motoru: kuyruk ve konum elle sürülür.
@@ -53,4 +54,16 @@ Future<ContentDatabase> seededContent() async {
     }
   }
   return db;
+}
+
+/// Testler için tam uygulama servisleri (bellek içi veritabanları + sahte ses motoru).
+Future<(AppServices, FakeBackend, ContentDatabase)> testServices() async {
+  final db = await seededContent();
+  final backend = FakeBackend();
+  final services = await AppServices.create(
+    queries: ContentQueries(db),
+    user: UserDatabase.memory(),
+    player: PlayerService(backend, ContentQueries(db), fileOf: (t) => File(t.relPath)),
+  );
+  return (services, backend, db);
 }
