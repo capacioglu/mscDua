@@ -6,6 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
+import 'silence.dart';
+
 /// Ses motoru soyutlaması (testte sahte motor kullanılır).
 abstract class AudioBackend {
   Future<void> setQueue(
@@ -25,10 +27,13 @@ abstract class AudioBackend {
 
 /// just_audio ile kuyruk: [klip, sessizlik, klip, …]. Kaydı olmayan dua 2 sn sessizliktir.
 class JustAudioBackend implements AudioBackend {
-  JustAudioBackend({this.background = true});
+  JustAudioBackend({required this.cacheDir, this.background = true});
 
   /// Mobilde kilit ekranı/bildirim için MediaItem etiketi eklenir.
   final bool background;
+
+  /// Sessizlik dosyalarının yazıldığı klasör.
+  final Directory cacheDir;
   final AudioPlayer _p = AudioPlayer();
 
   @override
@@ -46,6 +51,7 @@ class JustAudioBackend implements AudioBackend {
             artist: suffix,
           )
         : null;
+    // Boşluklar her platformda çalınabilen gerçek sessiz WAV dosyalarıdır.
     final sources = <AudioSource>[
       for (final e in q)
         switch (e) {
@@ -53,12 +59,12 @@ class JustAudioBackend implements AudioBackend {
             fileOf(c.track).path,
             tag: tag(c.duaId, c.turns > 1 ? '${c.turn}/${c.turns}' : ''),
           ),
-          GapEntry g => SilenceAudioSource(
-            duration: Duration(milliseconds: g.ms),
+          GapEntry g => AudioSource.file(
+            (await silenceWav(cacheDir, g.ms)).path,
             tag: tag(null, ''),
           ),
-          TextOnlyEntry t => SilenceAudioSource(
-            duration: const Duration(seconds: 2),
+          TextOnlyEntry t => AudioSource.file(
+            (await silenceWav(cacheDir, 2000)).path,
             tag: tag(t.duaId, ''),
           ),
         },

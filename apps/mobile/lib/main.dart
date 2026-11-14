@@ -4,6 +4,7 @@ import 'package:dua_core/dua_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:just_audio_media_kit/just_audio_media_kit.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -23,6 +24,9 @@ Future<void> main() async {
       androidNotificationOngoing: true,
     );
   }
+  if (Platform.isWindows) {
+    JustAudioMediaKit.ensureInitialized(windows: true);
+  }
   final support = await getApplicationSupportDirectory();
   final installer = ContentInstaller(
     supportDir: support,
@@ -36,7 +40,10 @@ Future<void> main() async {
     queries: queries,
     user: UserDatabase.open(File(p.join(support.path, 'user.db'))),
     player: PlayerService(
-      JustAudioBackend(background: _isMobile),
+      JustAudioBackend(
+        background: _isMobile,
+        cacheDir: Directory(p.join(support.path, 'silence')),
+      ),
       queries,
       fileOf: (t) =>
           File(p.joinAll([installer.contentDir.path, ...t.relPath.split('/')])),
