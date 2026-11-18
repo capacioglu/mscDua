@@ -1,45 +1,162 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
   <defs>
-    <radialGradient id="bg" cx="50%" cy="36%" r="80%">
-      <stop offset="0" stop-color="#17697A"/>
-      <stop offset="0.55" stop-color="#0C4250"/>
-      <stop offset="1" stop-color="#05232A"/>
+    <!-- Zemin: derin zümrüt -> gece mavisi -->
+    <radialGradient id="bg" cx="50%" cy="30%" r="85%">
+      <stop offset="0" stop-color="#145a55"/>
+      <stop offset="0.5" stop-color="#0b3a3d"/>
+      <stop offset="1" stop-color="#051a1f"/>
     </radialGradient>
+    <!-- Yukarıdan inen ışık -->
     <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0" stop-color="#FFEBB0" stop-opacity="0.95"/>
-      <stop offset="0.35" stop-color="#F5C96A" stop-opacity="0.40"/>
-      <stop offset="1" stop-color="#F5C96A" stop-opacity="0"/>
+      <stop offset="0" stop-color="#fff2c8" stop-opacity="0.85"/>
+      <stop offset="0.3" stop-color="#f3cf7a" stop-opacity="0.38"/>
+      <stop offset="1" stop-color="#f3cf7a" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="skin" gradientUnits="userSpaceOnUse" x1="0" y1="40" x2="0" y2="420">
-      <stop offset="0" stop-color="#FCEBCB"/>
-      <stop offset="1" stop-color="#E8C48A"/>
+    <linearGradient id="rays" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe9b0" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#ffe9b0" stop-opacity="0"/>
     </linearGradient>
+    <!-- Ten: üstte ışık alan açık ton, bileğe doğru koyulaşır -->
+    <linearGradient id="skin" gradientUnits="userSpaceOnUse" x1="0" y1="350" x2="0" y2="820">
+      <stop offset="0" stop-color="#f6d2ae"/>
+      <stop offset="0.45" stop-color="#e9b78c"/>
+      <stop offset="1" stop-color="#c98d63"/>
+    </linearGradient>
+    <linearGradient id="skinSide" gradientUnits="userSpaceOnUse" x1="300" y1="0" x2="520" y2="0">
+      <stop offset="0" stop-color="#000" stop-opacity="0.16"/>
+      <stop offset="0.25" stop-color="#000" stop-opacity="0"/>
+      <stop offset="0.8" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.18"/>
+    </linearGradient>
+    <radialGradient id="palmLight" cx="410" cy="600" r="120" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff3e0" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#fff3e0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="palmHollow" cx="420" cy="650" r="70" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#a8673f" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#a8673f" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="thumbSkin" gradientUnits="userSpaceOnUse" x1="260" y1="500" x2="350" y2="700">
+      <stop offset="0" stop-color="#f3cba4"/>
+      <stop offset="1" stop-color="#d79d72"/>
+    </linearGradient>
+    <!-- Yen: beyaz kumaş -->
+    <linearGradient id="cloth" gradientUnits="userSpaceOnUse" x1="0" y1="770" x2="0" y2="1024">
+      <stop offset="0" stop-color="#fbf8f2"/>
+      <stop offset="1" stop-color="#d9d3c7"/>
+    </linearGradient>
+    <linearGradient id="clothSide" gradientUnits="userSpaceOnUse" x1="300" y1="0" x2="530" y2="0">
+      <stop offset="0" stop-color="#6d6658" stop-opacity="0.35"/>
+      <stop offset="0.3" stop-color="#6d6658" stop-opacity="0"/>
+      <stop offset="0.75" stop-color="#6d6658" stop-opacity="0"/>
+      <stop offset="1" stop-color="#6d6658" stop-opacity="0.3"/>
+    </linearGradient>
+    <clipPath id="palmClip"><path d="
+        M 346 806
+        C 337 748 319 694 321 626
+        L 326 436
+        C 326 402 343 386 353 386
+        C 367 386 377 398 378 418
+        C 379 382 392 354 403 354
+        C 418 354 426 374 426 398
+        C 428 380 440 370 449 371
+        C 462 373 468 390 468 414
+        C 471 416 484 420 490 428
+        C 498 436 506 448 505 468
+        L 502 566
+        C 500 614 496 652 489 692
+        C 483 732 479 770 479 806 Z"/></clipPath>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+
+    <!-- Sağ el (izleyicinin solu): avuç izleyiciye dönük, başparmak dışta -->
     <g id="hand">
-      <!-- avuç -->
-      <path d="M26 230 L204 230 L206 330 C206 385 172 418 118 418 C64 418 30 385 28 330 Z" fill="url(#skin)"/>
-      <!-- parmaklar: serçe, yüzük, orta, işaret (aralarda ince boşluk) -->
-      <rect x="26"  y="118" width="42" height="160" rx="21" fill="url(#skin)"/>
-      <rect x="71"  y="62"  width="43" height="210" rx="21.5" fill="url(#skin)"/>
-      <rect x="117" y="44"  width="43" height="226" rx="21.5" fill="url(#skin)"/>
-      <rect x="163" y="78"  width="41" height="196" rx="20.5" fill="url(#skin)"/>
-      <!-- başparmak (iç yanda, yukarı-içe) -->
-      <g transform="rotate(34 196 372)">
-        <rect x="174" y="236" width="46" height="140" rx="23" fill="url(#skin)"/>
+      <!-- yen -->
+      <path d="M300 1040 L316 800 C352 774 456 772 500 792 L506 1040 Z" fill="url(#cloth)"/>
+      <path d="M300 1040 L316 800 C352 774 456 772 500 792 L506 1040 Z" fill="url(#clothSide)"/>
+      <path d="M318 806 C360 790 456 788 504 806" fill="none" stroke="#bfb6a6" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
+      <path d="M360 830 C356 900 350 960 346 1030" fill="none" stroke="#c9c1b2" stroke-width="4" opacity="0.7"/>
+      <path d="M462 828 C470 900 476 960 482 1030" fill="none" stroke="#c9c1b2" stroke-width="4" opacity="0.6"/>
+
+      <!-- avuç + dört parmak (bitişik) -->
+      <path id="palm" d="
+        M 346 806
+        C 337 748 319 694 321 626
+        L 326 436
+        C 326 402 343 386 353 386
+        C 367 386 377 398 378 418
+        C 379 382 392 354 403 354
+        C 418 354 426 374 426 398
+        C 428 380 440 370 449 371
+        C 462 373 468 390 468 414
+        C 471 416 484 420 490 428
+        C 498 436 506 448 505 468
+        L 502 566
+        C 500 614 496 652 489 692
+        C 483 732 479 770 479 806 Z" fill="url(#skin)"/>
+      <path d="M 346 806 C 337 748 319 694 321 626 L 326 436 C 326 402 343 386 353 386 C 367 386 377 398 378 418 C 379 382 392 354 403 354 C 418 354 426 374 426 398 C 428 380 440 370 449 371 C 462 373 468 390 468 414 C 471 416 484 420 490 428 C 498 436 506 448 505 468 L 502 566 C 500 614 496 652 489 692 C 483 732 479 770 479 806 Z" fill="url(#skinSide)"/>
+      <g clip-path="url(#palmClip)"><ellipse cx="420" cy="650" rx="90" ry="90" fill="url(#palmHollow)"/>
+      <ellipse cx="410" cy="600" rx="140" ry="140" fill="url(#palmLight)"/></g>
+
+      <!-- parmak araları -->
+      <g fill="none" stroke="#a96c45" stroke-linecap="round">
+        <path d="M378 420 C380 470 381 520 382 566" stroke-width="3.5" opacity="0.55"/>
+        <path d="M426 400 C427 455 428 510 428 560" stroke-width="3.5" opacity="0.55"/>
+        <path d="M468 416 C469 465 469 515 468 562" stroke-width="3.5" opacity="0.5"/>
+      </g>
+      <!-- parmak eklem kıvrımları -->
+      <g fill="none" stroke="#b07650" stroke-linecap="round" opacity="0.45" stroke-width="2.6">
+        <path d="M333 470 C344 476 360 476 372 470"/>
+        <path d="M331 520 C344 527 362 527 374 520"/>
+        <path d="M384 448 C396 454 412 454 422 448"/>
+        <path d="M384 505 C396 512 412 512 423 505"/>
+        <path d="M431 462 C442 468 455 468 464 462"/>
+        <path d="M431 515 C442 521 455 521 465 515"/>
+        <path d="M472 488 C481 493 492 493 499 488"/>
+        <path d="M472 530 C481 535 492 535 499 530"/>
+      </g>
+      <!-- tırnak ucu parlaklıkları -->
+      <g fill="#fff6ea" opacity="0.5">
+        <ellipse cx="352" cy="400" rx="10" ry="6"/>
+        <ellipse cx="403" cy="368" rx="10" ry="6"/>
+        <ellipse cx="448" cy="385" rx="9" ry="5.5"/>
+        <ellipse cx="489" cy="440" rx="8" ry="5"/>
       </g>
       <!-- avuç çizgileri -->
-      <g stroke="#C79450" stroke-linecap="round" fill="none" opacity="0.55">
-        <path d="M50 300 C90 328 140 326 176 292" stroke-width="6"/>
-        <path d="M70 350 C100 366 132 364 156 346" stroke-width="5"/>
+      <g fill="none" stroke="#9e6240" stroke-linecap="round" opacity="0.5">
+        <path d="M498 590 C468 600 430 598 398 590 C378 585 360 590 346 600" stroke-width="3.2"/>
+        <path d="M492 628 C460 640 420 646 384 636" stroke-width="2.8"/>
+        <path d="M372 612 C366 650 372 700 392 748" stroke-width="3.2"/>
+        <path d="M440 760 C438 720 440 680 448 640" stroke-width="2" opacity="0.6"/>
       </g>
-      <!-- yen -->
-      <rect x="18" y="404" width="198" height="72" rx="24" fill="#D9A441"/>
-      <rect x="18" y="404" width="198" height="18" rx="9" fill="#F3CB72"/>
+
+      <!-- başparmak: dışa ve yukarı, avuç kenarının önünde -->
+      <path d="
+        M 352 718
+        C 336 702 318 680 306 654
+        C 294 628 282 602 276 580
+        C 270 558 276 538 292 536
+        C 308 534 318 548 326 566
+        C 338 592 348 618 356 640
+        C 364 662 368 684 368 704 Z" fill="url(#thumbSkin)"/>
+      <path d="M 352 718 C 336 702 318 680 306 654 C 294 628 282 602 276 580" fill="none" stroke="#9e6240" stroke-width="3" opacity="0.35"/>
+      <path d="M290 584 C298 590 312 590 320 584" fill="none" stroke="#b07650" stroke-width="2.6" stroke-linecap="round" opacity="0.5"/>
+      <ellipse cx="287" cy="548" rx="9" ry="6" fill="#fff6ea" opacity="0.5" transform="rotate(-20 287 548)"/>
+      <!-- başparmak kökü (tenar) gölgesi -->
+      <path d="M356 640 C366 670 372 700 372 726" fill="none" stroke="#a96c45" stroke-width="3" opacity="0.4" stroke-linecap="round"/>
     </g>
   </defs>
+
   <rect width="1024" height="1024" fill="url(#bg)"/>
-  <circle cx="512" cy="320" r="310" fill="url(#glow)"/>
-  <path d="M500 160 a80 80 0 1 0 60 138 a62 62 0 1 1 -60 -138 Z" fill="#FFF4D6"/>
-  <path d="M598 206 l9 22 24 2 -18 15 6 23 -21 -13 -21 13 6 -23 -18 -15 24 -2 Z" fill="#FFF4D6"/>
-  <g transform="translate(254 410) rotate(-12 118 418)"><use href="#hand"/></g>
-  <g transform="translate(770 410) scale(-1 1) rotate(-12 118 418)"><use href="#hand"/></g>
+  <!-- ışık huzmeleri -->
+  
+  <circle cx="512" cy="300" r="330" fill="url(#glow)"/>
+  <!-- ince hilal -->
+  <path d="M520 150 a64 64 0 1 0 46 110 a50 50 0 1 1 -46 -110 Z" fill="#fff4d6" opacity="0.92"/>
+  <!-- iki el, hafif dışa açık -->
+  <g filter="url(#shadow)">
+    <g transform="translate(-16 0) rotate(-9 410 806)"><use href="#hand"/></g>
+    <g transform="translate(1024 0) scale(-1 1) translate(-16 0) rotate(-9 410 806)"><use href="#hand"/></g>
+  </g>
 </svg>
