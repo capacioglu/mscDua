@@ -45,3 +45,12 @@ Testler: `cd packages/dua_core && dart test` · `cd apps/editor && flutter test`
 4. `cd apps/mobile && flutter precache --ios && cd ios && pod install && cd ..`
 5. `open ios/Runner.xcworkspace` → Runner hedefi → **Signing & Capabilities** → Team: Apple geliştirici hesabın. Bundle Identifier: `com.dualarim.app` (başkası almışsa benzersiz bir ad ver). **Background Modes → Audio** işaretli olmalı (Info.plist'te `UIBackgroundModes: audio` hazır).
 6. iPhone'u kabloyla bağla (Geliştirici Modu açık): `flutter run --release -d <iphone>` — ya da TestFlight için `flutter build ipa` → `build/ios/ipa/` dosyasını Xcode Organizer / Transporter ile yükle.
+
+## ElevenLabs ile seslendirme
+
+1. Editör → Ayarlar → **ElevenLabs** sekmesi: API anahtarını gir, "Bağlantıyı dene" (kalan kota görünür).
+2. Her dil (Arapça / Türkçe / İngilizce) için hesaptaki bir sesi seç ya da "Ses kitaplığında ara" (ör. *Hanafi*) → "Hesabıma ekle". Deneme alanından sesi dinleyebilirsin.
+3. Dua ekranında "Ses üret" düğmeleri ya da listede Ctrl/Shift ile çoklu seçim → sağ tık → "… sesi üret". Satır işaretleri kendiliğinden yerleşir; ses `content/audio/tts/<dua>_<dil>.mp3` olur.
+4. Ses zorunlu değildir; sesi olmayan dua metin olarak yayınlanır. Telefonda "Okuma seçenekleri → Dinleme dili" seçilir; o dilde sesi olmayan dua Arapça sesiyle çalar.
+
+API anahtarı yalnızca `%APPDATA%\Dualarim\settings.json` içinde durur; içerik veritabanına, yayına ya da git'e girmez.

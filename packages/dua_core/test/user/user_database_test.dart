@@ -60,6 +60,13 @@ void main() {
     expect(() => u.setThemeMode('mor'), throwsArgumentError);
   });
 
+  test('dinleme dili varsayılan Arapça, kalıcı ve geçersiz değeri reddeder', () async {
+    expect(await u.listenLanguage(), 'ar');
+    await u.setListenLanguage('tr');
+    expect(await u.listenLanguage(), 'tr');
+    expect(() => u.setListenLanguage('fr'), throwsArgumentError);
+  });
+
   test('eski (v1) kullanıcı veritabanı açılınca ayarlar tablosu eklenir, listeler korunur', () async {
     final dir = await Directory.systemTemp.createTemp('dualarim_mig');
     final f = File(p.join(dir.path, 'user.db'));

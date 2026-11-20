@@ -70,6 +70,7 @@ flutter:
   assets:
     - assets/content/
     - assets/content/audio/
+    - assets/content/audio/tts/
   fonts:
     - family: Amiri
       fonts:

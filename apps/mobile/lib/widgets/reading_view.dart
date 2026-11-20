@@ -62,6 +62,8 @@ class _ReadingViewState extends State<ReadingView> {
     final scale = s.fontScale;
     final theme = Theme.of(context);
     final d = v.dua;
+    // Yalnızca Türkçe dua: satırın ana metni Türkçe anlamdır, ayrıca tekrarlanmaz.
+    final turkish = d.textLanguage == 'tr';
     final allHaveMeaningTr = v.segments.every(
       (x) => (x.meaningTr ?? '').isNotEmpty,
     );
@@ -122,7 +124,7 @@ class _ReadingViewState extends State<ReadingView> {
               !allHavePronTr &&
               d.srcPronunciationTr != null)
             _para(d.srcPronunciationTr!, scale, italic: true),
-          if (p.meaningTr && !lineTr && endTr != null)
+          if (!turkish && p.meaningTr && !lineTr && endTr != null)
             _para(endTr, scale, key: ValueKey('dua-meaning-${d.id}')),
           if (p.meaningEn && !lineEn && endEn != null)
             _para(
@@ -188,7 +190,12 @@ class _ReadingViewState extends State<ReadingView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (p.arabic)
+              if (v.dua.textLanguage == 'tr')
+                Text(
+                  seg.meaningTr ?? '',
+                  style: TextStyle(fontSize: 22 * scale, height: 1.5),
+                )
+              else if (p.arabic)
                 Text(
                   seg.textAr,
                   textDirection: TextDirection.rtl,
@@ -216,7 +223,7 @@ class _ReadingViewState extends State<ReadingView> {
                     color: theme.colorScheme.outline,
                   ),
                 ),
-              if (p.meaningTr && lineTr)
+              if (p.meaningTr && lineTr && v.dua.textLanguage != 'tr')
                 Text(
                   seg.meaningTr!,
                   key: ValueKey('seg-meaning-${seg.id}'),

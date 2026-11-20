@@ -55,4 +55,47 @@ void main() {
     expect(nowPlaying(q, 0, 3500).segmentId, isNull);
     expect(nowPlaying(q, 0, 500).segmentId, 10);
   });
+
+  group('dinleme dili', () {
+    Track tr(int id, String duaId, String lang, {bool primary = true}) => Track(
+        id: id, ownerKind: TrackOwnerKind.dua, duaId: duaId, relPath: 'audio/$duaId-$id.mp3', label: 'x',
+        language: lang, source: 'manual', isPrimary: primary);
+
+    DuaView v(String id, List<Track> tracks, {String textLanguage = 'ar'}) => DuaView(
+          dua: Dua(id: id, titleTr: id, readyToPublish: false, version: 0, sortOrder: 0,
+              standaloneVisible: true, textLanguage: textLanguage),
+          segments: [Segment(id: 1, duaId: id, position: 0, textAr: 'س', review: ReviewStatus.none)],
+          tracks: tracks,
+          cuesByTrack: {for (final t in tracks) t.id: [Cue(id: t.id, trackId: t.id, startMs: 0, segmentId: 1)]},
+          variants: [],
+          categories: [],
+        );
+
+    int? picked(List<QueueEntry> q) => q.whereType<ClipEntry>().firstOrNull?.track.id;
+
+    test('TR seçiliyken TR kaydı olan dua TR kaydını, olmayan AR kaydını çalar', () {
+      final views = {
+        'A': v('A', [tr(1, 'A', 'ar'), tr(2, 'A', 'tr')]),
+        'B': v('B', [tr(3, 'B', 'ar')]),
+      };
+      expect(picked(buildQueue([PlayRequest('A', 1)], views, gapMs: 0, lang: 'tr')), 2);
+      expect(picked(buildQueue([PlayRequest('B', 1)], views, gapMs: 0, lang: 'tr')), 3);
+      expect(picked(buildQueue([PlayRequest('A', 1)], views, gapMs: 0)), 1);
+    });
+
+    test('Türkçe dua Arapça seçiliyken kendi dilindeki TR kaydını çalar', () {
+      final views = {'T': v('T', [tr(5, 'T', 'tr')], textLanguage: 'tr')};
+      expect(picked(buildQueue([PlayRequest('T', 1)], views, gapMs: 0, lang: 'ar')), 5);
+      expect(buildQueue([PlayRequest('T', 1)], views, gapMs: 0, lang: 'en').single, isA<ClipEntry>());
+    });
+
+    test('aynı dilde birincil olmayan kayıt seçilmez; seçilen dilde kayıt yoksa ve AR de yoksa metin', () {
+      final views = {
+        'A': v('A', [tr(1, 'A', 'en', primary: false), tr(2, 'A', 'en')]),
+        'B': v('B', [tr(3, 'B', 'en')]),
+      };
+      expect(picked(buildQueue([PlayRequest('A', 1)], views, gapMs: 0, lang: 'en')), 2);
+      expect(buildQueue([PlayRequest('B', 1)], views, gapMs: 0, lang: 'tr').single, isA<TextOnlyEntry>());
+    });
+  });
 }

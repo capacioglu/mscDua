@@ -43,8 +43,21 @@ class TextOnlyEntry extends QueueEntry {
   final String duaId;
 }
 
+/// Duanın çalınacak kaydı: seçilen dil → duanın kendi dili → Arapça; her dilde
+/// birincil kayıt, yoksa o dildeki ilk kayıt. Hiçbiri yoksa null (metin olarak geçer).
+Track? pickTrack(DuaView v, String lang) {
+  for (final l in {lang, v.dua.textLanguage, 'ar'}) {
+    final ts = v.tracks.where((t) => t.language == l).toList();
+    if (ts.isEmpty) continue;
+    return ts.firstWhere((t) => t.isPrimary, orElse: () => ts.first);
+  }
+  return null;
+}
+
 /// İstekleri çalma kuyruğuna çevirir: her dua `repeat` kez, aralarında `gapMs` sessizlik.
-List<QueueEntry> buildQueue(List<PlayRequest> requests, Map<String, DuaView> views, {required int gapMs}) {
+/// Kayıt [pickTrack] ile dinleme diline ([lang]) göre seçilir.
+List<QueueEntry> buildQueue(List<PlayRequest> requests, Map<String, DuaView> views,
+    {required int gapMs, String lang = 'ar'}) {
   final out = <QueueEntry>[];
   void add(QueueEntry e) {
     if (out.isNotEmpty && gapMs > 0) out.add(GapEntry(gapMs));
@@ -54,7 +67,7 @@ List<QueueEntry> buildQueue(List<PlayRequest> requests, Map<String, DuaView> vie
   for (final r in requests) {
     final v = views[r.duaId];
     if (v == null) continue;
-    final track = v.tracks.isEmpty ? null : v.tracks.first;
+    final track = pickTrack(v, lang);
     if (track == null) {
       add(TextOnlyEntry(r.duaId));
       continue;

@@ -108,6 +108,10 @@ Future<PublishReport> publish(ContentDatabase db, {required Directory contentDir
   final tmp = Directory('${p.normalize(p.absolute(outDir.path))}.tmp');
   if (tmp.existsSync()) await tmp.delete(recursive: true);
   await Directory(p.join(tmp.path, 'audio')).create(recursive: true);
+  // Mobil pubspec bu klasörü asset olarak listeler; ElevenLabs sesi olmasa da
+  // klasör (git'te de) bulunsun diye yer tutucu.
+  await Directory(p.join(tmp.path, 'audio', 'tts')).create(recursive: true);
+  await File(p.join(tmp.path, 'audio', 'tts', '.keep')).writeAsString('');
   final out = ContentDatabase.open(File(p.join(tmp.path, 'content.db')));
   try {
     await out.transaction(() async {

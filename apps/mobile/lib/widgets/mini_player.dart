@@ -55,6 +55,7 @@ class MiniPlayer extends StatelessWidget {
               title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
               subtitle: Text(
                 [
+                  if (p.nowLanguage != null) p.nowLanguage!.toUpperCase(),
                   if (p.title != null) p.title!,
                   if (now.turns > 1) '${now.turn}/${now.turns}',
                   if (now.inGap) 'ara',

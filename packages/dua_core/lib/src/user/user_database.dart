@@ -188,6 +188,14 @@ class UserDatabase extends _$UserDatabase {
 
   Future<void> setMeaningPerLine(bool v) => _set('meaningPerLine', v ? '1' : '0');
 
+  /// Dinleme dili: 'ar' | 'tr' | 'en' (kayıt seçimi, bkz. `pickTrack`).
+  Future<String> listenLanguage() async => await _get('listenLanguage') ?? 'ar';
+
+  Future<void> setListenLanguage(String lang) async {
+    if (!const {'ar', 'tr', 'en'}.contains(lang)) throw ArgumentError('Geçersiz dil: $lang');
+    await _set('listenLanguage', lang);
+  }
+
   /// Son dinleme oturumu (JSON) — "kaldığın yerden devam" için.
   Future<String?> lastSession() => _get('lastSession');
 

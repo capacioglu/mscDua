@@ -58,7 +58,13 @@ class JustAudioBackend implements AudioBackend {
         switch (e) {
           ClipEntry c => AudioSource.file(
             fileOf(c.track).path,
-            tag: tag(c.duaId, c.turns > 1 ? '${c.turn}/${c.turns}' : ''),
+            tag: tag(
+              c.duaId,
+              [
+                c.track.language.toUpperCase(),
+                if (c.turns > 1) '${c.turn}/${c.turns}',
+              ].join(' · '),
+            ),
           ),
           GapEntry g => AudioSource.file(
             (await silenceWav(cacheDir, g.ms)).path,
@@ -141,6 +147,10 @@ class PlayerService extends ChangeNotifier {
   int _savedMs = 0;
   Map<String, dynamic>? _pending;
 
+  /// Kuyruk kurulurken kullanılan dinleme dili (AppServices ayarlar).
+  String listenLanguage = 'ar';
+  String _queueLang = 'ar';
+
   List<QueueEntry> _queue = [];
   Map<String, DuaView> _views = {};
   int _index = 0;
@@ -153,6 +163,14 @@ class PlayerService extends ChangeNotifier {
   bool get playing => _playing;
   bool get active => _queue.isNotEmpty;
   String? get title => _title;
+
+  /// Çalan kaydın dili (AR/TR/EN göstermek için); kayıt çalmıyorsa null.
+  String? get nowLanguage {
+    if (_index < 0 || _index >= _queue.length) return null;
+    final e = _queue[_index];
+    return e is ClipEntry ? e.track.language : null;
+  }
+
   DuaView? viewOf(String duaId) => _views[duaId];
 
   /// Uygulama yeniden açılınca devam ettirilebilecek oturum var mı?
@@ -222,7 +240,10 @@ class PlayerService extends ChangeNotifier {
     required int segmentId,
   }) async {
     final same =
-        _queue.isNotEmpty && _sameRequests(requests) && _gapMs == gapMs;
+        _queue.isNotEmpty &&
+        _sameRequests(requests) &&
+        _gapMs == gapMs &&
+        _queueLang == listenLanguage;
     if (!same) {
       await start(requests, gapMs: gapMs, title: title, autoplay: false);
     }
@@ -260,7 +281,8 @@ class PlayerService extends ChangeNotifier {
       }
     }
     _views = views;
-    _queue = buildQueue(requests, views, gapMs: gapMs);
+    _queue = buildQueue(requests, views, gapMs: gapMs, lang: listenLanguage);
+    _queueLang = listenLanguage;
     _title = title;
     _index = 0;
     _posMs = 0;

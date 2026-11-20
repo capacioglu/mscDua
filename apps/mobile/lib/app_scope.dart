@@ -14,7 +14,10 @@ class AppServices extends ChangeNotifier {
     this._gapMs,
     this._themeMode,
     this._meaningPerLine,
-  );
+    this._listenLanguage,
+  ) {
+    player.listenLanguage = _listenLanguage;
+  }
 
   static Future<AppServices> create({
     required ContentQueries queries,
@@ -29,6 +32,7 @@ class AppServices extends ChangeNotifier {
     await user.gapMs(),
     _parseTheme(await user.themeMode()),
     await user.meaningPerLine(),
+    await user.listenLanguage(),
   );
 
   static ThemeMode _parseTheme(String s) => ThemeMode.values.firstWhere(
@@ -45,6 +49,17 @@ class AppServices extends ChangeNotifier {
   int _gapMs;
   ThemeMode _themeMode;
   bool _meaningPerLine;
+  String _listenLanguage;
+
+  /// Dinleme dili: 'ar' | 'tr' | 'en'. O dilde kaydı olmayan dua Arapça kaydıyla çalar.
+  String get listenLanguage => _listenLanguage;
+
+  Future<void> setListenLanguage(String lang) async {
+    _listenLanguage = lang;
+    player.listenLanguage = lang;
+    notifyListeners();
+    await user.setListenLanguage(lang);
+  }
 
   ThemeMode get themeMode => _themeMode;
 

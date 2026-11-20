@@ -52,6 +52,33 @@ class _PrefsSheet extends StatelessWidget {
             onChanged: s.setMeaningPerLine,
           ),
           const Divider(),
+          Text('Dinleme dili', style: Theme.of(context).textTheme.titleMedium),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: SegmentedButton<String>(
+              segments: const [
+                ButtonSegment(
+                  value: 'ar',
+                  label: Text('Arapça', key: ValueKey('listen-ar')),
+                ),
+                ButtonSegment(
+                  value: 'tr',
+                  label: Text('Türkçe', key: ValueKey('listen-tr')),
+                ),
+                ButtonSegment(
+                  value: 'en',
+                  label: Text('İngilizce', key: ValueKey('listen-en')),
+                ),
+              ],
+              selected: {s.listenLanguage},
+              onSelectionChanged: (v) => s.setListenLanguage(v.first),
+            ),
+          ),
+          Text(
+            'O dilde sesi olmayan dua Arapça sesiyle, hiç sesi yoksa metin olarak geçer.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const Divider(),
           Text('Görünüm', style: Theme.of(context).textTheme.titleMedium),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
