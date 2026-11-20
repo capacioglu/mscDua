@@ -39,17 +39,18 @@ void main() {
 
   Future<ContentDatabase> openOut() async => ContentDatabase.open(File(p.join(out.path, 'content.db')));
 
-  test('yalnızca tam zamanlanmış dualar çıkar; duanın bütün anlamı mobile gider', () async {
+  test('sesi olmayan dua da metin olarak çıkar; duanın bütün anlamı mobile gider', () async {
     await publishable('D1');
     await seedDua(db, 'D2', ['جَ'], translated: true);
     final r = await publish(db, contentDir: content, outDir: out);
-    expect(r.publishedDuaIds, ['D1']);
-    expect(r.skipped['D2'], ['Tam zamanlanmış ses kaydı yok']);
+    expect(r.publishedDuaIds, ['D1', 'D2']);
+    expect(r.skipped, isEmpty);
 
     final o = await openOut();
-    expect((await o.select(o.duas).get()).map((d) => d.id), ['D1']);
+    expect((await o.select(o.duas).get()).map((d) => d.id), ['D1', 'D2']);
+    expect((await o.select(o.tracks).get()).map((t) => t.duaId), ['D1']);
     expect(await o.select(o.cues).get(), hasLength(2));
-    final d1 = await o.select(o.duas).getSingle();
+    final d1 = await (o.select(o.duas)..where((t) => t.id.equals('D1'))).getSingle();
     expect(d1.srcMeaningTr, 'kaynak');
     expect(d1.importDiff, isNull);
     await o.close();
@@ -65,7 +66,7 @@ void main() {
     expect(File(p.join(out.path, 'audio', 'd1.mp3')).existsSync(), isTrue);
   });
 
-  test('grup yalnızca yayınlanan üyeleriyle, sıra korunarak; boş grup çıkmaz', () async {
+  test('grup tüm üyeleriyle (sesi olmayan dahil), sıra korunarak; üyesiz grup çıkmaz', () async {
     await publishable('D1');
     await seedDua(db, 'D2', ['جَ'], translated: true);
     await publishable('D3');
@@ -74,12 +75,11 @@ void main() {
     for (final (id, pos) in [('D1', 1), ('D2', 2), ('D3', 3)]) {
       await db.into(db.groupItems).insert(GroupItemsCompanion.insert(groupId: 'G', duaId: id, position: Value(pos)));
     }
-    await db.into(db.groupItems).insert(GroupItemsCompanion.insert(groupId: 'BOS', duaId: 'D2'));
     final r = await publish(db, contentDir: content, outDir: out);
     expect(r.publishedGroupIds, ['G']);
     final o = await openOut();
     final items = await (o.select(o.groupItems)..orderBy([(t) => OrderingTerm.asc(t.position)])).get();
-    expect(items.map((i) => (i.duaId, i.position)), [('D1', 1), ('D3', 3)]);
+    expect(items.map((i) => (i.duaId, i.position)), [('D1', 1), ('D2', 2), ('D3', 3)]);
     expect((await o.select(o.groups).get()).map((g) => g.id), ['G']);
     await o.close();
   });
@@ -118,19 +118,22 @@ void main() {
     return t;
   }
 
-  test('grup kaydı: yayınlanmayan üyenin işaretleri metinsiz bölüm olur, dua sessiz kalmaz', () async {
+  test('grup kaydı: tüm üyeler işaretliyse çıkar, eksikse çıkmaz ve raporlanır', () async {
     final a = await seedDua(db, 'A', ['أَ'], approved: true, ready: true);
-    final b = await seedDua(db, 'B', ['بَ', 'تَ'], translated: true); // B'nin 2. satırı zamanlanmamış
+    final b = await seedDua(db, 'B', ['بَ', 'تَ'], translated: true);
     await db.into(db.groups).insert(GroupsCompanion.insert(id: 'G', titleTr: 'g'));
     for (final (id, pos) in [('A', 1), ('B', 2)]) {
       await db.into(db.groupItems).insert(GroupItemsCompanion.insert(groupId: 'G', duaId: id, position: Value(pos)));
     }
-    await groupTrack('G', [(0, a[0]), (1000, b[0])]);
-    final r = await publish(db, contentDir: content, outDir: out);
-    expect(r.publishedDuaIds, ['A']);
+    final t = await groupTrack('G', [(0, a[0]), (1000, b[0])]); // B'nin 2. satırı işaretsiz
+    var r = await publish(db, contentDir: content, outDir: out);
+    expect(r.publishedDuaIds, ['A', 'B']);
+    expect(r.skippedTracks.join(), contains('tam zamanlanmamış'));
+    await addCue(db, t, 2000, b[1]);
+    r = await publish(db, contentDir: content, outDir: out);
     final o = await openOut();
     expect(await o.select(o.tracks).get(), hasLength(1));
-    expect((await o.select(o.cues).get()).map((c) => c.segmentId), [a[0], null]);
+    expect((await o.select(o.cues).get()).map((c) => c.segmentId), [a[0], b[0], b[1]]);
     await o.close();
   });
 
@@ -143,20 +146,22 @@ void main() {
     }
     await groupTrack('G', [(0, a[0])]); // C grup kaydında işaretlenmemiş
     final r = await publish(db, contentDir: content, outDir: out);
-    expect(r.publishedDuaIds, ['C']);
-    expect(r.skipped['A']!.join(), contains('tam zamanlı'));
-    expect(r.groupMissing['G'], ['A']);
+    expect(r.publishedDuaIds, ['A', 'C']); // A metin olarak çıkar
+    expect(r.groupMissing, isEmpty);
     final o = await openOut();
     expect((await o.select(o.tracks).get()).map((t) => t.relPath), ['audio/c.mp3']);
     await o.close();
   });
 
-  test('ses dosyası diskte yoksa dua yayınlanmaz', () async {
+  test('ses dosyası diskte yoksa kayıt çıkmaz, dua metin olarak çıkar; rapor eder', () async {
     await publishable('D1');
     await File(p.join(content.path, 'audio', 'd1.mp3')).delete();
     final r = await publish(db, contentDir: content, outDir: out);
-    expect(r.publishedDuaIds, isEmpty);
-    expect(r.skipped['D1']!.join(), contains('Ses dosyası'));
+    expect(r.publishedDuaIds, ['D1']);
+    expect(r.skippedTracks.join(), contains('d1.mp3'));
+    final o = await openOut();
+    expect(await o.select(o.tracks).get(), isEmpty);
+    await o.close();
   });
 
   test('yayın klasörü içerik klasörü olamaz; yabancı dosya içeren klasör silinmez', () async {
@@ -170,7 +175,7 @@ void main() {
   });
 
   test('ana duası yayınlanmayan varyant bağı olmadan yayınlanır', () async {
-    await seedDua(db, 'D1', ['أَ'], translated: true);
+    await seedDua(db, 'D1', []); // satırı yok → yayınlanamaz
     await publishable('V1');
     await (db.update(db.duas)..where((t) => t.id.equals('V1'))).write(const DuasCompanion(variantOf: Value('D1')));
     final r = await publish(db, contentDir: content, outDir: out);

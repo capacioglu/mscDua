@@ -47,11 +47,10 @@ Future<List<int>> fullyTimedTracks(ContentDatabase db, String duaId) async {
 
 Future<PublishCheck> checkPublishable(ContentDatabase db, String duaId) async {
   final segs = await db.segmentsOf(duaId);
-  // Kullanıcı kararı (2026-11-14): JSON'daki metinler doğru kabul edilir; onay ve
-  // "yayına hazır" işareti gerekmez. Yayın koşulu: satır var + tam zamanlı kayıt.
+  // Kullanıcı kararları: JSON doğru kabul (2026-11-14); ses zorunlu değil, sesi
+  // olmayan dua metin olarak yayınlanır (2026-11-20). Yayın koşulu: satır var.
   final reasons = <String>[];
   if (segs.isEmpty) reasons.add('Satır yok');
   final timed = await fullyTimedTracks(db, duaId);
-  if (timed.isEmpty) reasons.add('Tam zamanlanmış ses kaydı yok');
   return PublishCheck(reasons, timed);
 }

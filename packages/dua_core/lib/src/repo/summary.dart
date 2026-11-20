@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 
 import '../db/database.dart';
 import '../rules/approval.dart';
+import '../tts/tts_text.dart';
 
 /// Zamanlama durumu (kullanıcının asıl işi: ses ekle ve zamanla).
 enum TimingProgress { noAudio, untimed, partial, ready }
@@ -23,6 +24,8 @@ class DuaSummary {
     required this.trackCount,
     required this.segmentCount,
     required this.timing,
+    required this.timingByLang,
+    required this.staleTts,
   });
   final Dua dua;
   final DuaProgress progress;
@@ -31,6 +34,12 @@ class DuaSummary {
   final int trackCount;
   final int segmentCount;
   final TimingProgress timing;
+
+  /// Dil bazında zamanlama ('ar', 'tr', 'en').
+  final Map<String, TimingProgress> timingByLang;
+
+  /// ElevenLabs sesi üretildikten sonra metin değişti mi?
+  final bool staleTts;
 
   String get id => dua.id;
   String get titleTr => dua.titleTr;
@@ -74,9 +83,11 @@ Future<List<DuaSummary>> listDuaSummaries(ContentDatabase db) async {
   for (final c in await db.select(db.cues).get()) {
     if (c.segmentId != null) cuedBy.putIfAbsent(c.trackId, () => {}).add(c.segmentId!);
   }
-  TimingProgress timingOf(String duaId) {
+  TimingProgress timingOf(String duaId, [String? lang]) {
     final groups = (groupsBy[duaId] ?? const []).toSet();
-    final relevant = tracks.where((t) => t.duaId == duaId || (t.groupId != null && groups.contains(t.groupId)));
+    final relevant = tracks.where((t) =>
+        (lang == null || t.language == lang) &&
+        (t.duaId == duaId || (t.groupId != null && groups.contains(t.groupId))));
     if (relevant.isEmpty) return TimingProgress.noAudio;
     final segIds = (segsBy[duaId] ?? const []).map((s) => s.id).toSet();
     var any = false;
@@ -97,6 +108,12 @@ Future<List<DuaSummary>> listDuaSummaries(ContentDatabase db) async {
         trackCount: tracksBy[d.id] ?? 0,
         segmentCount: segsBy[d.id]?.length ?? 0,
         timing: timingOf(d.id),
+        timingByLang: {for (final l in const ['ar', 'tr', 'en']) l: timingOf(d.id, l)},
+        staleTts: tracks.any((t) {
+          if (t.duaId != d.id || t.source != 'elevenlabs' || t.textHash == null) return false;
+          final text = buildTtsText(segsBy[d.id] ?? const [], t.language);
+          return text == null || ttsHash(text) != t.textHash;
+        }),
       ),
   ];
 }

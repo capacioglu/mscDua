@@ -70,12 +70,11 @@ void main() {
       expect(r.ok, isTrue, reason: r.reasons.join());
     });
 
-    test('eksik zamanlı kayıtta neden Türkçe', () async {
-      final s = await seedDua(db, 'D1', ['أ', 'ب']);
-      final t = await addDuaTrack(db, 'D1');
-      await addCue(db, t, 0, s[0]);
+    test('ses zorunlu değil: kaydı olmayan dua yayınlanabilir', () async {
+      await seedDua(db, 'D1', ['أ', 'ب']);
       final r = await checkPublishable(db, 'D1');
-      expect(r.reasons, ['Tam zamanlanmış ses kaydı yok']);
+      expect(r.ok, isTrue);
+      expect(r.fullyTimedTrackIds, isEmpty);
     });
 
     test('satırsız dua', () async {

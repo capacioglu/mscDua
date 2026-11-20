@@ -12,6 +12,9 @@ class PublishReport {
   int contentVersion = 0;
   final List<String> publishedDuaIds = [];
   final Map<String, List<String>> skipped = {};
+
+  /// Yayına alınmayan kayıtlar ve nedeni.
+  final List<String> skippedTracks = [];
   final List<String> publishedGroupIds = [];
 
   /// Grup → yayına girmeyen üyeleri.
@@ -75,33 +78,27 @@ Future<PublishReport> publish(ContentDatabase db, {required Directory contentDir
   }
   Set<int> cued(Track t) => (cuesByTrack[t.id] ?? const []).map((c) => c.segmentId).whereType<int>().toSet();
 
-  var included = <Track>[];
-  while (true) {
-    included = [];
-    for (final t in allTracks) {
-      if (!audioFile(t).existsSync()) continue;
-      if (t.ownerKind == TrackOwnerKind.dua) {
-        if (published.contains(t.duaId) && cued(t).containsAll(segsByDua[t.duaId] ?? const {})) included.add(t);
-      } else {
-        final members = allItems.where((i) => i.groupId == t.groupId && published.contains(i.duaId)).map((i) => i.duaId);
-        final need = {for (final m in members) ...?segsByDua[m]};
-        if (need.isNotEmpty && cued(t).containsAll(need)) included.add(t);
-      }
+  // Ses zorunlu değil (2026-11-20): dua metin olarak yayınlanır; yalnızca dosyası
+  // diskte olan ve tam zamanlı kayıtlar çıkar, diğerleri raporlanır.
+  final included = <Track>[];
+  for (final t in allTracks) {
+    final file = audioFile(t);
+    bool ok;
+    if (t.ownerKind == TrackOwnerKind.dua) {
+      if (!published.contains(t.duaId)) continue;
+      ok = cued(t).containsAll(segsByDua[t.duaId] ?? const {});
+    } else {
+      final members = allItems.where((i) => i.groupId == t.groupId && published.contains(i.duaId)).map((i) => i.duaId);
+      final need = {for (final m in members) ...?segsByDua[m]};
+      if (need.isEmpty) continue;
+      ok = cued(t).containsAll(need);
     }
-    final lost = <String>[];
-    for (final id in published) {
-      final groups = allItems.where((i) => i.duaId == id).map((i) => i.groupId).toSet();
-      final ok = included.any((t) => t.duaId == id || (t.groupId != null && groups.contains(t.groupId)));
-      if (!ok) lost.add(id);
-    }
-    if (lost.isEmpty) break;
-    for (final id in lost) {
-      published.remove(id);
-      final missingFile = allTracks.any((t) =>
-          (t.duaId == id) && !audioFile(t).existsSync() && cued(t).containsAll(segsByDua[id] ?? const {}));
-      report.skipped[id] = [
-        missingFile ? 'Ses dosyası diskte yok' : 'Yayınlanabilir tam zamanlı ses kaydı yok (grup kaydı eksik zamanlanmış olabilir)'
-      ];
+    if (!file.existsSync()) {
+      report.skippedTracks.add('${t.relPath}: ses dosyası diskte yok');
+    } else if (!ok) {
+      report.skippedTracks.add('${t.relPath}: tam zamanlanmamış');
+    } else {
+      included.add(t);
     }
   }
   report.publishedDuaIds.addAll(duas.map((d) => d.id).where(published.contains));

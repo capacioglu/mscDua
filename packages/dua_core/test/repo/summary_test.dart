@@ -60,4 +60,22 @@ void main() {
     expect(await of('DUA-0030'), TimingProgress.untimed);
     expect(timingLabel(TimingProgress.partial), 'Kısmen zamanlandı');
   });
+
+  test('dil bazlı zamanlama ve metin değişti uyarısı', () async {
+    Future<DuaSummary> of(String id) async => (await listDuaSummaries(db)).firstWhere((x) => x.id == id);
+    final segs = await db.segmentsOf('DUA-0013');
+    final text = buildTtsText(segs, 'tr')!;
+    final t = await db.into(db.tracks).insert(TracksCompanion.insert(
+        ownerKind: TrackOwnerKind.dua, duaId: const Value('DUA-0013'), relPath: 'audio/tts/x.mp3', label: 'el',
+        language: const Value('tr'), source: const Value('elevenlabs'), textHash: Value(ttsHash(text))));
+    await db.into(db.cues).insert(CuesCompanion.insert(trackId: t, startMs: 0, segmentId: Value(segs.single.id)));
+    var s = await of('DUA-0013');
+    expect(s.timingByLang, {'ar': TimingProgress.noAudio, 'tr': TimingProgress.ready, 'en': TimingProgress.noAudio});
+    expect(s.staleTts, isFalse);
+    await (db.update(db.segments)..where((x) => x.id.equals(segs.single.id)))
+        .write(const SegmentsCompanion(meaningTr: Value('değişti')));
+    s = await of('DUA-0013');
+    expect(s.staleTts, isTrue);
+  });
 }
+

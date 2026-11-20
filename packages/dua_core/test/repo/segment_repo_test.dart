@@ -69,7 +69,7 @@ void main() {
     final cues = await cuesOf(db, t);
     expect(cues.map((c) => c.segmentId), [a]);
     expect(b, isNot(a));
-    expect((await checkPublishable(db, 'D1')).reasons, contains('Tam zamanlanmış ses kaydı yok'));
+    expect(await fullyTimedTracks(db, 'D1'), isEmpty);
   });
 
   test('birleştirme metni birleştirir, ikinci satırın cuelarını taşır', () async {

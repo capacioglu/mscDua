@@ -62,7 +62,8 @@ void main() {
 
       final out = Directory(p.join(tmp.path, 'out'));
       final r = await publish(db, contentDir: content, outDir: out);
-      expect(r.publishedDuaIds, ['DUA-0006', 'DUA-0030']);
+      expect(r.publishedDuaIds, containsAll(['DUA-0006', 'DUA-0030']));
+      expect(r.publishedDuaIds, hasLength(65)); // ses zorunlu değil: hepsi metin olarak çıkar
       expect(r.publishedGroupIds, ['GRP-001', 'GRP-005']);
 
       final o = ContentDatabase.open(File(p.join(out.path, 'content.db')));
