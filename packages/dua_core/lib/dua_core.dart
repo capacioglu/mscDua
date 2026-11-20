@@ -20,3 +20,4 @@ export 'src/user/user_database.dart';
 export 'src/play/play_queue.dart';
 export 'src/tts/tts_text.dart';
 export 'src/tts/elevenlabs_client.dart';
+export 'src/tts/tts_generator.dart';

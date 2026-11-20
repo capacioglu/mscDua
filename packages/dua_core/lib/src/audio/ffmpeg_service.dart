@@ -74,5 +74,19 @@ class FfmpegService {
         (int.parse(frac) * 1000 ~/ _pow10(frac.length));
   }
 
+  /// MP3 dosyalarını sırayla birleştirir (yeniden kodlamadan).
+  Future<File> concat(List<File> inputs, File out) async {
+    final list = File('${out.path}.list.txt');
+    String quote(File f) => f.absolute.path.replaceAll(r'\', '/').replaceAll("'", r"'\''");
+    await list.writeAsString(inputs.map((f) => "file '${quote(f)}'").join('\n'));
+    try {
+      final r = await Process.run(ffmpegPath, ['-y', '-f', 'concat', '-safe', '0', '-i', list.path, '-c', 'copy', out.path]);
+      if (r.exitCode != 0) throw ProcessException(ffmpegPath, const [], 'Birleştirilemedi: ${r.stderr}', r.exitCode);
+      return out;
+    } finally {
+      if (list.existsSync()) await list.delete();
+    }
+  }
+
   static int _pow10(int n) => n <= 0 ? 1 : 10 * _pow10(n - 1);
 }
