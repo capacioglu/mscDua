@@ -66,10 +66,7 @@ void main() {
         find.textContaining('Rabbimiz! Kendimize zulmettik.'),
         findsWidgets,
       );
-      expect(
-        find.text('Yayınlanabilir'),
-        findsOneWidget,
-      );
+      expect(find.text('Yayınlanabilir'), findsOneWidget);
     },
   );
 

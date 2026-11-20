@@ -372,22 +372,48 @@ class _SyncPanelState extends State<SyncPanel> {
     final path = picked.isEmpty ? null : picked.first.path;
     if (path == null || !mounted) return;
     final labelCtl = TextEditingController(
-      text: _isGroup ? 'Halis Bayancuk' : 'ElevenLabs',
+      text: _isGroup ? 'Halis Bayancuk' : '',
     );
-    final label = await showDialog<String>(
+    var lang = 'ar';
+    if (!_isGroup) {
+      final d = await (db.select(
+        db.duas,
+      )..where((t) => t.id.equals(widget.duaId!))).getSingleOrNull();
+      lang = d?.textLanguage ?? 'ar';
+    }
+    if (!mounted) return;
+    final picked2 = await showDialog<(String, String)>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Kaydın etiketi (okuyan)'),
-        content: TextField(controller: labelCtl, autofocus: true),
+        title: const Text('Kaydın etiketi (okuyan) ve dili'),
+        content: StatefulBuilder(
+          builder: (c, setLocal) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: labelCtl, autofocus: true),
+              DropdownButton<String>(
+                key: const ValueKey('track-lang'),
+                value: lang,
+                items: const [
+                  DropdownMenuItem(value: 'ar', child: Text('Arapça')),
+                  DropdownMenuItem(value: 'tr', child: Text('Türkçe')),
+                  DropdownMenuItem(value: 'en', child: Text('İngilizce')),
+                ],
+                onChanged: (v) => setLocal(() => lang = v ?? lang),
+              ),
+            ],
+          ),
+        ),
         actions: [
           FilledButton(
-            onPressed: () => Navigator.pop(c, labelCtl.text.trim()),
+            onPressed: () => Navigator.pop(c, (labelCtl.text.trim(), lang)),
             child: const Text('Ekle'),
           ),
         ],
       ),
     );
-    if (label == null || label.isEmpty) return;
+    if (picked2 == null || picked2.$1.isEmpty) return;
+    final (label, trackLang) = picked2;
     setState(() => _message = 'Kayıt hazırlanıyor…');
     try {
       final audioDir = Directory(p.join(s.contentDir.path, 'audio'));
@@ -419,8 +445,11 @@ class _SyncPanelState extends State<SyncPanel> {
               relPath: 'audio/${p.basename(dst.path)}',
               label: label,
               durationMs: Value(ms),
+              language: Value(trackLang),
             ),
           );
+      // En son eklenen kayıt telefonda çalar (aynı dildeki diğerleri ikincil olur).
+      await setPrimaryTrack(db, id);
       setState(() => _message = null);
       s.changed();
       await _load(selectTrackId: id);
@@ -493,7 +522,7 @@ class _SyncPanelState extends State<SyncPanel> {
                           DropdownMenuItem(
                             value: t.id,
                             child: Text(
-                              '${t.label} — ${p.basename(t.relPath)}',
+                              '${t.language.toUpperCase()} · ${t.label} — ${p.basename(t.relPath)}${t.isPrimary ? '  ★' : ''}',
                             ),
                           ),
                       ],
@@ -505,6 +534,25 @@ class _SyncPanelState extends State<SyncPanel> {
                     tooltip: 'Kayıt ekle (ses/video)',
                     onPressed: _addTrack,
                     icon: const Icon(Icons.add),
+                  ),
+                  IconButton(
+                    key: const ValueKey('set-primary'),
+                    tooltip: _track?.isPrimary ?? false
+                        ? 'Telefonda bu kayıt çalıyor'
+                        : 'Telefonda bu çalsın',
+                    onPressed: _track == null || _track!.isPrimary
+                        ? null
+                        : () async {
+                            final id = _track!.id;
+                            await setPrimaryTrack(db, id);
+                            s.changed();
+                            await _load(selectTrackId: id, reopen: false);
+                          },
+                    icon: Icon(
+                      _track?.isPrimary ?? false
+                          ? Icons.star
+                          : Icons.star_border,
+                    ),
                   ),
                   IconButton(
                     tooltip: 'Kaydı sil',

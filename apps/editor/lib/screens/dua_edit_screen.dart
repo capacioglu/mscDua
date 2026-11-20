@@ -5,9 +5,11 @@ import 'package:dua_core/dua_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../app/actions.dart';
 import '../app/app_state.dart';
 import '../widgets/category_chips.dart';
 import '../widgets/common.dart';
+import '../widgets/elevenlabs_settings.dart';
 import '../widgets/review_fields.dart';
 import '../widgets/sync_panel.dart';
 
@@ -36,12 +38,17 @@ class _DuaEditScreenState extends State<DuaEditScreen> {
   List<Segment> _segs = [];
   List<Dua> _variants = [];
   PublishCheck? _check;
+  List<Track> _ttsTracks = [];
   int? _selectedSegId;
   final _paste = TextEditingController();
   late final SegmentRepo _repo = SegmentRepo(widget.state.db);
 
   AppState get s => widget.state;
   ContentDatabase get db => s.db;
+
+  /// Yalnızca Türkçe dua: satırın ana metni meaningTr'dedir.
+  bool get _tr => _dua?.textLanguage == 'tr';
+  String _mainText(Segment seg) => _tr ? (seg.meaningTr ?? '') : seg.textAr;
 
   @override
   void initState() {
@@ -70,6 +77,11 @@ class _DuaEditScreenState extends State<DuaEditScreen> {
       db.duas,
     )..where((t) => t.variantOf.equals(d.id))).get();
     final check = await checkPublishable(db, d.id);
+    final tts =
+        await (db.select(db.tracks)
+              ..where((t) => t.duaId.equals(d.id))
+              ..where((t) => t.source.equals('elevenlabs')))
+            .get();
     final order =
         (await (db.select(
               db.duas,
@@ -82,6 +94,7 @@ class _DuaEditScreenState extends State<DuaEditScreen> {
       _segs = segs;
       _variants = variants;
       _check = check;
+      _ttsTracks = tts;
       _order = order;
     });
   }
@@ -126,7 +139,8 @@ class _DuaEditScreenState extends State<DuaEditScreen> {
   }
 
   Future<void> _split(Segment seg) async {
-    final ctl = TextEditingController(text: seg.textAr);
+    final main = _mainText(seg);
+    final ctl = TextEditingController(text: main);
     final offset = await showDialog<int>(
       context: context,
       builder: (c) => AlertDialog(
@@ -139,8 +153,10 @@ class _DuaEditScreenState extends State<DuaEditScreen> {
             autofocus: true,
             showCursor: true,
             maxLines: null,
-            textDirection: TextDirection.rtl,
-            style: const TextStyle(fontFamily: 'Amiri', fontSize: 24),
+            textDirection: _tr ? TextDirection.ltr : TextDirection.rtl,
+            style: _tr
+                ? const TextStyle(fontSize: 20)
+                : const TextStyle(fontFamily: 'Amiri', fontSize: 24),
           ),
         ),
         actions: [
@@ -151,7 +167,7 @@ class _DuaEditScreenState extends State<DuaEditScreen> {
         ],
       ),
     );
-    if (offset == null || offset <= 0 || offset >= seg.textAr.length) return;
+    if (offset == null || offset <= 0 || offset >= main.length) return;
     await _repo.split(seg.id, offset);
     await _changed();
   }
@@ -189,12 +205,16 @@ class _DuaEditScreenState extends State<DuaEditScreen> {
   );
 
   Future<void> _copyArabic() async {
-    final text = _segs.map((x) => x.textAr).join(' ');
+    final text = _segs.map(_mainText).join(' ');
     await Clipboard.setData(ClipboardData(text: text));
     if (mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Arapça metin kopyalandı')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            _tr ? 'Türkçe metin kopyalandı' : 'Arapça metin kopyalandı',
+          ),
+        ),
+      );
     }
   }
 
@@ -212,7 +232,7 @@ class _DuaEditScreenState extends State<DuaEditScreen> {
             key: const ValueKey('copy-arabic'),
             onPressed: _copyArabic,
             icon: const Icon(Icons.copy),
-            label: const Text('Arapçayı kopyala'),
+            label: Text(_tr ? 'Metni kopyala' : 'Arapçayı kopyala'),
           ),
           IconButton(
             key: const ValueKey('prev-dua'),
@@ -329,6 +349,8 @@ class _DuaEditScreenState extends State<DuaEditScreen> {
             Text('$label: $v', style: const TextStyle(fontSize: 13)),
         const SizedBox(height: 6),
         CategoryChips(db: db, duaId: d.id, onChanged: () => s.changed()),
+        _ttsBar(d),
+        ..._staleWarnings(),
         if (check != null)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 6),
@@ -402,13 +424,16 @@ class _DuaEditScreenState extends State<DuaEditScreen> {
                     ),
                 ],
               ),
-              ArabicText(seg.textAr),
+              if (_tr)
+                Text(seg.meaningTr ?? '', style: const TextStyle(fontSize: 20))
+              else
+                ArabicText(seg.textAr),
               if (seg.pronunciationTr != null)
                 Text(
                   seg.pronunciationTr!,
                   style: const TextStyle(fontStyle: FontStyle.italic),
                 ),
-              if (seg.meaningTr != null) Text(seg.meaningTr!),
+              if (!_tr && seg.meaningTr != null) Text(seg.meaningTr!),
               if (seg.meaningEn != null)
                 Text(
                   seg.meaningEn!,
@@ -425,18 +450,93 @@ class _DuaEditScreenState extends State<DuaEditScreen> {
     );
   }
 
+  /// "Ses üret: [Arapça] [Türkçe] [İngilizce]"; uygun değilse pasif + ipucu.
+  Widget _ttsBar(Dua d) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Wrap(
+      spacing: 6,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        const Text('Ses üret (ElevenLabs):'),
+        for (final l in ttsLanguages)
+          Tooltip(
+            message:
+                _ttsBlocker(d, l) ??
+                '${ttsLangNames[l]} sesi üret (satır işaretleri kendiliğinden yerleşir)',
+            child: OutlinedButton(
+              key: ValueKey('tts-$l'),
+              onPressed: _ttsBlocker(d, l) != null
+                  ? null
+                  : () => generateTtsAction(context, s, [d.id], l),
+              child: Text(ttsLangNames[l]!),
+            ),
+          ),
+      ],
+    ),
+  );
+
+  /// Bu dilde üretim neden yapılamaz (yapılabiliyorsa null).
+  String? _ttsBlocker(Dua d, String lang) {
+    if (lang == 'ar' && d.textLanguage == 'tr') {
+      return 'Yalnızca Türkçe duada Arapça ses üretilmez';
+    }
+    if (_segs.isEmpty) return 'Satır yok';
+    final missing = _segs.where((x) {
+      final t = switch (lang) {
+        'ar' => x.textAr,
+        'tr' => x.meaningTr,
+        _ => x.meaningEn,
+      };
+      return (t ?? '').trim().isEmpty;
+    }).length;
+    return missing == 0
+        ? null
+        : '$missing satırın ${ttsLangNames[lang]} metni yok';
+  }
+
+  /// ElevenLabs kaydı üretildiğinden beri metin değiştiyse uyarı (yayını engellemez).
+  List<Widget> _staleWarnings() => [
+    for (final t in _ttsTracks)
+      if (_isStale(t))
+        Card(
+          color: Colors.deepOrange.withValues(alpha: 0.1),
+          child: ListTile(
+            leading: const Icon(Icons.sync_problem, color: Colors.deepOrange),
+            title: Text(
+              '${ttsLangNames[t.language] ?? t.language} metin değişti — sesi yeniden üret',
+            ),
+            subtitle: Text(
+              '"${t.label}" eski metinle üretildi; satır işaretleri kaymış olabilir.',
+            ),
+            trailing: TextButton(
+              onPressed: () =>
+                  generateTtsAction(context, s, [widget.duaId], t.language),
+              child: const Text('Yeniden üret'),
+            ),
+          ),
+        ),
+  ];
+
+  bool _isStale(Track t) {
+    final cur = buildTtsText(_segs, t.language);
+    return cur == null || ttsHash(cur) != t.textHash;
+  }
+
   Widget _pasteBox() => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
       TextField(
         controller: _paste,
         maxLines: 5,
-        textDirection: TextDirection.rtl,
-        style: const TextStyle(fontFamily: 'Amiri', fontSize: 20),
-        decoration: const InputDecoration(
-          labelText:
-              'Arapça metin yapıştır (noktalama ve boş satırlardan bölünür)',
-          border: OutlineInputBorder(),
+        textDirection: _tr ? TextDirection.ltr : TextDirection.rtl,
+        style: _tr
+            ? const TextStyle(fontSize: 18)
+            : const TextStyle(fontFamily: 'Amiri', fontSize: 20),
+        decoration: InputDecoration(
+          labelText: _tr
+              ? 'Türkçe metin yapıştır (cümle sonları ve boş satırlardan bölünür)'
+              : 'Arapça metin yapıştır (noktalama ve boş satırlardan bölünür)',
+          border: const OutlineInputBorder(),
         ),
       ),
       Align(

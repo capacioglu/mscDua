@@ -1,10 +1,12 @@
 import 'package:drift/drift.dart' show Value, OrderingTerm;
 import 'package:dua_core/dua_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../app/actions.dart';
 import '../app/app_state.dart';
 import '../widgets/common.dart';
+import '../widgets/elevenlabs_settings.dart';
 
 /// Ana ekran: dualar, filtreler ve içerik eylemleri.
 class DuaListScreen extends StatefulWidget {
@@ -32,6 +34,10 @@ class _DuaListScreenState extends State<DuaListScreen> {
   String? _groupFilter;
   TimingProgress? _progressFilter;
   String _query = '';
+
+  /// Çoklu seçim (Ctrl/Shift + tık); sağ tık menüsü seçime uygulanır.
+  final Set<String> _selected = {};
+  String? _anchor;
 
   AppState get s => widget.state;
 
@@ -93,22 +99,36 @@ class _DuaListScreenState extends State<DuaListScreen> {
         .padLeft(4, '0');
     final idCtl = TextEditingController(text: 'DUA-$next');
     final titleCtl = TextEditingController();
+    var turkishOnly = false;
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
         title: const Text('Yeni dua'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: idCtl,
-              decoration: const InputDecoration(labelText: 'Kimlik'),
-            ),
-            TextField(
-              controller: titleCtl,
-              decoration: const InputDecoration(labelText: 'Başlık (Türkçe)'),
-            ),
-          ],
+        content: StatefulBuilder(
+          builder: (c, setLocal) => Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: idCtl,
+                decoration: const InputDecoration(labelText: 'Kimlik'),
+              ),
+              TextField(
+                key: const ValueKey('new-dua-title'),
+                controller: titleCtl,
+                decoration: const InputDecoration(labelText: 'Başlık (Türkçe)'),
+              ),
+              CheckboxListTile(
+                key: const ValueKey('new-dua-tr'),
+                contentPadding: EdgeInsets.zero,
+                value: turkishOnly,
+                onChanged: (v) => setLocal(() => turkishOnly = v ?? false),
+                title: const Text('Yalnızca Türkçe'),
+                subtitle: const Text(
+                  'Arapçası yok; metin Türkçe yazılır ve Türkçe seslendirilir.',
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -130,11 +150,97 @@ class _DuaListScreenState extends State<DuaListScreen> {
             id: idCtl.text.trim(),
             titleTr: titleCtl.text.trim(),
             expectedAudioFile: Value(expectedAudioFileFor(idCtl.text.trim())),
+            textLanguage: Value(turkishOnly ? 'tr' : 'ar'),
           ),
         );
     s.changed();
     widget.onOpenDua?.call(idCtl.text.trim());
   }
+
+  void _tap(DuaSummary d, List<DuaSummary> visible) {
+    final kb = HardwareKeyboard.instance;
+    if (kb.isControlPressed) {
+      setState(() {
+        if (!_selected.remove(d.id)) _selected.add(d.id);
+        _anchor = d.id;
+      });
+    } else if (kb.isShiftPressed && _anchor != null) {
+      final ids = visible.map((x) => x.id).toList();
+      final a = ids.indexOf(_anchor!), b = ids.indexOf(d.id);
+      if (a < 0 || b < 0) return;
+      setState(
+        () => _selected
+          ..clear()
+          ..addAll(ids.sublist(a < b ? a : b, (a < b ? b : a) + 1)),
+      );
+    } else {
+      setState(() {
+        _selected.clear();
+        _anchor = d.id;
+      });
+      widget.onOpenDua?.call(d.id);
+    }
+  }
+
+  /// Seçili kimlikler, listedeki sırasıyla.
+  List<String> get _selectedInOrder => [
+    for (final d in _all)
+      if (_selected.contains(d.id)) d.id,
+  ];
+
+  Future<void> _contextMenu(DuaSummary d, Offset at) async {
+    if (!_selected.contains(d.id)) {
+      setState(() {
+        _selected
+          ..clear()
+          ..add(d.id);
+        _anchor = d.id;
+      });
+    }
+    final n = _selected.length;
+    final pick = await showMenu<String>(
+      context: context,
+      position: RelativeRect.fromLTRB(at.dx, at.dy, at.dx, at.dy),
+      items: [
+        for (final l in ttsLanguages)
+          PopupMenuItem(value: l, child: Text('${ttsLangNames[l]} sesi üret')),
+        if (n == 1) const PopupMenuDivider(),
+        if (n == 1) const PopupMenuItem(value: 'open', child: Text('Aç')),
+      ],
+    );
+    if (pick == null || !mounted) return;
+    if (pick == 'open') {
+      widget.onOpenDua?.call(d.id);
+    } else {
+      await generateTtsAction(context, s, _selectedInOrder, pick);
+    }
+  }
+
+  Widget _selectionBar() => Material(
+    color: Theme.of(context).colorScheme.secondaryContainer,
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      child: Row(
+        children: [
+          Text('${_selected.length} dua seçili'),
+          const SizedBox(width: 16),
+          const Text('Ses üret:'),
+          for (final l in ttsLanguages)
+            TextButton(
+              key: ValueKey('bulk-tts-$l'),
+              onPressed: () =>
+                  generateTtsAction(context, s, _selectedInOrder, l),
+              child: Text(ttsLangNames[l]!),
+            ),
+          const Spacer(),
+          TextButton(
+            onPressed: () => setState(_selected.clear),
+            child: const Text('Seçimi temizle'),
+          ),
+        ],
+      ),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -182,6 +288,7 @@ class _DuaListScreenState extends State<DuaListScreen> {
             ),
           ),
           const Divider(height: 1),
+          if (_selected.isNotEmpty) _selectionBar(),
           Expanded(
             child: Row(
               children: [
@@ -191,7 +298,7 @@ class _DuaListScreenState extends State<DuaListScreen> {
                   child: ListView.separated(
                     itemCount: visible.length,
                     separatorBuilder: (_, _) => const Divider(height: 1),
-                    itemBuilder: (_, i) => _row(visible[i]),
+                    itemBuilder: (_, i) => _row(visible[i], visible),
                   ),
                 ),
               ],
@@ -272,9 +379,22 @@ class _DuaListScreenState extends State<DuaListScreen> {
     ],
   );
 
-  Widget _row(DuaSummary d) => ListTile(
+  Widget _row(DuaSummary d, List<DuaSummary> visible) => GestureDetector(
+    onSecondaryTapUp: (e) => _contextMenu(d, e.globalPosition),
+    child: _tile(d, visible),
+  );
+
+  static String _sym(TimingProgress t) => switch (t) {
+    TimingProgress.ready => '✓',
+    TimingProgress.partial => '◐',
+    TimingProgress.untimed => '○',
+    TimingProgress.noAudio => '–',
+  };
+
+  Widget _tile(DuaSummary d, List<DuaSummary> visible) => ListTile(
     key: ValueKey('row-${d.id}'),
-    onTap: () => widget.onOpenDua?.call(d.id),
+    selected: _selected.contains(d.id),
+    onTap: () => _tap(d, visible),
     leading: SizedBox(
       width: 110,
       child: Text(d.id, style: const TextStyle(fontFeatures: [])),
@@ -286,7 +406,20 @@ class _DuaListScreenState extends State<DuaListScreen> {
             padding: EdgeInsets.only(right: 6),
             child: Icon(Icons.call_split, size: 16),
           ),
+        if (d.dua.textLanguage == 'tr')
+          const Padding(
+            padding: EdgeInsets.only(right: 6),
+            child: Tooltip(
+              message: 'Yalnızca Türkçe dua',
+              child: Icon(Icons.translate, size: 16),
+            ),
+          ),
         Expanded(child: Text(d.titleTr)),
+        if (d.staleTts)
+          const Tooltip(
+            message: 'Metin değişti — ElevenLabs sesini yeniden üret',
+            child: Icon(Icons.sync_problem, color: Colors.deepOrange),
+          ),
         if (d.hasWarning)
           const Tooltip(
             message: 'Doğrulanmamış kaynak veya JSON farkı',
@@ -309,6 +442,19 @@ class _DuaListScreenState extends State<DuaListScreen> {
             padding: EdgeInsets.only(right: 8),
             child: Icon(Icons.verified, color: Colors.green),
           ),
+        Tooltip(
+          message: '✓ tam zamanlı · ◐ kısmen · ○ zamanlanmamış · – ses yok',
+          child: Text(
+            [
+              for (final l in ttsLanguages)
+                if (!(l == 'ar' && d.dua.textLanguage == 'tr'))
+                  '${l.toUpperCase()} ${_sym(d.timingByLang[l] ?? TimingProgress.noAudio)}',
+            ].join(' · '),
+            key: ValueKey('lang-${d.id}'),
+            style: const TextStyle(fontSize: 12),
+          ),
+        ),
+        const SizedBox(width: 8),
         TimingChip(d.timing),
       ],
     ),

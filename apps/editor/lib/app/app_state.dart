@@ -10,13 +10,27 @@ import '../services/settings.dart';
 
 /// Açık içerik klasörü, veritabanı ve ayarlar.
 class AppState extends ChangeNotifier {
-  AppState._(this.db, this.contentDir, this.settings);
+  AppState._(
+    this.db,
+    this.contentDir,
+    this.settings, {
+    this.elevenLabsFactory = ElevenLabsClient.new,
+    this._ffmpegLocator,
+  });
 
   factory AppState.forDatabase(
     ContentDatabase db,
     Directory contentDir, [
     Settings? settings,
-  ]) => AppState._(db, contentDir, settings ?? Settings.inMemory());
+    ElevenLabsClient Function(String apiKey)? elevenLabsFactory,
+    FfmpegService? Function()? ffmpegLocator,
+  ]) => AppState._(
+    db,
+    contentDir,
+    settings ?? Settings.inMemory(),
+    elevenLabsFactory: elevenLabsFactory ?? ElevenLabsClient.new,
+    ffmpegLocator: ffmpegLocator,
+  );
 
   /// `content/` klasörünü açar; `content.db` yoksa oluşturur.
   static Future<AppState> open(Directory dir, Settings settings) async {
@@ -67,8 +81,22 @@ class AppState extends ChangeNotifier {
     return ArchiveImporter(db).importJson(json, fileName: p.basename(f.path));
   }
 
-  FfmpegService? get ffmpeg =>
-      FfmpegService.locate(preferred: settings.ffmpegPath);
+  /// ElevenLabs istemcisi üreticisi (testte sahte istemci).
+  final ElevenLabsClient Function(String apiKey) elevenLabsFactory;
+  final FfmpegService? Function()? _ffmpegLocator;
+
+  FfmpegService? get ffmpeg => _ffmpegLocator != null
+      ? _ffmpegLocator()
+      : FfmpegService.locate(preferred: settings.ffmpegPath);
+
+  /// Ayarlardaki anahtarla istemci; anahtar yoksa null.
+  ElevenLabsClient? elevenLabs() {
+    final el = settings.elevenLabs;
+    return el.hasKey ? elevenLabsFactory(el.apiKey!.trim()) : null;
+  }
+
+  TtsGenerator ttsGenerator(ElevenLabsClient client) =>
+      TtsGenerator(db, contentDir, client, ffmpeg: ffmpeg);
 
   Directory get publishDir => Directory(
     settings.publishDir ??

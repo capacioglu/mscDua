@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dua_core/dua_core.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
@@ -10,7 +11,9 @@ import 'app/app_state.dart';
 import 'screens/dua_edit_screen.dart';
 import 'screens/dua_list_screen.dart';
 import 'screens/group_screen.dart';
+import 'services/playback.dart';
 import 'services/settings.dart';
+import 'widgets/elevenlabs_settings.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +33,17 @@ class _EditorAppState extends State<EditorApp> {
   final _nav = GlobalKey<NavigatorState>();
   AppState? _state;
   String? _error;
+  PlaybackController? _preview;
+
+  /// ElevenLabs deneme sesini geçici dosyadan çalar.
+  Future<void> _playPreview(List<int> mp3) async {
+    final f = File(p.join(Directory.systemTemp.path, 'dualarim_deneme.mp3'));
+    final player = _preview ??= MediaKitPlayback();
+    await player.pause();
+    await f.writeAsBytes(mp3, flush: true);
+    await player.open(f);
+    await player.playOrPause();
+  }
 
   @override
   void initState() {
@@ -104,40 +118,73 @@ class _EditorAppState extends State<EditorApp> {
       builder: (c) => AlertDialog(
         title: const Text('Ayarlar'),
         content: SizedBox(
-          width: 600,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('İçerik klasörü: ${_state?.contentDir.path ?? '-'}'),
-              const SizedBox(height: 8),
-              TextField(
-                controller: ffCtl,
-                decoration: const InputDecoration(
-                  labelText: 'ffmpeg.exe yolu (boş = otomatik)',
+          width: 760,
+          height: 620,
+          child: DefaultTabController(
+            length: 2,
+            child: Column(
+              children: [
+                const TabBar(
+                  tabs: [
+                    Tab(text: 'Genel'),
+                    Tab(text: 'ElevenLabs'),
+                  ],
                 ),
-              ),
-              Text(
-                found == null ? 'ffmpeg bulunamadı' : 'Kullanılan: $found',
-                style: const TextStyle(fontSize: 12),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: pubCtl,
-                decoration: const InputDecoration(
-                  labelText: 'Yayın klasörü (boş = apps/mobile/assets/content)',
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      SingleChildScrollView(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'İçerik klasörü: ${_state?.contentDir.path ?? '-'}',
+                            ),
+                            const SizedBox(height: 8),
+                            TextField(
+                              controller: ffCtl,
+                              decoration: const InputDecoration(
+                                labelText: 'ffmpeg.exe yolu (boş = otomatik)',
+                              ),
+                            ),
+                            Text(
+                              found == null
+                                  ? 'ffmpeg bulunamadı'
+                                  : 'Kullanılan: $found',
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                            const SizedBox(height: 8),
+                            TextField(
+                              controller: pubCtl,
+                              decoration: const InputDecoration(
+                                labelText: 'Yayın klasörü (boş = apps/mobile/assets/content)',
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            TextButton.icon(
+                              onPressed: () {
+                                Navigator.pop(c);
+                                _pickFolder();
+                              },
+                              icon: const Icon(Icons.folder_open),
+                              label: const Text('Başka içerik klasörü aç'),
+                            ),
+                          ],
+                        ),
+                      ),
+                      ElevenLabsSettingsView(
+                        settings: _settings.elevenLabs,
+                        clientFactory:
+                            _state?.elevenLabsFactory ?? ElevenLabsClient.new,
+                        onPlay: _playPreview,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              TextButton.icon(
-                onPressed: () {
-                  Navigator.pop(c);
-                  _pickFolder();
-                },
-                icon: const Icon(Icons.folder_open),
-                label: const Text('Başka içerik klasörü aç'),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         actions: [
