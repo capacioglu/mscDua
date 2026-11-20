@@ -18,3 +18,4 @@ export 'src/text/search_normalize.dart';
 export 'src/content/content_queries.dart';
 export 'src/user/user_database.dart';
 export 'src/play/play_queue.dart';
+export 'src/tts/tts_text.dart';
