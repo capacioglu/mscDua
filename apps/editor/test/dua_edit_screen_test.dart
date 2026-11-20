@@ -67,7 +67,7 @@ void main() {
         findsWidgets,
       );
       expect(
-        find.textContaining('Tam zamanlanmış ses kaydı yok'),
+        find.text('Yayınlanabilir'),
         findsOneWidget,
       );
     },

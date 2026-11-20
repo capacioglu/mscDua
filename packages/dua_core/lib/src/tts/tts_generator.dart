@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 
 import '../audio/ffmpeg_service.dart';
 import '../db/database.dart';
+import '../repo/track_repo.dart';
 import '../model/enums.dart';
 import 'elevenlabs_client.dart';
 import 'tts_text.dart';
@@ -39,14 +40,7 @@ class TtsGenerator {
   Future<int> estimateChars(String duaId, String lang) async => (await textFor(duaId, lang))?.text.length ?? 0;
 
   /// Aynı dua+dildeki kayıtlar arasında telefonda çalacak olanı seçer.
-  Future<void> setPrimary(int trackId) => db.transaction(() async {
-        final t = await (db.select(db.tracks)..where((x) => x.id.equals(trackId))).getSingle();
-        await (db.update(db.tracks)
-              ..where((x) => x.duaId.equalsNullable(t.duaId) & x.language.equals(t.language)))
-            .write(const TracksCompanion(isPrimary: Value(false)));
-        await (db.update(db.tracks)..where((x) => x.id.equals(trackId)))
-            .write(const TracksCompanion(isPrimary: Value(true)));
-      });
+  Future<void> setPrimary(int trackId) => setPrimaryTrack(db, trackId);
 
   Future<TtsResult> generate(
     String duaId,

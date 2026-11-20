@@ -4,6 +4,7 @@ import '../db/database.dart';
 import '../model/enums.dart';
 import '../rules/approval.dart';
 import '../text/arabic_segmenter.dart';
+import '../text/turkish_segmenter.dart';
 
 /// Satır düzenleme işlemleri; onay kurallarını (spec §6.5.1) uygular.
 class SegmentRepo {
@@ -23,6 +24,10 @@ class SegmentRepo {
         meaningEnSource: Value(null),
         review: Value(ReviewStatus.none),
       );
+
+  /// Yalnızca Türkçe duada satırın ana metni `meaningTr`'dedir (`textAr` boş).
+  Future<bool> _isTurkish(String duaId) async =>
+      (await (db.select(db.duas)..where((t) => t.id.equals(duaId))).getSingleOrNull())?.textLanguage == 'tr';
 
   Future<void> _renumber(String duaId, [List<int>? order]) async {
     final ids = order ?? (await db.segmentsOf(duaId)).map((s) => s.id).toList();
@@ -88,15 +93,20 @@ class SegmentRepo {
   /// Satırı [charOffset] (UTF-16 kod birimi) noktasından ikiye böler.
   Future<(int, int)> split(int segId, int charOffset) => db.transaction(() async {
         final s = await _get(segId);
-        final a = s.textAr.substring(0, charOffset).trim();
-        final b = s.textAr.substring(charOffset).trim();
+        final tr = await _isTurkish(s.duaId);
+        final main = tr ? (s.meaningTr ?? '') : s.textAr;
+        final a = main.substring(0, charOffset).trim();
+        final b = main.substring(charOffset).trim();
         if (a.isEmpty || b.isEmpty) throw ArgumentError('Bölme noktası satırın içinde olmalı');
-        await (db.update(db.segments)..where((t) => t.id.equals(segId)))
-            .write(_clearedTranslations().copyWith(textAr: Value(a)));
+        await (db.update(db.segments)..where((t) => t.id.equals(segId))).write(tr
+            ? _clearedTranslations().copyWith(meaningTr: Value(a), meaningTrSource: const Value(FieldSource.user))
+            : _clearedTranslations().copyWith(textAr: Value(a)));
         final newId = await db.into(db.segments).insert(SegmentsCompanion.insert(
               duaId: s.duaId,
               position: s.position, // aşağıda yeniden numaralanır
-              textAr: b,
+              textAr: tr ? '' : b,
+              meaningTr: Value(tr ? b : null),
+              meaningTrSource: Value(tr ? FieldSource.user : null),
             ));
         final order = (await db.segmentsOf(s.duaId)).map((x) => x.id).where((id) => id != newId).toList();
         order.insert(order.indexOf(segId) + 1, newId);
@@ -113,8 +123,12 @@ class SegmentRepo {
         final next = segs[idx + 1];
         await (db.update(db.cues)..where((c) => c.segmentId.equals(next.id)))
             .write(CuesCompanion(segmentId: Value(firstSegId)));
-        await (db.update(db.segments)..where((t) => t.id.equals(firstSegId)))
-            .write(_clearedTranslations().copyWith(textAr: Value(mergeArabic(s.textAr, next.textAr))));
+        final tr = await _isTurkish(s.duaId);
+        await (db.update(db.segments)..where((t) => t.id.equals(firstSegId))).write(tr
+            ? _clearedTranslations().copyWith(
+                meaningTr: Value('${s.meaningTr ?? ''} ${next.meaningTr ?? ''}'.trim()),
+                meaningTrSource: const Value(FieldSource.user))
+            : _clearedTranslations().copyWith(textAr: Value(mergeArabic(s.textAr, next.textAr))));
         await (db.delete(db.segments)..where((t) => t.id.equals(next.id))).go();
         await _renumber(s.duaId);
         return firstSegId;
@@ -135,6 +149,18 @@ class SegmentRepo {
           if (cued.isNotEmpty) throw StateError('Zamanlanmış satırlar var');
         }
         await (db.delete(db.segments)..where((t) => t.duaId.equals(duaId))).go();
+        if (await _isTurkish(duaId)) {
+          final parts = splitTurkish(text);
+          for (var i = 0; i < parts.length; i++) {
+            await db.into(db.segments).insert(SegmentsCompanion.insert(
+                duaId: duaId,
+                position: i,
+                textAr: '',
+                meaningTr: Value(parts[i]),
+                meaningTrSource: const Value(FieldSource.user)));
+          }
+          return;
+        }
         final parts = splitArabic(text);
         for (var i = 0; i < parts.length; i++) {
           await db.into(db.segments).insert(SegmentsCompanion.insert(duaId: duaId, position: i, textAr: parts[i]));

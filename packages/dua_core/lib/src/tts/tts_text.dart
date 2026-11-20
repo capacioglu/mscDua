@@ -13,12 +13,12 @@ class TtsText {
 }
 
 /// Harf bazlı zamanlama (ElevenLabs `alignment`).
-class Alignment {
-  Alignment({required this.chars, required this.startsSec});
+class TtsAlignment {
+  TtsAlignment({required this.chars, required this.startsSec});
   final List<String> chars;
   final List<double> startsSec;
 
-  factory Alignment.fromJson(Map<String, dynamic> j) => Alignment(
+  factory TtsAlignment.fromJson(Map<String, dynamic> j) => TtsAlignment(
         chars: (j['characters'] as List).cast<String>(),
         startsSec: [for (final x in j['character_start_times_seconds'] as List) (x as num).toDouble()],
       );
@@ -86,7 +86,7 @@ bool _ws(String c) => c.trim().isEmpty;
 /// Her satırın ilk boşluk-olmayan karakterinin başlangıç zamanı (ms).
 /// Boşluk farkları (satır sonu yerine boşluk, fazladan boşluk) tolere edilir;
 /// boşluk dışındaki karakterler eşleşmezse [FormatException].
-List<int> lineCueMs(TtsText t, Alignment a) {
+List<int> lineCueMs(TtsText t, TtsAlignment a) {
   final textIdx = <int>[];
   for (var i = 0; i < t.text.length; i++) {
     if (!_ws(t.text[i])) textIdx.add(i);

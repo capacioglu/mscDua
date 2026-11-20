@@ -5,7 +5,7 @@ Segment seg(int id, String ar, {String? tr, String? en}) =>
     Segment(id: id, duaId: 'D', position: id, textAr: ar, meaningTr: tr, meaningEn: en, review: ReviewStatus.review);
 
 /// Her karakteri 100 ms'de bir okuyan sahte hizalama.
-Alignment fakeAlign(String text, {double startSec = 0}) => Alignment(
+TtsAlignment fakeAlign(String text, {double startSec = 0}) => TtsAlignment(
       chars: text.split(''),
       startsSec: [for (var i = 0; i < text.length; i++) startSec + i * 0.1],
     );

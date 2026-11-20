@@ -128,7 +128,7 @@ class ElevenLabsClient {
   }
 
   /// Zamanlamalı seslendirme: mp3 baytları ve harf zamanları.
-  Future<(List<int>, Alignment)> speakWithTimestamps(String voiceId, String text,
+  Future<(List<int>, TtsAlignment)> speakWithTimestamps(String voiceId, String text,
       {String modelId = defaultModel}) async {
     final r = await _send(() => _http.post(
         Uri.parse('$base/v1/text-to-speech/$voiceId/with-timestamps')
@@ -138,7 +138,7 @@ class ElevenLabsClient {
     final j = jsonDecode(utf8.decode(r.bodyBytes)) as Map<String, dynamic>;
     final al = j['alignment'] as Map<String, dynamic>?;
     if (al == null) throw ElevenLabsException('ElevenLabs zamanlama bilgisi döndürmedi.');
-    return (base64Decode(j['audio_base64'] as String), Alignment.fromJson(al));
+    return (base64Decode(j['audio_base64'] as String), TtsAlignment.fromJson(al));
   }
 
   void close() => _http.close();
