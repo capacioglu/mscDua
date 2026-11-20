@@ -39,6 +39,9 @@ class Duas extends Table {
   TextColumn get recitationTimeEn => text().nullable()();
   BoolColumn get standaloneVisible => boolean().withDefault(const Constant(true))();
 
+  /// Duanın ana dili: 'ar' (Arapça satırlar) | 'tr' (yalnızca Türkçe; ana metin meaningTr'de).
+  TextColumn get textLanguage => text().withDefault(const Constant('ar'))();
+
   @override
   Set<Column> get primaryKey => {id};
 }
@@ -127,6 +130,20 @@ class Tracks extends Table {
   TextColumn get relPath => text()();
   TextColumn get label => text()();
   IntColumn get durationMs => integer().nullable()();
+
+  /// Kaydın dili: 'ar' | 'tr' | 'en'.
+  TextColumn get language => text().withDefault(const Constant('ar'))();
+
+  /// 'manual' (elle eklenen) | 'elevenlabs' (üretilen).
+  TextColumn get source => text().withDefault(const Constant('manual'))();
+  TextColumn get voiceId => text().nullable()();
+  TextColumn get voiceName => text().nullable()();
+
+  /// Aynı dua+dilde telefonda çalınacak kayıt.
+  BoolColumn get isPrimary => boolean().withDefault(const Constant(true))();
+
+  /// Üretimde kullanılan birleşik metnin SHA-1'i (metin değişti mi?).
+  TextColumn get textHash => text().nullable()();
 
   @override
   List<String> get customConstraints => [

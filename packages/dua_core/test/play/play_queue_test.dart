@@ -2,13 +2,13 @@ import 'package:dua_core/dua_core.dart';
 import 'package:test/test.dart';
 
 Dua dua(String id) => Dua(
-    id: id, titleTr: id, readyToPublish: false, version: 0, sortOrder: 0, standaloneVisible: true);
+    id: id, titleTr: id, readyToPublish: false, version: 0, sortOrder: 0, standaloneVisible: true, textLanguage: 'ar');
 
 DuaView view(String id, {bool withTrack = true, int trackId = 1}) {
   final segs = [
     for (var i = 0; i < 2; i++) Segment(id: trackId * 10 + i, duaId: id, position: i, textAr: 'س$i', review: ReviewStatus.none)
   ];
-  final track = Track(id: trackId, ownerKind: TrackOwnerKind.dua, duaId: id, relPath: 'audio/$id.mp3', label: 'x');
+  final track = Track(id: trackId, ownerKind: TrackOwnerKind.dua, duaId: id, relPath: 'audio/$id.mp3', label: 'x', language: 'ar', source: 'manual', isPrimary: true);
   return DuaView(
     dua: dua(id),
     segments: segs,

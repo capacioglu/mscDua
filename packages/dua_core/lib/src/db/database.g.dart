@@ -361,6 +361,18 @@ class $DuasTable extends Duas with TableInfo<$DuasTable, Dua> {
     ),
     defaultValue: const Constant(true),
   );
+  static const VerificationMeta _textLanguageMeta = const VerificationMeta(
+    'textLanguage',
+  );
+  @override
+  late final GeneratedColumn<String> textLanguage = GeneratedColumn<String>(
+    'text_language',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('ar'),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -394,6 +406,7 @@ class $DuasTable extends Duas with TableInfo<$DuasTable, Dua> {
     recitationTimeTr,
     recitationTimeEn,
     standaloneVisible,
+    textLanguage,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -639,6 +652,15 @@ class $DuasTable extends Duas with TableInfo<$DuasTable, Dua> {
         ),
       );
     }
+    if (data.containsKey('text_language')) {
+      context.handle(
+        _textLanguageMeta,
+        textLanguage.isAcceptableOrUnknown(
+          data['text_language']!,
+          _textLanguageMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -772,6 +794,10 @@ class $DuasTable extends Duas with TableInfo<$DuasTable, Dua> {
         DriftSqlType.bool,
         data['${effectivePrefix}standalone_visible'],
       )!,
+      textLanguage: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}text_language'],
+      )!,
     );
   }
 
@@ -815,6 +841,9 @@ class Dua extends DataClass implements Insertable<Dua> {
   final String? recitationTimeTr;
   final String? recitationTimeEn;
   final bool standaloneVisible;
+
+  /// Duanın ana dili: 'ar' (Arapça satırlar) | 'tr' (yalnızca Türkçe; ana metin meaningTr'de).
+  final String textLanguage;
   const Dua({
     required this.id,
     required this.titleTr,
@@ -847,6 +876,7 @@ class Dua extends DataClass implements Insertable<Dua> {
     this.recitationTimeTr,
     this.recitationTimeEn,
     required this.standaloneVisible,
+    required this.textLanguage,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -932,6 +962,7 @@ class Dua extends DataClass implements Insertable<Dua> {
       map['recitation_time_en'] = Variable<String>(recitationTimeEn);
     }
     map['standalone_visible'] = Variable<bool>(standaloneVisible);
+    map['text_language'] = Variable<String>(textLanguage);
     return map;
   }
 
@@ -1018,6 +1049,7 @@ class Dua extends DataClass implements Insertable<Dua> {
           ? const Value.absent()
           : Value(recitationTimeEn),
       standaloneVisible: Value(standaloneVisible),
+      textLanguage: Value(textLanguage),
     );
   }
 
@@ -1064,6 +1096,7 @@ class Dua extends DataClass implements Insertable<Dua> {
       recitationTimeTr: serializer.fromJson<String?>(json['recitationTimeTr']),
       recitationTimeEn: serializer.fromJson<String?>(json['recitationTimeEn']),
       standaloneVisible: serializer.fromJson<bool>(json['standaloneVisible']),
+      textLanguage: serializer.fromJson<String>(json['textLanguage']),
     );
   }
   @override
@@ -1101,6 +1134,7 @@ class Dua extends DataClass implements Insertable<Dua> {
       'recitationTimeTr': serializer.toJson<String?>(recitationTimeTr),
       'recitationTimeEn': serializer.toJson<String?>(recitationTimeEn),
       'standaloneVisible': serializer.toJson<bool>(standaloneVisible),
+      'textLanguage': serializer.toJson<String>(textLanguage),
     };
   }
 
@@ -1136,6 +1170,7 @@ class Dua extends DataClass implements Insertable<Dua> {
     Value<String?> recitationTimeTr = const Value.absent(),
     Value<String?> recitationTimeEn = const Value.absent(),
     bool? standaloneVisible,
+    String? textLanguage,
   }) => Dua(
     id: id ?? this.id,
     titleTr: titleTr ?? this.titleTr,
@@ -1186,6 +1221,7 @@ class Dua extends DataClass implements Insertable<Dua> {
         ? recitationTimeEn.value
         : this.recitationTimeEn,
     standaloneVisible: standaloneVisible ?? this.standaloneVisible,
+    textLanguage: textLanguage ?? this.textLanguage,
   );
   Dua copyWithCompanion(DuasCompanion data) {
     return Dua(
@@ -1258,6 +1294,9 @@ class Dua extends DataClass implements Insertable<Dua> {
       standaloneVisible: data.standaloneVisible.present
           ? data.standaloneVisible.value
           : this.standaloneVisible,
+      textLanguage: data.textLanguage.present
+          ? data.textLanguage.value
+          : this.textLanguage,
     );
   }
 
@@ -1294,7 +1333,8 @@ class Dua extends DataClass implements Insertable<Dua> {
           ..write('recitationCount: $recitationCount, ')
           ..write('recitationTimeTr: $recitationTimeTr, ')
           ..write('recitationTimeEn: $recitationTimeEn, ')
-          ..write('standaloneVisible: $standaloneVisible')
+          ..write('standaloneVisible: $standaloneVisible, ')
+          ..write('textLanguage: $textLanguage')
           ..write(')'))
         .toString();
   }
@@ -1332,6 +1372,7 @@ class Dua extends DataClass implements Insertable<Dua> {
     recitationTimeTr,
     recitationTimeEn,
     standaloneVisible,
+    textLanguage,
   ]);
   @override
   bool operator ==(Object other) =>
@@ -1367,7 +1408,8 @@ class Dua extends DataClass implements Insertable<Dua> {
           other.recitationCount == this.recitationCount &&
           other.recitationTimeTr == this.recitationTimeTr &&
           other.recitationTimeEn == this.recitationTimeEn &&
-          other.standaloneVisible == this.standaloneVisible);
+          other.standaloneVisible == this.standaloneVisible &&
+          other.textLanguage == this.textLanguage);
 }
 
 class DuasCompanion extends UpdateCompanion<Dua> {
@@ -1402,6 +1444,7 @@ class DuasCompanion extends UpdateCompanion<Dua> {
   final Value<String?> recitationTimeTr;
   final Value<String?> recitationTimeEn;
   final Value<bool> standaloneVisible;
+  final Value<String> textLanguage;
   final Value<int> rowid;
   const DuasCompanion({
     this.id = const Value.absent(),
@@ -1435,6 +1478,7 @@ class DuasCompanion extends UpdateCompanion<Dua> {
     this.recitationTimeTr = const Value.absent(),
     this.recitationTimeEn = const Value.absent(),
     this.standaloneVisible = const Value.absent(),
+    this.textLanguage = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   DuasCompanion.insert({
@@ -1469,6 +1513,7 @@ class DuasCompanion extends UpdateCompanion<Dua> {
     this.recitationTimeTr = const Value.absent(),
     this.recitationTimeEn = const Value.absent(),
     this.standaloneVisible = const Value.absent(),
+    this.textLanguage = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        titleTr = Value(titleTr);
@@ -1504,6 +1549,7 @@ class DuasCompanion extends UpdateCompanion<Dua> {
     Expression<String>? recitationTimeTr,
     Expression<String>? recitationTimeEn,
     Expression<bool>? standaloneVisible,
+    Expression<String>? textLanguage,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1540,6 +1586,7 @@ class DuasCompanion extends UpdateCompanion<Dua> {
       if (recitationTimeTr != null) 'recitation_time_tr': recitationTimeTr,
       if (recitationTimeEn != null) 'recitation_time_en': recitationTimeEn,
       if (standaloneVisible != null) 'standalone_visible': standaloneVisible,
+      if (textLanguage != null) 'text_language': textLanguage,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1576,6 +1623,7 @@ class DuasCompanion extends UpdateCompanion<Dua> {
     Value<String?>? recitationTimeTr,
     Value<String?>? recitationTimeEn,
     Value<bool>? standaloneVisible,
+    Value<String>? textLanguage,
     Value<int>? rowid,
   }) {
     return DuasCompanion(
@@ -1610,6 +1658,7 @@ class DuasCompanion extends UpdateCompanion<Dua> {
       recitationTimeTr: recitationTimeTr ?? this.recitationTimeTr,
       recitationTimeEn: recitationTimeEn ?? this.recitationTimeEn,
       standaloneVisible: standaloneVisible ?? this.standaloneVisible,
+      textLanguage: textLanguage ?? this.textLanguage,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1710,6 +1759,9 @@ class DuasCompanion extends UpdateCompanion<Dua> {
     if (standaloneVisible.present) {
       map['standalone_visible'] = Variable<bool>(standaloneVisible.value);
     }
+    if (textLanguage.present) {
+      map['text_language'] = Variable<String>(textLanguage.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1750,6 +1802,7 @@ class DuasCompanion extends UpdateCompanion<Dua> {
           ..write('recitationTimeTr: $recitationTimeTr, ')
           ..write('recitationTimeEn: $recitationTimeEn, ')
           ..write('standaloneVisible: $standaloneVisible, ')
+          ..write('textLanguage: $textLanguage, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -4373,6 +4426,76 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _languageMeta = const VerificationMeta(
+    'language',
+  );
+  @override
+  late final GeneratedColumn<String> language = GeneratedColumn<String>(
+    'language',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('ar'),
+  );
+  static const VerificationMeta _sourceMeta = const VerificationMeta('source');
+  @override
+  late final GeneratedColumn<String> source = GeneratedColumn<String>(
+    'source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('manual'),
+  );
+  static const VerificationMeta _voiceIdMeta = const VerificationMeta(
+    'voiceId',
+  );
+  @override
+  late final GeneratedColumn<String> voiceId = GeneratedColumn<String>(
+    'voice_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _voiceNameMeta = const VerificationMeta(
+    'voiceName',
+  );
+  @override
+  late final GeneratedColumn<String> voiceName = GeneratedColumn<String>(
+    'voice_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isPrimaryMeta = const VerificationMeta(
+    'isPrimary',
+  );
+  @override
+  late final GeneratedColumn<bool> isPrimary = GeneratedColumn<bool>(
+    'is_primary',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_primary" IN (0, 1))',
+    ),
+    defaultValue: const Constant(true),
+  );
+  static const VerificationMeta _textHashMeta = const VerificationMeta(
+    'textHash',
+  );
+  @override
+  late final GeneratedColumn<String> textHash = GeneratedColumn<String>(
+    'text_hash',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -4382,6 +4505,12 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
     relPath,
     label,
     durationMs,
+    language,
+    source,
+    voiceId,
+    voiceName,
+    isPrimary,
+    textHash,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4432,6 +4561,42 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
         durationMs.isAcceptableOrUnknown(data['duration_ms']!, _durationMsMeta),
       );
     }
+    if (data.containsKey('language')) {
+      context.handle(
+        _languageMeta,
+        language.isAcceptableOrUnknown(data['language']!, _languageMeta),
+      );
+    }
+    if (data.containsKey('source')) {
+      context.handle(
+        _sourceMeta,
+        source.isAcceptableOrUnknown(data['source']!, _sourceMeta),
+      );
+    }
+    if (data.containsKey('voice_id')) {
+      context.handle(
+        _voiceIdMeta,
+        voiceId.isAcceptableOrUnknown(data['voice_id']!, _voiceIdMeta),
+      );
+    }
+    if (data.containsKey('voice_name')) {
+      context.handle(
+        _voiceNameMeta,
+        voiceName.isAcceptableOrUnknown(data['voice_name']!, _voiceNameMeta),
+      );
+    }
+    if (data.containsKey('is_primary')) {
+      context.handle(
+        _isPrimaryMeta,
+        isPrimary.isAcceptableOrUnknown(data['is_primary']!, _isPrimaryMeta),
+      );
+    }
+    if (data.containsKey('text_hash')) {
+      context.handle(
+        _textHashMeta,
+        textHash.isAcceptableOrUnknown(data['text_hash']!, _textHashMeta),
+      );
+    }
     return context;
   }
 
@@ -4471,6 +4636,30 @@ class $TracksTable extends Tracks with TableInfo<$TracksTable, Track> {
         DriftSqlType.int,
         data['${effectivePrefix}duration_ms'],
       ),
+      language: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}language'],
+      )!,
+      source: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}source'],
+      )!,
+      voiceId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}voice_id'],
+      ),
+      voiceName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}voice_name'],
+      ),
+      isPrimary: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_primary'],
+      )!,
+      textHash: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}text_hash'],
+      ),
     );
   }
 
@@ -4495,6 +4684,20 @@ class Track extends DataClass implements Insertable<Track> {
   final String relPath;
   final String label;
   final int? durationMs;
+
+  /// Kaydın dili: 'ar' | 'tr' | 'en'.
+  final String language;
+
+  /// 'manual' (elle eklenen) | 'elevenlabs' (üretilen).
+  final String source;
+  final String? voiceId;
+  final String? voiceName;
+
+  /// Aynı dua+dilde telefonda çalınacak kayıt.
+  final bool isPrimary;
+
+  /// Üretimde kullanılan birleşik metnin SHA-1'i (metin değişti mi?).
+  final String? textHash;
   const Track({
     required this.id,
     required this.ownerKind,
@@ -4503,6 +4706,12 @@ class Track extends DataClass implements Insertable<Track> {
     required this.relPath,
     required this.label,
     this.durationMs,
+    required this.language,
+    required this.source,
+    this.voiceId,
+    this.voiceName,
+    required this.isPrimary,
+    this.textHash,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -4524,6 +4733,18 @@ class Track extends DataClass implements Insertable<Track> {
     if (!nullToAbsent || durationMs != null) {
       map['duration_ms'] = Variable<int>(durationMs);
     }
+    map['language'] = Variable<String>(language);
+    map['source'] = Variable<String>(source);
+    if (!nullToAbsent || voiceId != null) {
+      map['voice_id'] = Variable<String>(voiceId);
+    }
+    if (!nullToAbsent || voiceName != null) {
+      map['voice_name'] = Variable<String>(voiceName);
+    }
+    map['is_primary'] = Variable<bool>(isPrimary);
+    if (!nullToAbsent || textHash != null) {
+      map['text_hash'] = Variable<String>(textHash);
+    }
     return map;
   }
 
@@ -4542,6 +4763,18 @@ class Track extends DataClass implements Insertable<Track> {
       durationMs: durationMs == null && nullToAbsent
           ? const Value.absent()
           : Value(durationMs),
+      language: Value(language),
+      source: Value(source),
+      voiceId: voiceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(voiceId),
+      voiceName: voiceName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(voiceName),
+      isPrimary: Value(isPrimary),
+      textHash: textHash == null && nullToAbsent
+          ? const Value.absent()
+          : Value(textHash),
     );
   }
 
@@ -4560,6 +4793,12 @@ class Track extends DataClass implements Insertable<Track> {
       relPath: serializer.fromJson<String>(json['relPath']),
       label: serializer.fromJson<String>(json['label']),
       durationMs: serializer.fromJson<int?>(json['durationMs']),
+      language: serializer.fromJson<String>(json['language']),
+      source: serializer.fromJson<String>(json['source']),
+      voiceId: serializer.fromJson<String?>(json['voiceId']),
+      voiceName: serializer.fromJson<String?>(json['voiceName']),
+      isPrimary: serializer.fromJson<bool>(json['isPrimary']),
+      textHash: serializer.fromJson<String?>(json['textHash']),
     );
   }
   @override
@@ -4575,6 +4814,12 @@ class Track extends DataClass implements Insertable<Track> {
       'relPath': serializer.toJson<String>(relPath),
       'label': serializer.toJson<String>(label),
       'durationMs': serializer.toJson<int?>(durationMs),
+      'language': serializer.toJson<String>(language),
+      'source': serializer.toJson<String>(source),
+      'voiceId': serializer.toJson<String?>(voiceId),
+      'voiceName': serializer.toJson<String?>(voiceName),
+      'isPrimary': serializer.toJson<bool>(isPrimary),
+      'textHash': serializer.toJson<String?>(textHash),
     };
   }
 
@@ -4586,6 +4831,12 @@ class Track extends DataClass implements Insertable<Track> {
     String? relPath,
     String? label,
     Value<int?> durationMs = const Value.absent(),
+    String? language,
+    String? source,
+    Value<String?> voiceId = const Value.absent(),
+    Value<String?> voiceName = const Value.absent(),
+    bool? isPrimary,
+    Value<String?> textHash = const Value.absent(),
   }) => Track(
     id: id ?? this.id,
     ownerKind: ownerKind ?? this.ownerKind,
@@ -4594,6 +4845,12 @@ class Track extends DataClass implements Insertable<Track> {
     relPath: relPath ?? this.relPath,
     label: label ?? this.label,
     durationMs: durationMs.present ? durationMs.value : this.durationMs,
+    language: language ?? this.language,
+    source: source ?? this.source,
+    voiceId: voiceId.present ? voiceId.value : this.voiceId,
+    voiceName: voiceName.present ? voiceName.value : this.voiceName,
+    isPrimary: isPrimary ?? this.isPrimary,
+    textHash: textHash.present ? textHash.value : this.textHash,
   );
   Track copyWithCompanion(TracksCompanion data) {
     return Track(
@@ -4606,6 +4863,12 @@ class Track extends DataClass implements Insertable<Track> {
       durationMs: data.durationMs.present
           ? data.durationMs.value
           : this.durationMs,
+      language: data.language.present ? data.language.value : this.language,
+      source: data.source.present ? data.source.value : this.source,
+      voiceId: data.voiceId.present ? data.voiceId.value : this.voiceId,
+      voiceName: data.voiceName.present ? data.voiceName.value : this.voiceName,
+      isPrimary: data.isPrimary.present ? data.isPrimary.value : this.isPrimary,
+      textHash: data.textHash.present ? data.textHash.value : this.textHash,
     );
   }
 
@@ -4618,14 +4881,33 @@ class Track extends DataClass implements Insertable<Track> {
           ..write('groupId: $groupId, ')
           ..write('relPath: $relPath, ')
           ..write('label: $label, ')
-          ..write('durationMs: $durationMs')
+          ..write('durationMs: $durationMs, ')
+          ..write('language: $language, ')
+          ..write('source: $source, ')
+          ..write('voiceId: $voiceId, ')
+          ..write('voiceName: $voiceName, ')
+          ..write('isPrimary: $isPrimary, ')
+          ..write('textHash: $textHash')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, ownerKind, duaId, groupId, relPath, label, durationMs);
+  int get hashCode => Object.hash(
+    id,
+    ownerKind,
+    duaId,
+    groupId,
+    relPath,
+    label,
+    durationMs,
+    language,
+    source,
+    voiceId,
+    voiceName,
+    isPrimary,
+    textHash,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -4636,7 +4918,13 @@ class Track extends DataClass implements Insertable<Track> {
           other.groupId == this.groupId &&
           other.relPath == this.relPath &&
           other.label == this.label &&
-          other.durationMs == this.durationMs);
+          other.durationMs == this.durationMs &&
+          other.language == this.language &&
+          other.source == this.source &&
+          other.voiceId == this.voiceId &&
+          other.voiceName == this.voiceName &&
+          other.isPrimary == this.isPrimary &&
+          other.textHash == this.textHash);
 }
 
 class TracksCompanion extends UpdateCompanion<Track> {
@@ -4647,6 +4935,12 @@ class TracksCompanion extends UpdateCompanion<Track> {
   final Value<String> relPath;
   final Value<String> label;
   final Value<int?> durationMs;
+  final Value<String> language;
+  final Value<String> source;
+  final Value<String?> voiceId;
+  final Value<String?> voiceName;
+  final Value<bool> isPrimary;
+  final Value<String?> textHash;
   const TracksCompanion({
     this.id = const Value.absent(),
     this.ownerKind = const Value.absent(),
@@ -4655,6 +4949,12 @@ class TracksCompanion extends UpdateCompanion<Track> {
     this.relPath = const Value.absent(),
     this.label = const Value.absent(),
     this.durationMs = const Value.absent(),
+    this.language = const Value.absent(),
+    this.source = const Value.absent(),
+    this.voiceId = const Value.absent(),
+    this.voiceName = const Value.absent(),
+    this.isPrimary = const Value.absent(),
+    this.textHash = const Value.absent(),
   });
   TracksCompanion.insert({
     this.id = const Value.absent(),
@@ -4664,6 +4964,12 @@ class TracksCompanion extends UpdateCompanion<Track> {
     required String relPath,
     required String label,
     this.durationMs = const Value.absent(),
+    this.language = const Value.absent(),
+    this.source = const Value.absent(),
+    this.voiceId = const Value.absent(),
+    this.voiceName = const Value.absent(),
+    this.isPrimary = const Value.absent(),
+    this.textHash = const Value.absent(),
   }) : ownerKind = Value(ownerKind),
        relPath = Value(relPath),
        label = Value(label);
@@ -4675,6 +4981,12 @@ class TracksCompanion extends UpdateCompanion<Track> {
     Expression<String>? relPath,
     Expression<String>? label,
     Expression<int>? durationMs,
+    Expression<String>? language,
+    Expression<String>? source,
+    Expression<String>? voiceId,
+    Expression<String>? voiceName,
+    Expression<bool>? isPrimary,
+    Expression<String>? textHash,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -4684,6 +4996,12 @@ class TracksCompanion extends UpdateCompanion<Track> {
       if (relPath != null) 'rel_path': relPath,
       if (label != null) 'label': label,
       if (durationMs != null) 'duration_ms': durationMs,
+      if (language != null) 'language': language,
+      if (source != null) 'source': source,
+      if (voiceId != null) 'voice_id': voiceId,
+      if (voiceName != null) 'voice_name': voiceName,
+      if (isPrimary != null) 'is_primary': isPrimary,
+      if (textHash != null) 'text_hash': textHash,
     });
   }
 
@@ -4695,6 +5013,12 @@ class TracksCompanion extends UpdateCompanion<Track> {
     Value<String>? relPath,
     Value<String>? label,
     Value<int?>? durationMs,
+    Value<String>? language,
+    Value<String>? source,
+    Value<String?>? voiceId,
+    Value<String?>? voiceName,
+    Value<bool>? isPrimary,
+    Value<String?>? textHash,
   }) {
     return TracksCompanion(
       id: id ?? this.id,
@@ -4704,6 +5028,12 @@ class TracksCompanion extends UpdateCompanion<Track> {
       relPath: relPath ?? this.relPath,
       label: label ?? this.label,
       durationMs: durationMs ?? this.durationMs,
+      language: language ?? this.language,
+      source: source ?? this.source,
+      voiceId: voiceId ?? this.voiceId,
+      voiceName: voiceName ?? this.voiceName,
+      isPrimary: isPrimary ?? this.isPrimary,
+      textHash: textHash ?? this.textHash,
     );
   }
 
@@ -4733,6 +5063,24 @@ class TracksCompanion extends UpdateCompanion<Track> {
     if (durationMs.present) {
       map['duration_ms'] = Variable<int>(durationMs.value);
     }
+    if (language.present) {
+      map['language'] = Variable<String>(language.value);
+    }
+    if (source.present) {
+      map['source'] = Variable<String>(source.value);
+    }
+    if (voiceId.present) {
+      map['voice_id'] = Variable<String>(voiceId.value);
+    }
+    if (voiceName.present) {
+      map['voice_name'] = Variable<String>(voiceName.value);
+    }
+    if (isPrimary.present) {
+      map['is_primary'] = Variable<bool>(isPrimary.value);
+    }
+    if (textHash.present) {
+      map['text_hash'] = Variable<String>(textHash.value);
+    }
     return map;
   }
 
@@ -4745,7 +5093,13 @@ class TracksCompanion extends UpdateCompanion<Track> {
           ..write('groupId: $groupId, ')
           ..write('relPath: $relPath, ')
           ..write('label: $label, ')
-          ..write('durationMs: $durationMs')
+          ..write('durationMs: $durationMs, ')
+          ..write('language: $language, ')
+          ..write('source: $source, ')
+          ..write('voiceId: $voiceId, ')
+          ..write('voiceName: $voiceName, ')
+          ..write('isPrimary: $isPrimary, ')
+          ..write('textHash: $textHash')
           ..write(')'))
         .toString();
   }
@@ -5515,6 +5869,7 @@ typedef $$DuasTableCreateCompanionBuilder = DuasCompanion Function({
   Value<String?> recitationTimeTr,
   Value<String?> recitationTimeEn,
   Value<bool> standaloneVisible,
+  Value<String> textLanguage,
   Value<int> rowid,
 });
 typedef $$DuasTableUpdateCompanionBuilder = DuasCompanion Function({
@@ -5549,6 +5904,7 @@ typedef $$DuasTableUpdateCompanionBuilder = DuasCompanion Function({
   Value<String?> recitationTimeTr,
   Value<String?> recitationTimeEn,
   Value<bool> standaloneVisible,
+  Value<String> textLanguage,
   Value<int> rowid,
 });
 
@@ -5805,6 +6161,11 @@ class $$DuasTableFilterComposer
 
   ColumnFilters<bool> get standaloneVisible => $composableBuilder(
     column: $table.standaloneVisible,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get textLanguage => $composableBuilder(
+    column: $table.textLanguage,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6091,6 +6452,11 @@ class $$DuasTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get textLanguage => $composableBuilder(
+    column: $table.textLanguage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$DuasTableOrderingComposer get variantOf {
     final $$DuasTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -6249,6 +6615,11 @@ class $$DuasTableAnnotationComposer
 
   GeneratedColumn<bool> get standaloneVisible => $composableBuilder(
     column: $table.standaloneVisible,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get textLanguage => $composableBuilder(
+    column: $table.textLanguage,
     builder: (column) => column,
   );
 
@@ -6441,6 +6812,7 @@ class $$DuasTableTableManager
                 Value<String?> recitationTimeTr = const Value.absent(),
                 Value<String?> recitationTimeEn = const Value.absent(),
                 Value<bool> standaloneVisible = const Value.absent(),
+                Value<String> textLanguage = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DuasCompanion(
                 id: id,
@@ -6474,6 +6846,7 @@ class $$DuasTableTableManager
                 recitationTimeTr: recitationTimeTr,
                 recitationTimeEn: recitationTimeEn,
                 standaloneVisible: standaloneVisible,
+                textLanguage: textLanguage,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -6509,6 +6882,7 @@ class $$DuasTableTableManager
                 Value<String?> recitationTimeTr = const Value.absent(),
                 Value<String?> recitationTimeEn = const Value.absent(),
                 Value<bool> standaloneVisible = const Value.absent(),
+                Value<String> textLanguage = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => DuasCompanion.insert(
                 id: id,
@@ -6542,6 +6916,7 @@ class $$DuasTableTableManager
                 recitationTimeTr: recitationTimeTr,
                 recitationTimeEn: recitationTimeEn,
                 standaloneVisible: standaloneVisible,
+                textLanguage: textLanguage,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -9321,6 +9696,12 @@ typedef $$TracksTableCreateCompanionBuilder = TracksCompanion Function({
   required String relPath,
   required String label,
   Value<int?> durationMs,
+  Value<String> language,
+  Value<String> source,
+  Value<String?> voiceId,
+  Value<String?> voiceName,
+  Value<bool> isPrimary,
+  Value<String?> textHash,
 });
 typedef $$TracksTableUpdateCompanionBuilder = TracksCompanion Function({
   Value<int> id,
@@ -9330,6 +9711,12 @@ typedef $$TracksTableUpdateCompanionBuilder = TracksCompanion Function({
   Value<String> relPath,
   Value<String> label,
   Value<int?> durationMs,
+  Value<String> language,
+  Value<String> source,
+  Value<String?> voiceId,
+  Value<String?> voiceName,
+  Value<bool> isPrimary,
+  Value<String?> textHash,
 });
 
 final class $$TracksTableReferences
@@ -9422,6 +9809,36 @@ class $$TracksTableFilterComposer
 
   ColumnFilters<int> get durationMs => $composableBuilder(
     column: $table.durationMs,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get language => $composableBuilder(
+    column: $table.language,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get voiceId => $composableBuilder(
+    column: $table.voiceId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get voiceName => $composableBuilder(
+    column: $table.voiceName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isPrimary => $composableBuilder(
+    column: $table.isPrimary,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get textHash => $composableBuilder(
+    column: $table.textHash,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -9531,6 +9948,36 @@ class $$TracksTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get language => $composableBuilder(
+    column: $table.language,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get source => $composableBuilder(
+    column: $table.source,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get voiceId => $composableBuilder(
+    column: $table.voiceId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get voiceName => $composableBuilder(
+    column: $table.voiceName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isPrimary => $composableBuilder(
+    column: $table.isPrimary,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get textHash => $composableBuilder(
+    column: $table.textHash,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$DuasTableOrderingComposer get duaId {
     final $$DuasTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -9603,6 +10050,24 @@ class $$TracksTableAnnotationComposer
     column: $table.durationMs,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get language =>
+      $composableBuilder(column: $table.language, builder: (column) => column);
+
+  GeneratedColumn<String> get source =>
+      $composableBuilder(column: $table.source, builder: (column) => column);
+
+  GeneratedColumn<String> get voiceId =>
+      $composableBuilder(column: $table.voiceId, builder: (column) => column);
+
+  GeneratedColumn<String> get voiceName =>
+      $composableBuilder(column: $table.voiceName, builder: (column) => column);
+
+  GeneratedColumn<bool> get isPrimary =>
+      $composableBuilder(column: $table.isPrimary, builder: (column) => column);
+
+  GeneratedColumn<String> get textHash =>
+      $composableBuilder(column: $table.textHash, builder: (column) => column);
 
   $$DuasTableAnnotationComposer get duaId {
     final $$DuasTableAnnotationComposer composer = $composerBuilder(
@@ -9711,6 +10176,12 @@ class $$TracksTableTableManager
                 Value<String> relPath = const Value.absent(),
                 Value<String> label = const Value.absent(),
                 Value<int?> durationMs = const Value.absent(),
+                Value<String> language = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<String?> voiceId = const Value.absent(),
+                Value<String?> voiceName = const Value.absent(),
+                Value<bool> isPrimary = const Value.absent(),
+                Value<String?> textHash = const Value.absent(),
               }) => TracksCompanion(
                 id: id,
                 ownerKind: ownerKind,
@@ -9719,6 +10190,12 @@ class $$TracksTableTableManager
                 relPath: relPath,
                 label: label,
                 durationMs: durationMs,
+                language: language,
+                source: source,
+                voiceId: voiceId,
+                voiceName: voiceName,
+                isPrimary: isPrimary,
+                textHash: textHash,
               ),
           createCompanionCallback:
               ({
@@ -9729,6 +10206,12 @@ class $$TracksTableTableManager
                 required String relPath,
                 required String label,
                 Value<int?> durationMs = const Value.absent(),
+                Value<String> language = const Value.absent(),
+                Value<String> source = const Value.absent(),
+                Value<String?> voiceId = const Value.absent(),
+                Value<String?> voiceName = const Value.absent(),
+                Value<bool> isPrimary = const Value.absent(),
+                Value<String?> textHash = const Value.absent(),
               }) => TracksCompanion.insert(
                 id: id,
                 ownerKind: ownerKind,
@@ -9737,6 +10220,12 @@ class $$TracksTableTableManager
                 relPath: relPath,
                 label: label,
                 durationMs: durationMs,
+                language: language,
+                source: source,
+                voiceId: voiceId,
+                voiceName: voiceName,
+                isPrimary: isPrimary,
+                textHash: textHash,
               ),
           withReferenceMapper: (p0) => p0
               .map(

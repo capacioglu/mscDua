@@ -28,10 +28,21 @@ class ContentDatabase extends _$ContentDatabase {
   static ContentDatabase memory() => ContentDatabase(NativeDatabase.memory());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            await m.addColumn(duas, duas.textLanguage);
+            await m.addColumn(tracks, tracks.language);
+            await m.addColumn(tracks, tracks.source);
+            await m.addColumn(tracks, tracks.voiceId);
+            await m.addColumn(tracks, tracks.voiceName);
+            await m.addColumn(tracks, tracks.isPrimary);
+            await m.addColumn(tracks, tracks.textHash);
+          }
+        },
         beforeOpen: (details) async {
           await customStatement('PRAGMA foreign_keys = ON');
         },
