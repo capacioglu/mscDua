@@ -30,9 +30,55 @@ class _DuaListScreenState extends State<DuaListScreen> {
   List<DuaSummary> _all = [];
   List<Category> _categories = [];
   List<DuaGroup> _groups = [];
-  final Set<String> _catFilter = {};
+  String? _catFilter;
   String? _groupFilter;
   TimingProgress? _progressFilter;
+  String? _kindFilter;
+  String? _audioFilter;
+
+  /// "Filtreleri temizle" açılır listeleri sıfırlasın diye artar.
+  int _filterGen = 0;
+
+  static const _kinds = {
+    'ar': 'Arapça dualar',
+    'tr': 'Yalnızca Türkçe dualar',
+    'ar-tr': 'Arapça · Türkçe anlamlı',
+    'ar-en': 'Arapça · İngilizce anlamlı',
+    'ar-tr-en': 'Arapça · Türkçe + İngilizce anlamlı',
+    'no-meaning': 'Satır anlamı eksik',
+  };
+
+  static const _audios = {
+    'ar': 'Arapça sesi var',
+    'tr': 'Türkçe sesi var',
+    'en': 'İngilizce sesi var',
+    'none': 'Hiç sesi yok',
+    'stale': 'Metin değişti (yeniden üret)',
+  };
+
+  static bool _kindMatches(String k, DuaSummary d) => switch (k) {
+    'ar' => !d.turkishOnly,
+    'tr' => d.turkishOnly,
+    'ar-tr' => !d.turkishOnly && d.hasMeaningTr,
+    'ar-en' => !d.turkishOnly && d.hasMeaningEn,
+    'ar-tr-en' => !d.turkishOnly && d.hasMeaningTr && d.hasMeaningEn,
+    'no-meaning' => !d.turkishOnly && !d.hasMeaningTr,
+    _ => true,
+  };
+
+  static bool _audioMatches(String k, DuaSummary d) => switch (k) {
+    'none' => d.trackCount == 0,
+    'stale' => d.staleTts,
+    _ =>
+      (d.timingByLang[k] ?? TimingProgress.noAudio) != TimingProgress.noAudio,
+  };
+
+  bool get _anyFilter =>
+      _catFilter != null ||
+      _groupFilter != null ||
+      _progressFilter != null ||
+      _kindFilter != null ||
+      _audioFilter != null;
   String _query = '';
 
   /// Çoklu seçim (Ctrl/Shift + tık); sağ tık menüsü seçime uygulanır.
@@ -73,7 +119,13 @@ class _DuaListScreenState extends State<DuaListScreen> {
   List<DuaSummary> get _visible {
     final q = trLower(_query.trim());
     return _all.where((d) {
-      if (_catFilter.isNotEmpty && !_catFilter.every(d.categories.contains)) {
+      if (_catFilter != null && !d.categories.contains(_catFilter)) {
+        return false;
+      }
+      if (_kindFilter != null && !_kindMatches(_kindFilter!, d)) {
+        return false;
+      }
+      if (_audioFilter != null && !_audioMatches(_audioFilter!, d)) {
         return false;
       }
       if (_groupFilter != null && !d.groupIds.contains(_groupFilter)) {
@@ -309,73 +361,158 @@ class _DuaListScreenState extends State<DuaListScreen> {
     );
   }
 
+  /// Küçük yazılı, kenarlıklı açılır liste; ilk seçenek "Hepsi".
+  Widget _combo<T>({
+    required String id,
+    required String label,
+    required T? value,
+    required Map<T, String> items,
+    required ValueChanged<T?> onChanged,
+  }) {
+    final style = TextStyle(
+      fontSize: 13,
+      color: Theme.of(context).colorScheme.onSurface,
+    );
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: DropdownButtonFormField<T?>(
+        key: ValueKey('filter-$id'),
+        initialValue: value,
+        isDense: true,
+        isExpanded: true,
+        style: style,
+        iconSize: 20,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(fontSize: 13),
+          isDense: true,
+          border: const OutlineInputBorder(),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 10,
+            vertical: 10,
+          ),
+        ),
+        items: [
+          DropdownMenuItem<T?>(value: null, child: Text('Hepsi', style: style)),
+          for (final e in items.entries)
+            DropdownMenuItem<T?>(
+              value: e.key,
+              child: Text(
+                e.value,
+                style: style,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+        ],
+        onChanged: onChanged,
+      ),
+    );
+  }
+
+  String _withCount(String label, bool Function(DuaSummary) f) =>
+      '$label (${_all.where(f).length})';
+
   Widget _filters() => ListView(
     padding: const EdgeInsets.all(12),
     children: [
       TextField(
         key: const ValueKey('search'),
+        style: const TextStyle(fontSize: 13),
         decoration: const InputDecoration(
-          prefixIcon: Icon(Icons.search),
+          prefixIcon: Icon(Icons.search, size: 18),
           hintText: 'Ara (başlık, kimlik)',
+          hintStyle: TextStyle(fontSize: 13),
+          isDense: true,
+          border: OutlineInputBorder(),
         ),
         onChanged: (v) => setState(() => _query = v),
       ),
       const SizedBox(height: 12),
-      DropdownButton<TimingProgress?>(
-        isExpanded: true,
-        value: _progressFilter,
-        hint: const Text('Durum: hepsi'),
-        items: [
-          const DropdownMenuItem(value: null, child: Text('Durum: hepsi')),
-          for (final p in TimingProgress.values)
-            DropdownMenuItem(value: p, child: Text(timingLabel(p))),
-        ],
-        onChanged: (v) => setState(() => _progressFilter = v),
-      ),
-      const SizedBox(height: 12),
-      Text('Gruplar', style: Theme.of(context).textTheme.titleSmall),
-      RadioGroup<String?>(
-        groupValue: _groupFilter,
-        onChanged: (v) => setState(() => _groupFilter = v),
+      KeyedSubtree(
+        key: ValueKey('filters-$_filterGen'),
         child: Column(
           children: [
-            const RadioListTile<String?>(
-              dense: true,
-              value: null,
-              title: Text('Hepsi'),
+            _combo<String>(
+              id: 'kind',
+              label: 'Dua dili',
+              value: _kindFilter,
+              items: {
+                for (final e in _kinds.entries)
+                  e.key: _withCount(e.value, (d) => _kindMatches(e.key, d)),
+              },
+              onChanged: (v) => setState(() => _kindFilter = v),
             ),
-            for (final g in _groups)
-              RadioListTile<String?>(
-                dense: true,
-                value: g.id,
-                title: Text(g.titleTr),
-                secondary: IconButton(
-                  icon: const Icon(Icons.open_in_new, size: 18),
-                  tooltip: 'Grubu aç',
-                  onPressed: () => widget.onOpenGroup?.call(g.id),
+            _combo<String>(
+              id: 'category',
+              label: 'Kategori',
+              value: _catFilter,
+              items: {
+                for (final c in _categories)
+                  c.nameTr: _withCount(
+                    c.nameTr,
+                    (d) => d.categories.contains(c.nameTr),
+                  ),
+              },
+              onChanged: (v) => setState(() => _catFilter = v),
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: _combo<String>(
+                    id: 'group',
+                    label: 'Grup',
+                    value: _groupFilter,
+                    items: {for (final g in _groups) g.id: g.titleTr},
+                    onChanged: (v) => setState(() => _groupFilter = v),
+                  ),
                 ),
-              ),
+                if (_groupFilter != null)
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    icon: const Icon(Icons.open_in_new, size: 18),
+                    tooltip: 'Grubu aç',
+                    onPressed: () => widget.onOpenGroup?.call(_groupFilter!),
+                  ),
+              ],
+            ),
+            _combo<String>(
+              id: 'audio',
+              label: 'Ses',
+              value: _audioFilter,
+              items: {
+                for (final e in _audios.entries)
+                  e.key: _withCount(e.value, (d) => _audioMatches(e.key, d)),
+              },
+              onChanged: (v) => setState(() => _audioFilter = v),
+            ),
+            _combo<TimingProgress>(
+              id: 'timing',
+              label: 'Zamanlama',
+              value: _progressFilter,
+              items: {for (final p in TimingProgress.values) p: timingLabel(p)},
+              onChanged: (v) => setState(() => _progressFilter = v),
+            ),
           ],
         ),
       ),
-      const SizedBox(height: 12),
-      Text('Kategoriler', style: Theme.of(context).textTheme.titleSmall),
-      Wrap(
-        spacing: 4,
-        runSpacing: 4,
-        children: [
-          for (final c in _categories)
-            FilterChip(
-              key: ValueKey('filter-cat-${c.nameTr}'),
-              label: Text(c.nameTr),
-              selected: _catFilter.contains(c.nameTr),
-              onSelected: (on) => setState(
-                () =>
-                    on ? _catFilter.add(c.nameTr) : _catFilter.remove(c.nameTr),
-              ),
+      if (_anyFilter)
+        Align(
+          alignment: Alignment.centerLeft,
+          child: TextButton.icon(
+            key: const ValueKey('filter-clear'),
+            onPressed: () => setState(() {
+              _catFilter = _groupFilter = _kindFilter = _audioFilter = null;
+              _progressFilter = null;
+              _filterGen++;
+            }),
+            icon: const Icon(Icons.filter_alt_off, size: 16),
+            label: const Text(
+              'Filtreleri temizle',
+              style: TextStyle(fontSize: 13),
             ),
-        ],
-      ),
+          ),
+        ),
     ],
   );
 

@@ -349,6 +349,7 @@ class _DuaEditScreenState extends State<DuaEditScreen> {
             Text('$label: $v', style: const TextStyle(fontSize: 13)),
         const SizedBox(height: 6),
         CategoryChips(db: db, duaId: d.id, onChanged: () => s.changed()),
+        _languagePicker(d),
         _ttsBar(d),
         ..._staleWarnings(),
         if (check != null)
@@ -448,6 +449,56 @@ class _DuaEditScreenState extends State<DuaEditScreen> {
         ),
       ),
     );
+  }
+
+  /// Dua dili: Arapça (Arapça metin + anlamlar) ya da yalnızca Türkçe.
+  Widget _languagePicker(Dua d) {
+    const style = TextStyle(fontSize: 13);
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Row(
+        children: [
+          const Text('Dua dili:', style: style),
+          const SizedBox(width: 8),
+          DropdownButton<String>(
+            key: const ValueKey('dua-language'),
+            value: d.textLanguage,
+            isDense: true,
+            style: style.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+            items: const [
+              DropdownMenuItem(
+                value: 'ar',
+                child: Text('Arapça (anlamlarıyla)'),
+              ),
+              DropdownMenuItem(value: 'tr', child: Text('Yalnızca Türkçe')),
+            ],
+            onChanged: (v) =>
+                v == null || v == d.textLanguage ? null : _setLanguage(v),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _setLanguage(String lang) async {
+    final missingTr = _segs
+        .where((x) => (x.meaningTr ?? '').trim().isEmpty)
+        .length;
+    await (db.update(db.duas)..where((t) => t.id.equals(widget.duaId))).write(
+      DuasCompanion(textLanguage: Value(lang)),
+    );
+    if (mounted && lang == 'tr' && missingTr > 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '$missingTr satırın Türkçe metni yok; Türkçe duada ana metin Türkçe anlamdır.',
+          ),
+        ),
+      );
+    }
+    await _changed();
   }
 
   /// "Ses üret: [Arapça] [Türkçe] [İngilizce]"; uygun değilse pasif + ipucu.

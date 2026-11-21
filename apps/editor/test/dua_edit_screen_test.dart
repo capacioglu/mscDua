@@ -105,4 +105,19 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('DUA-0004 —'), findsOneWidget);
   });
+
+  testWidgets('dua dili kategoriler gibi seçilir: Arapça → Yalnızca Türkçe', (
+    tester,
+  ) async {
+    await open(tester, 'DUA-0013');
+    await tester.tap(find.byKey(const ValueKey('dua-language')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Yalnızca Türkçe').last);
+    await tester.pumpAndSettle();
+    final d = await (db.select(
+      db.duas,
+    )..where((t) => t.id.equals('DUA-0013'))).getSingle();
+    expect(d.textLanguage, 'tr');
+    expect(find.textContaining('Türkçe metin yapıştır'), findsOneWidget);
+  });
 }

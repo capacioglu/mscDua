@@ -5,6 +5,8 @@ import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:dua_core/dua_core.dart';
 import 'package:test/test.dart';
 
+import '../helpers.dart';
+
 void main() {
   late ContentDatabase db;
   setUp(() async {
@@ -77,5 +79,14 @@ void main() {
     s = await of('DUA-0013');
     expect(s.staleTts, isTrue);
   });
-}
 
+  test('özet satır anlamlarının tamlığını ve yalnızca Türkçe duayı bildirir', () async {
+    await seedDua(db, 'X1', ['أ', 'ب'], translated: true);
+    await seedDua(db, 'X2', ['أ']);
+    await db.into(db.duas).insert(DuasCompanion.insert(id: 'X3', titleTr: 'X3', textLanguage: const Value('tr')));
+    final m = {for (final s in await listDuaSummaries(db)) s.id: s};
+    expect((m['X1']!.hasMeaningTr, m['X1']!.hasMeaningEn, m['X1']!.turkishOnly), (true, true, false));
+    expect((m['X2']!.hasMeaningTr, m['X2']!.hasMeaningEn), (false, false));
+    expect(m['X3']!.turkishOnly, isTrue);
+  });
+}

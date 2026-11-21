@@ -26,6 +26,8 @@ class DuaSummary {
     required this.timing,
     required this.timingByLang,
     required this.staleTts,
+    this.hasMeaningTr = false,
+    this.hasMeaningEn = false,
   });
   final Dua dua;
   final DuaProgress progress;
@@ -40,6 +42,13 @@ class DuaSummary {
 
   /// ElevenLabs sesi üretildikten sonra metin değişti mi?
   final bool staleTts;
+
+  /// Satırların hepsinde Türkçe / İngilizce anlam var mı (satırsız duada false).
+  final bool hasMeaningTr;
+  final bool hasMeaningEn;
+
+  /// Yalnızca Türkçe dua (Arapçası yok).
+  bool get turkishOnly => dua.textLanguage == 'tr';
 
   String get id => dua.id;
   String get titleTr => dua.titleTr;
@@ -109,6 +118,8 @@ Future<List<DuaSummary>> listDuaSummaries(ContentDatabase db) async {
         segmentCount: segsBy[d.id]?.length ?? 0,
         timing: timingOf(d.id),
         timingByLang: {for (final l in const ['ar', 'tr', 'en']) l: timingOf(d.id, l)},
+        hasMeaningTr: _allHave(segsBy[d.id], (s) => s.meaningTr),
+        hasMeaningEn: _allHave(segsBy[d.id], (s) => s.meaningEn),
         staleTts: tracks.any((t) {
           if (t.duaId != d.id || t.source != 'elevenlabs' || t.textHash == null) return false;
           final text = buildTtsText(segsBy[d.id] ?? const [], t.language);
@@ -117,3 +128,6 @@ Future<List<DuaSummary>> listDuaSummaries(ContentDatabase db) async {
       ),
   ];
 }
+
+bool _allHave(List<Segment>? segs, String? Function(Segment) f) =>
+    segs != null && segs.isNotEmpty && segs.every((s) => (f(s) ?? '').trim().isNotEmpty);
