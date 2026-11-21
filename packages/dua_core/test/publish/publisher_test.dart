@@ -66,6 +66,32 @@ void main() {
     expect(File(p.join(out.path, 'audio', 'd1.mp3')).existsSync(), isTrue);
   });
 
+  test('dönüştürücü verilirse yayına dönüştürülmüş ses gider, orijinal değişmez', () async {
+    await publishable('D1');
+    final calls = <String>[];
+    await publish(db, contentDir: content, outDir: out, transcode: (src, dst) async {
+      calls.add(p.basename(src.path));
+      await dst.writeAsBytes([9, 9]);
+    });
+    expect(calls, ['d1.mp3']);
+    expect(File(p.join(out.path, 'audio', 'd1.mp3')).readAsBytesSync(), [9, 9]);
+    expect(File(p.join(content.path, 'audio', 'd1.mp3')).readAsBytesSync(), [1, 2, 3]);
+  });
+
+  test('önbellekli dönüştürücü aynı dosyayı ikinci yayında yeniden dönüştürmez', () async {
+    await publishable('D1');
+    var n = 0;
+    final cache = Directory(p.join(tmp.path, 'cache'));
+    final t = cachedTranscoder(cache, (src, dst) async {
+      n++;
+      await dst.writeAsBytes([7]);
+    });
+    await publish(db, contentDir: content, outDir: out, transcode: t);
+    await publish(db, contentDir: content, outDir: out, transcode: t);
+    expect(n, 1);
+    expect(File(p.join(out.path, 'audio', 'd1.mp3')).readAsBytesSync(), [7]);
+  });
+
   test('grup tüm üyeleriyle (sesi olmayan dahil), sıra korunarak; üyesiz grup çıkmaz', () async {
     await publishable('D1');
     await seedDua(db, 'D2', ['جَ'], translated: true);

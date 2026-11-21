@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:drift/drift.dart';
 import 'package:path/path.dart' as p;
 
@@ -38,9 +39,31 @@ void _validateOutDir(Directory contentDir, Directory outDir) {
   }
 }
 
+/// Yayına giden sesi [src]'den [dst]'ye yazar (ör. 64 kbps'ye dönüştürür).
+typedef AudioTranscoder = Future<void> Function(File src, File dst);
+
+/// [convert]'ü önbellekle sarar: aynı dosya (yol + boyut + değişme zamanı)
+/// ikinci kez dönüştürülmez. Orijinal dosyaya dokunulmaz.
+AudioTranscoder cachedTranscoder(Directory cacheDir, AudioTranscoder convert) => (src, dst) async {
+      final st = src.statSync();
+      final key = sha1
+          .convert(utf8.encode('${p.normalize(p.absolute(src.path))}|${st.size}|${st.modified.millisecondsSinceEpoch}'))
+          .toString();
+      final cached = File(p.join(cacheDir.path, '$key${p.extension(src.path)}'));
+      if (!cached.existsSync()) {
+        await cacheDir.create(recursive: true);
+        final part = File('${cached.path}.part');
+        await convert(src, part);
+        await part.rename(cached.path);
+      }
+      await cached.copy(dst.path);
+    };
+
 /// Yayınlanabilir içeriği (spec §6.5.2, §6.6) mobil için ayrı bir veritabanına
 /// ve ses klasörüne aktarır. Çıktı önce geçici klasörde hazırlanır.
-Future<PublishReport> publish(ContentDatabase db, {required Directory contentDir, required Directory outDir}) async {
+/// [transcode] verilirse sesler kopyalanmak yerine onunla yazılır (orijinaller kalır).
+Future<PublishReport> publish(ContentDatabase db,
+    {required Directory contentDir, required Directory outDir, AudioTranscoder? transcode}) async {
   _validateOutDir(contentDir, outDir);
   final report = PublishReport();
   final manifestFile = File(p.join(outDir.path, 'manifest.json'));
@@ -164,7 +187,11 @@ Future<PublishReport> publish(ContentDatabase db, {required Directory contentDir
         }
         final dst = File(p.joinAll([tmp.path, ...t.relPath.split('/')]));
         await dst.parent.create(recursive: true);
-        await audioFile(t).copy(dst.path);
+        if (transcode == null) {
+          await audioFile(t).copy(dst.path);
+        } else {
+          await transcode(audioFile(t), dst);
+        }
       }
     });
   } finally {

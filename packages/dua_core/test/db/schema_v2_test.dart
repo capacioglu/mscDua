@@ -8,7 +8,7 @@ void main() {
   test('v1 içerik veritabanı açılınca yeni sütunlar varsayılanlarla eklenir, veri korunur', () async {
     final tmp = await Directory.systemTemp.createTemp('dualarim_v2');
     final f = File(p.join(tmp.path, 'content.db'));
-    await File('../../apps/mobile/assets/content/content.db').copy(f.path);
+    await File('test/fixtures/content_v1.db').copy(f.path);
     final db = ContentDatabase.open(f);
     try {
       final tracks = await db.select(db.tracks).get();

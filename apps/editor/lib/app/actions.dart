@@ -124,10 +124,25 @@ Future<void> publishAction(
   BuildContext context,
   AppState s,
 ) => _guard(context, 'Mobil için yayınla', () async {
-  final r = await publish(s.db, contentDir: s.contentDir, outDir: s.publishDir);
+  // Telefona 64 kbps mono kopyalar gider; content/audio'daki orijinaller değişmez.
+  final ff = s.ffmpeg;
+  final r = await publish(
+    s.db,
+    contentDir: s.contentDir,
+    outDir: s.publishDir,
+    transcode: ff == null
+        ? null
+        : cachedTranscoder(
+            Directory(p.join(s.contentDir.path, '.yayin-64k')),
+            (src, dst) => ff.transcodeSpeech(src, dst),
+          ),
+  );
   s.changed();
   return [
     'İçerik sürümü: ${r.contentVersion} → ${s.publishDir.path}',
+    ff == null
+        ? '⚠ ffmpeg bulunamadı: sesler dönüştürülmeden (orijinal boyutta) kopyalandı.'
+        : 'Sesler telefona 64 kbps olarak gitti (orijinaller content/audio\'da).',
     'Yayınlanan dua: ${r.publishedDuaIds.length}, grup: ${r.publishedGroupIds.length}',
     if (r.skipped.isNotEmpty) 'Yayınlanmayan (${r.skipped.length}):',
     ...r.skipped.entries.map((e) => '  ${e.key}: ${e.value.join('; ')}'),

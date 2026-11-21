@@ -11,3 +11,5 @@ content/translation/done.json
 
 # Inno Setup çıktısı (installer/dualarim.iss)
 installer/Output/
+content/.yayin-64k/
+content/_yedek_*/

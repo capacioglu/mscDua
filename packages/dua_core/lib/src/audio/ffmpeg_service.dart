@@ -48,6 +48,20 @@ class FfmpegService {
     return outM4a;
   }
 
+  /// Konuşma sesini mono [kbps] (varsayılan 64) olarak yeniden kodlar.
+  /// mp3 → mp3 (LAME), m4a/aac → AAC; uzantı korunur.
+  Future<File> transcodeSpeech(File input, File out, {int kbps = 64}) async {
+    final ext = p.extension(input.path).toLowerCase();
+    final codec = ext == '.m4a' || ext == '.aac' ? 'aac' : 'libmp3lame';
+    final format = ext == '.m4a' ? 'ipod' : (ext == '.aac' ? 'adts' : 'mp3');
+    final r = await Process.run(ffmpegPath, [
+      '-y', '-v', 'error', '-i', input.path, '-vn', '-ac', '1',
+      '-c:a', codec, '-b:a', '${kbps}k', '-f', format, out.path,
+    ]);
+    if (r.exitCode != 0) throw ProcessException(ffmpegPath, const [], 'Dönüştürülemedi: ${r.stderr}', r.exitCode);
+    return out;
+  }
+
   /// Sesi mono 16-bit PCM olarak çözer (dalga formu için).
   Future<Int16List> decodePcm(File audio, {int sampleRate = 8000}) async {
     final proc = await Process.start(
