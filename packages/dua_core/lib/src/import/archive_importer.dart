@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 
 import '../db/database.dart';
 import '../model/enums.dart';
+import '../text/turkish_segmenter.dart';
 import '../text/pronunciation_segmenter.dart';
 
 class ImportReport {
@@ -210,7 +211,25 @@ class ArchiveImporter {
     return null;
   }
 
+  /// Arapçası olmayan, Türkçe metni olan dua: yalnızca Türkçe dua.
+  static bool _turkishOnly(Map<String, dynamic> m) =>
+      ((m['text_ar'] as String?) ?? '').trim().isEmpty && ((m['meaning_tr'] as String?) ?? '').trim().isNotEmpty;
+
   Future<void> _createSegments(String duaId, Map<String, dynamic> m, ImportReport report) async {
+    if (_turkishOnly(m)) {
+      final parts = splitTurkish(m['meaning_tr'] as String);
+      for (var i = 0; i < parts.length; i++) {
+        await db.into(db.segments).insert(SegmentsCompanion.insert(
+              duaId: duaId,
+              position: i,
+              textAr: '',
+              meaningTr: Value(parts[i]),
+              meaningTrSource: const Value(FieldSource.imported),
+            ));
+      }
+      report.segmentsCreated += parts.length;
+      return;
+    }
     final text = m['text_ar'] as String?;
     if (text == null) return;
     final drafts = segmentByPronunciation(
@@ -266,6 +285,7 @@ class ArchiveImporter {
       editorialNote: Value(m['source_note'] as String?),
       standaloneVisible: Value((m['standalone_visible'] as bool?) ?? variantOf == null),
       expectedAudioFile: Value(expectedAudioFileFor(id)),
+      textLanguage: Value(_turkishOnly(m) ? 'tr' : 'ar'),
     );
 
     final existing = await _dua(id);
@@ -299,7 +319,11 @@ class ArchiveImporter {
       if (n != null && n != current[k]) diff[k] = {'old': current[k], 'new': n};
     }
 
-    final segs = await db.segmentsOf(id);
+    var segs = await db.segmentsOf(id);
+    if (segs.isEmpty && _turkishOnly(m)) {
+      await _createSegments(id, m, report);
+      segs = await db.segmentsOf(id);
+    }
     final joined = segs.map((s) => s.textAr).join(' ');
     final prevText = existing.srcTextAr ?? joined;
     var recreated = false;
