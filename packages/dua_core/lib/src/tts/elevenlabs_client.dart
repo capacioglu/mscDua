@@ -51,7 +51,8 @@ class ElevenLabsClient {
   final http.Client _http;
 
   static const defaultModel = 'eleven_multilingual_v2';
-  static const outputFormat = 'mp3_44100_128';
+  /// 64 kbps: konuşma için yeterli, uygulama boyutunu mağaza sınırlarının altında tutar.
+  static const outputFormat = 'mp3_44100_64';
 
   String get _masked => apiKey.length <= 4 ? '****' : '…${apiKey.substring(apiKey.length - 4)}';
 

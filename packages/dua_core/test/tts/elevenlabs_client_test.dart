@@ -60,7 +60,7 @@ void main() {
     }));
     final (mp3, al) = await c.speakWithTimestamps('v1', 'ab');
     expect(seen.url.path, '/v1/text-to-speech/v1/with-timestamps');
-    expect(seen.url.queryParameters['output_format'], 'mp3_44100_128');
+    expect(seen.url.queryParameters['output_format'], 'mp3_44100_64');
     final body = jsonDecode(seen.body);
     expect((body['text'], body['model_id']), ('ab', 'eleven_multilingual_v2'));
     expect(mp3, [1, 2, 3]);

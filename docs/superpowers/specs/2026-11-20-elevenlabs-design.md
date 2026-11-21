@@ -64,7 +64,7 @@ Kullanıcı duaların sesini elle kaydetmek yerine editörden doğrudan ElevenLa
 - **API anahtarı** alanı (gizli yazı, göster/gizle) + "Bağlantıyı dene" → `GET /v1/user/subscription` ile doğrular ve **kalan karakter kotasını** gösterir (`character_limit - character_count`).
 - **Sesler:** her dil (Arapça, Türkçe, İngilizce) için ayrı seçim. Liste `GET /v1/voices` (hesaptaki sesler). Ayrıca **"Ses kitaplığında ara"** (`GET /v1/shared-voices?search=…`, ör. "Hanafi") → seçilen kitaplık sesi "Hesabıma ekle" (`POST /v1/voices/add/{public_owner_id}/{voice_id}`) ile hesaba eklenir. Elle **ses kimliği (voice ID)** girmek de mümkün.
 - **Deneme alanı:** metin kutusu (varsayılan: o dilde kısa bir dua cümlesi) + "Seslendir" → `POST /v1/text-to-speech/{voice_id}` → editörde çalınır; dosya kalıcı yazılmaz.
-- Model: `eleven_multilingual_v2` (ar, tr, en destekli); çıktı `mp3_44100_128`. Ayarda değiştirilebilir (varsayılan bu).
+- Model: `eleven_multilingual_v2` (ar, tr, en destekli); çıktı `mp3_44100_64`. Ayarda değiştirilebilir (varsayılan bu).
 - Ayarlar `settings.json`'a yazılır: `elevenLabs: { apiKey, modelId, voices: { ar: {id, name}, tr: {...}, en: {...} } }`.
 
 ### 6.4 Ses üretimi
